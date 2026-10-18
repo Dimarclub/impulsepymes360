@@ -1,0 +1,310 @@
+// Dimarclub - B2C Marketplace con sistema de afiliados de 3 niveles
+// learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Usuarios y red de afiliados ----------
+
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  name       String
+  phone      String?
+  password   String   @default("dimar123")
+  role       String   @default("CLIENT") // CLIENT, AFFILIATE, SUPPLIER, COURIER, PARTNER, ADMIN
+  avatarUrl  String?
+  city       String?
+  address    String?
+
+  // Red de afiliados (auto-referencia)
+  sponsorId  String?
+  sponsor    User?    @relation("Referrals", fields: [sponsorId], references: [id])
+  referrals  User[]   @relation("Referrals")
+  affiliateCode String?
+
+  supplier   Supplier?
+  courier    Courier?
+  partner    Partner?
+  orders     Order[]
+  commissions Commission[]
+  cart       Cart?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ---------- Catálogo ----------
+
+model Category {
+  id        String     @id @default(cuid())
+  name      String
+  slug      String     @unique
+  icon      String?
+  color     String?
+  parentId  String?
+  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryTree")
+  products  Product[]
+  createdAt DateTime   @default(now())
+}
+
+model Supplier {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  user        User      @relation(fields: [userId], references: [id])
+  companyName String
+  taxId       String?
+  phone       String?
+  address     String?
+  city        String?
+  category    String?   // rubro
+  verified    Boolean   @default(false)
+  rating      Float     @default(0)
+  products    Product[]
+  ads         Advertisement[]
+  createdAt   DateTime  @default(now())
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  description   String?
+  longDescription String?
+  price         Float
+  compareAtPrice Float?
+  stock         Int      @default(0)
+  sku           String?
+  imageUrl      String?
+  gallery       String?  // JSON array
+  tags          String?  // JSON array
+  categoryId    String
+  category      Category @relation(fields: [categoryId], references: [id])
+  supplierId    String
+  supplier      Supplier @relation(fields: [supplierId], references: [id])
+  rating        Float    @default(0)
+  reviewCount   Int      @default(0)
+  featured      Boolean  @default(false)
+  status        String   @default("ACTIVE") // ACTIVE, DRAFT, ARCHIVED
+  orderItems    OrderItem[]
+  cartItems     CartItem[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ---------- Pedidos y carrito ----------
+
+model Order {
+  id            String      @id @default(cuid())
+  orderNumber   String      @unique
+  userId        String
+  user          User        @relation(fields: [userId], references: [id])
+  items         OrderItem[]
+  subtotal      Float
+  commission    Float       // comisión del marketplace
+  total         Float
+  status        String      @default("PENDING") // PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
+  paymentStatus String      @default("UNPAID") // UNPAID, PAID, REFUNDED
+  paymentMethod String?
+  shippingAddress String?
+  city          String?
+  deliveryId    String?
+  delivery      Delivery?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+}
+
+model Cart {
+  id     String     @id @default(cuid())
+  userId String     @unique
+  user   User       @relation(fields: [userId], references: [id])
+  items  CartItem[]
+}
+
+model CartItem {
+  id        String  @id @default(cuid())
+  cartId    String
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+}
+
+// ---------- Comisiones (3 niveles + N0) ----------
+
+model Commission {
+  id        String   @id @default(cuid())
+  userId    String   // quien gana la comisión
+  user      User     @relation(fields: [userId], references: [id])
+  orderId   String?
+  sourceUserId String? // quién generó la venta
+  amount    Float
+  level     Int      // 0 = venta propia/autoconsumo, 1, 2, 3 = niveles
+  rate      Float    // porcentaje aplicado
+  status    String   @default("PENDING") // PENDING, PAID
+  createdAt DateTime @default(now())
+}
+
+// ---------- Logística y mensajería ----------
+
+model Courier {
+  id            String     @id @default(cuid())
+  userId        String     @unique
+  user          User       @relation(fields: [userId], references: [id])
+  vehicleType   String     // MOTORCYCLE, BICYCLE, PICKUP, TRUCK, TRACTOR_TRUCK, TAXI
+  vehicleModel  String?
+  licensePlate  String?
+  licenseNumber String?
+  available     Boolean    @default(true)
+  rating        Float      @default(0)
+  zone          String?
+  deliveries    Delivery[]
+  createdAt     DateTime   @default(now())
+}
+
+model Delivery {
+  id              String   @id @default(cuid())
+  orderId         String   @unique
+  order           Order    @relation(fields: [orderId], references: [id])
+  courierId       String?
+  courier         Courier? @relation(fields: [courierId], references: [id])
+  status          String   @default("ASSIGNED") // ASSIGNED, PICKED_UP, IN_TRANSIT, DELIVERED
+  pickupAddress   String?
+  deliveryAddress String?
+  distance        Float?
+  estimatedMinutes Int?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ---------- Socios (capital) ----------
+
+model Partner {
+  id                String                @id @default(cuid())
+  userId            String                @unique
+  user              User                  @relation(fields: [userId], references: [id])
+  totalContribution Float                 @default(0)
+  totalReturns      Float                 @default(0)
+  status            String                @default("ACTIVE")
+  contributions     PartnerContribution[]
+  createdAt         DateTime              @default(now())
+}
+
+model PartnerContribution {
+  id        String   @id @default(cuid())
+  partnerId String
+  partner   Partner  @relation(fields: [partnerId], references: [id])
+  amount    Float
+  returnRate Float   @default(3) // 3% de utilidad
+  monthlyReturn Float @default(0)
+  status    String   @default("ACTIVE") // ACTIVE, WITHDRAWN
+  date      DateTime @default(now())
+}
+
+// ---------- Espacios publicitarios ----------
+
+model Advertisement {
+  id         String    @id @default(cuid())
+  title      String
+  imageUrl   String
+  targetUrl  String?
+  placement  String    // HEADER, SIDEBAR_LEFT, SIDEBAR_RIGHT, IN_GRID, FOOTER, HERO
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+  startDate  DateTime
+  endDate    DateTime
+  status     String    @default("ACTIVE")
+  clicks     Int       @default(0)
+  impressions Int      @default(0)
+  price      Float     @default(0)
+  createdAt  DateTime  @default(now())
+}
+
+// ---------- CRM ----------
+
+model CrmContact {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  phone      String?
+  company    String?
+  stage      String   @default("LEAD") // LEAD, QUALIFIED, PROPOSAL, NEGOTIATION, WON, LOST
+  value      Float    @default(0)
+  source     String?  // WEB, REFERRAL, MARKETING, MARKETPLACE
+  notes      String?
+  tags       String?  // JSON
+  assignedTo String?
+  activities CrmActivity[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model CrmActivity {
+  id        String   @id @default(cuid())
+  contactId String
+  contact   CrmContact @relation(fields: [contactId], references: [id])
+  type      String   // CALL, EMAIL, MEETING, NOTE, TASK
+  subject   String
+  description String?
+  dueDate   DateTime?
+  done      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// ---------- Email marketing ----------
+
+model EmailCampaign {
+  id            String    @id @default(cuid())
+  name          String
+  subject       String
+  content       String
+  template      String?   // PROMOTION, NEW_MEMBER, COMMISSION, NEWSLETTER
+  audience      String    @default("ALL") // ALL, CLIENTS, AFFILIATES, SUPPLIERS, PARTNERS
+  status        String    @default("DRAFT") // DRAFT, SCHEDULED, SENT
+  scheduledAt   DateTime?
+  sentAt        DateTime?
+  recipientCount Int      @default(0)
+  openCount     Int       @default(0)
+  clickCount    Int       @default(0)
+  createdAt     DateTime  @default(now())
+}
+
+model EmailSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  segment   String   @default("ALL") // ALL, CLIENTS, AFFILIATES, SUPPLIERS, PARTNERS
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+// ---------- Solicitudes (registro proveedores, mensajeros, socios) ----------
+
+model Application {
+  id        String   @id @default(cuid())
+  type      String   // SUPPLIER, COURIER, PARTNER
+  name      String
+  email     String
+  phone     String?
+  details   String?  // JSON con datos específicos
+  status    String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt DateTime @default(now())
+}
