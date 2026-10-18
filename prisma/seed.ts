@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { db } from '../src/lib/db'
 
 const slugify = (s: string) =>
