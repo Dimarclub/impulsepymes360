@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import bcrypt from 'bcryptjs'
+import { requireRole } from '@/lib/security/auth'
 
 export async function GET() {
   const couriers = await db.courier.findMany({
@@ -10,9 +12,11 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireRole('ADMIN')
+  if (auth instanceof NextResponse) return auth
   const body = await req.json()
   const user = await db.user.create({
-    data: { email: body.email, name: body.name, role: 'COURIER', phone: body.phone, city: body.zone, password: 'dimar123' },
+    data: { email: body.email, name: body.name, role: 'COURIER', phone: body.phone, city: body.zone, password: await bcrypt.hash(body.password || 'dimar123', 10) },
   })
   const courier = await db.courier.create({
     data: {

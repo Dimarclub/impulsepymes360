@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import {
   Megaphone, Plus, Pencil, Trash2, MousePointerClick, Eye, Loader2,
-  Sparkles, Crown, Gem, LayoutDashboard, ExternalLink, ImageIcon,
+  Sparkles, Crown, Gem, LayoutDashboard, ExternalLink,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -25,6 +25,7 @@ import {
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { useAppStore } from '@/lib/store'
+import { ImageUpload } from '@/components/dimar/image-upload'
 import type { Advertisement, Supplier } from '@/lib/types'
 import { PLACEMENT_LABELS } from '@/lib/types'
 import { cn } from '@/lib/utils'
@@ -472,15 +473,16 @@ export function AdsModule() {
               <Label>Título *</Label>
               <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Black Friday en electrónicos" />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="grid gap-1.5">
-                <Label>URL de imagen *</Label>
-                <Input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} placeholder="https://…" />
-              </div>
-              <div className="grid gap-1.5">
-                <Label>URL destino</Label>
-                <Input value={form.targetUrl} onChange={(e) => setForm({ ...form, targetUrl: e.target.value })} placeholder="https://…" />
-              </div>
+            <div className="grid gap-1.5">
+              <Label>Imagen del anuncio *</Label>
+              <ImageUpload
+                value={form.imageUrl}
+                onChange={(url) => setForm({ ...form, imageUrl: url })}
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label>URL destino</Label>
+              <Input value={form.targetUrl} onChange={(e) => setForm({ ...form, targetUrl: e.target.value })} placeholder="https://…" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-1.5">
@@ -520,12 +522,6 @@ export function AdsModule() {
                 <Input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
               </div>
             </div>
-            {form.imageUrl ? (
-              <div className="rounded-md border p-2 bg-muted/30">
-                <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-1">Vista previa</div>
-                <img src={form.imageUrl} alt="" className="max-h-24 rounded object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0.2' }} />
-              </div>
-            ) : null}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setCreateOpen(false); setEditAd(null); setForm(emptyForm) }}>Cancelar</Button>

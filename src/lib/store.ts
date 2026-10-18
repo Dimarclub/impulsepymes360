@@ -21,7 +21,7 @@ interface AppState {
   clearCart: () => void
 
   // Toasts/mensajes
-  toast: (msg: string, type?: 'success' | 'error' | 'info') => void
+  toast: (msg: string, type?: 'success' | 'error' | 'info' | 'warning') => void
 }
 
 // Usuarios demo precargados (simulan sesión sin NextAuth)

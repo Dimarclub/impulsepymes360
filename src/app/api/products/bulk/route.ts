@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requireRole } from '@/lib/security/auth'
 
 // Importe masivo vía CSV (texto plano)
 export async function POST(req: NextRequest) {
+  const auth = await requireRole('ADMIN', 'SUPPLIER')
+  if (auth instanceof NextResponse) return auth
   const body = await req.json()
   const { csv, supplierId } = body as { csv: string; supplierId: string }
   const slugify = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')

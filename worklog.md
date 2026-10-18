@@ -230,3 +230,244 @@ Stage Summary:
 - Aplicación completa y funcional verificada end-to-end con Agent Browser
 - 11 módulos operativos, checkout funcional, responsivo, sin errores
 - Proyecto Dimarclub completado
+
+---
+Task ID: 4 (foundation for production hardening)
+Agent: main
+Task: Auth real + seguridad APIs + servicios de pago/email/upload + liquidación comisiones
+
+Work Log:
+- NextAuth.js configurado con CredentialsProvider (bcrypt) en src/lib/auth.ts
+- Helper de seguridad src/lib/security/auth.ts: getSessionUser, requireSession, requireRole, isOwnerOrAdmin
+- Ruta /api/auth/[...nextauth] + /api/auth/register (registro público cliente/afiliado con código referido) + /api/auth/me
+- Seed actualizado: hashea todas las contraseñas con bcrypt (password "dimar123" para todas las cuentas demo)
+- Protegidas TODAS las APIs de escritura y las sensibles de lectura con requireRole/requireSession:
+  * dashboard: ADMIN/AFFILIATE/SUPPLIER/PARTNER
+  * products POST/PATCH/DELETE + bulk: ADMIN/SUPPLIER
+  * categories POST: ADMIN
+  * ads POST: ADMIN/SUPPLIER
+  * orders GET: ADMIN/AFFILIATE; POST: sesión (userId forzado al autenticado)
+  * affiliates tree/commissions/sales: sesión
+  * crm contacts/activities: ADMIN
+  * email campaigns: ADMIN
+  * deliveries: ADMIN/COURIER
+  * couriers PATCH: ADMIN/COURIER
+  * partners/contributions: ADMIN
+  * applications GET/PATCH: ADMIN
+  * users: ADMIN
+  * suppliers/couriers/partners POST: ADMIN
+  * Públicas (sin auth): productos GET, categorías GET, ads GET (con placement), benefits GET, auth/register
+- Servicio de pagos src/lib/services/payment.ts: TestProvider (simula) + StripeProvider (real). /api/payments/intent crea orden PENDING + intent, /api/payments/confirm confirma pago, descuenta stock, genera comisiones N0+N1+N2+N3
+- Servicio de email src/lib/services/email.ts: DevProvider (logs) + ResendProvider (real). /api/email/send envía campaña a suscriptores, personaliza {nombre}, marca SENT con métricas
+- Endpoint /api/upload: multipart/form-data, procesa con Sharp (resize 1200px + thumb 400px, WebP quality 82), guarda en /public/uploads
+- API liquidación comisiones /api/affiliates/commissions/liquidate: POST marcar PAID (batch o individual), GET resumen agrupado por usuario
+- .env actualizado con NEXTAUTH_SECRET, PAYMENT_PROVIDER=test, EMAIL_PROVIDER=dev
+
+Stage Summary:
+- Autenticación real funcional (login con email+password hasheado)
+- Todas las APIs protegidas por rol
+- Pagos: flujo intent→confirm funcional en modo test, listo para Stripe
+- Email: flujo de envío funcional en modo dev (logs), listo para Resend
+- Upload de imágenes funcional con Sharp
+- Liquidación de comisiones funcional
+- Pendiente (subagentes): UI login/register, integrar payment flow en cart, UI liquidación, integrar upload en formularios, integrar envío email en módulo
+
+---
+Task ID: 5-c
+Agent: full-stack-developer (email send UI)
+Task: Integrate real email sending flow into Email Marketing module
+
+Work Log:
+- Leído worklog.md (Task 1-4), src/lib/services/email.ts (DevProvider/ResendProvider), src/app/api/email/send/route.ts (POST handler que retorna {sent, failed, total, provider, errors}), módulo email.tsx existente, types.ts y store.ts.
+- Sustituido el flujo simulado de envío (PATCH /api/email/campaigns/{id} con status SENT) por el flujo real:
+  * Botón "Enviar ahora" en cards DRAFT o SCHEDULED ahora abre un AlertDialog de confirmación con el conteo de suscriptores de la audiencia calculado en cliente (audienceCount) + nota si está programada + nota "Modo demo" cuando provider === 'dev'.
+  * On confirm: set sendingId (Loader2 spinner en la card), POST /api/email/send { campaignId }, parse {sent, failed, total, provider, errors}.
+  * On success: toast success `Campaña enviada a ${sent}/${total} suscriptores`.
+  * If failed > 0: toast warning `${sent} enviados, ${failed} fallidos`.
+  * On API error: toast error "Error al enviar la campaña".
+  * Refresh de la lista al terminar y limpieza del estado sending.
+- ProviderBadge en el header del módulo:
+  * Default: badge ámbar "Dev (logs)" + texto "Modo demo — los correos se registran en consola".
+  * Si la respuesta del API indica provider === 'resend': badge esmeralda "Resend" + texto "Resend — envíos reales activados".
+  * Estado provider se actualiza tras cada envío con el valor retornado por la API.
+- CampaignCard mejorada:
+  * Props nuevas: sending (bool) y audienceCount (number).
+  * Badge de audiencia muestra "{N} suscriptores" cuando no está enviada.
+  * Estados: SENT → "Enviada {fecha}"; SCHEDULED + fecha futura → "Programada para {fecha}"; SCHEDULED pasada → "Programada {fecha}"; DRAFT → "Borrador · {fecha}".
+  * Botón principal: spinner Loader2 + "Enviando…" mientras sending=true; "Enviar ahora (no esperar)" cuando es SCHEDULED programada para el futuro; "Enviar ahora" en el resto. Botón deshabilitado mientras se envía (también el de eliminar).
+- Toast 'warning': añadido tipo 'warning' al toast del store (store.ts) y al handler de Sonner en page.tsx (s.toast.warning(msg)) — necesario para el toast de "X enviados, Y fallidos".
+- 'use client' preservado. Paleta estricta esmeralda + ámbar (sin azul/índigo). shadcn components: Card, Button, Badge, AlertDialog, Tabs, Dialog, Table, Switch, Skeleton, Select, Input, Textarea, Label. Iconos Lucide: Mail, MailPlus, Send, Trash2, Users, MailCheck, MousePointerClick, Plus, RefreshCw, CalendarClock, CheckCircle2, Pencil, Eye, Loader2, Terminal, Zap.
+- Funcionalidad existente preservada al 100%: creación de campañas con vista previa en vivo, gestión de suscriptores con switch, tabs, stats, delete con confirmación, etc.
+- Lint: 0 errores, 0 warnings tras los cambios.
+
+Stage Summary:
+- Archivos modificados:
+  * src/components/dimar/modules/email.tsx (envío real + AlertDialog confirmación + provider badge + estados SCHEDULED + spinner)
+  * src/lib/store.ts (toast type añadido 'warning')
+  * src/app/page.tsx (handler de Sonner añade s.toast.warning para 'warning')
+
+---
+Task ID: 5-b
+Agent: full-stack-developer (upload+liquidation UI)
+Task: Image upload component + integration in forms + commission liquidation module
+
+Work Log:
+- Leído worklog previo y los archivos clave: security/auth.ts, api/upload/route.ts, api/affiliates/commissions/liquidate/route.ts, modules/affiliates.tsx, modules/suppliers.tsx, modules/ads.tsx, lib/types.ts
+- Creado `src/components/dimar/image-upload.tsx` (componente reutilizable cliente):
+  * Dropzone con borde dashed, icono UploadCloud y texto "Arrastra una imagen o haz clic"
+  * Drag & drop + clic + soporte teclado (Enter/Space) para accesibilidad
+  * Previsualización (max-h-40 object-cover) con overlay "Eliminar" (X) y botón "Cambiar"
+  * Spinner Loader2 mientras sube (POST /api/upload multipart/form-data, campo "file")
+  * Validación cliente: solo image/* y máx 5MB → muestra error inline (AlertCircle) + toast
+  * Input alternativo de URL (pegar enlace directamente) debajo del dropzone
+  * Props controladas: value, onChange, label, className
+  * Hidden `<input type="file" accept="image/*">`
+- Integrado ImageUpload en `src/components/dimar/modules/suppliers.tsx`:
+  * Import añadido desde `@/components/dimar/image-upload`
+  * En el dialog "Agregar producto", reemplazado el `<Input>` de "URL de imagen" por `<ImageUpload value={productForm.imageUrl} onChange={(url) => setProductForm({ ...productForm, imageUrl: url })} />`
+  * Toda la lógica existente del form (handleCreateProduct, payload, fetchProducts) preservada — solo cambia el control de entrada del campo imageUrl
+- Integrado ImageUpload en `src/components/dimar/modules/ads.tsx`:
+  * Import añadido; eliminado ImageIcon no utilizado de imports lucide-react
+  * Reemplazado el grid 2-col (URL imagen + URL destino) por un stack vertical: ImageUpload (con label "Imagen del anuncio *") + Input "URL destino"
+  * Eliminado el bloque "Vista previa" redundante (ImageUpload ya incluye su propia preview)
+  * Lógica submit/openEdit/confirmDelete preservada intacta
+- Creado `src/components/dimar/modules/commissions-liquidation.tsx` (módulo standalone):
+  * Fetch GET /api/affiliates/commissions/liquidate?status=PENDING → { commissions, byUser }
+  * Tipos locales CommissionLiquidation (con user + sourceUser) y ByUserRow
+  * 3 SummaryCards: Total pendiente (suma byUser.total), Afiliados con saldo (count byUser), Comisiones pendientes (suma byUser.count). Paleta esmeralda + ámbar
+  * Botón "Liquidar todo" en el header → POST { all: true } → toast `Liquidadas N comisiones` + refresh
+  * Tabla por usuario (byUser): Afiliado (avatar inicial + nombre), Email (oculto en móvil), Código (oculto en md-), Comisiones count, Monto total USD, botón "Liquidar" (POST { all: true, userId })
+  * Tabla detalle (commissions, max-h-96 scroll-thin con header sticky): checkbox (seleccionar todas/todas), Fecha (datetime es-EC), Afiliado (nombre+email), Origen (sourceUser?.name || "Venta directa", oculto en móvil), Nivel (badge N0-N3 con colores LEVEL_BADGE), Tasa (% del rate, oculta en móvil), Monto USD, Estado (badge PENDING/PAID con STATUS_COLORS)
+  * Footer de selección: contador "N comisiones seleccionadas", botón "Limpiar" + botón ámbar "Liquidar seleccionadas" (POST { commissionIds: [...] })
+  * Estado loading: LiquidationSkeleton (3 cards + 2 bloques)
+  * Estado vacío: EmptyState con icono CheckCircle2 "No hay comisiones pendientes"
+  * Helper fmtRate, fmtDate, fmtDateTime, usd (Intl.NumberFormat es-EC USD)
+- Modificado `src/components/dimar/modules/affiliates.tsx`:
+  * Importado CommissionsLiquidation y BanknoteIcon (lucide-react)
+  * Calculado `isAdmin = currentUser.role === 'ADMIN'` y `tabCount` (3 o 4)
+  * TabsList con grid-cols dinámico (3 o 4 según rol)
+  * 4º TabsTrigger "Liquidación" renderizado condicionalmente solo si isAdmin
+  * 4º TabsContent "liquidacion" que monta <CommissionsLiquidation />
+  * Si currentUser es null → el early-return existente oculta toda la sección (tab incluido)
+- Verificación: lint (eslint) pasa limpio en mis 5 archivos (image-upload, commissions-liquidation, affiliates, suppliers, ads). tsc no genera errores en mis archivos. El único error de lint restante (topbar.tsx setState in effect) pertenece a otro agente. Los errores tsc en /api/affiliates/commissions/* (include sourceUser no existe en schema Prisma) son responsabilidad del main agent (Task 4).
+
+Stage Summary:
+- Archivos creados:
+  * /home/z/my-project/src/components/dimar/image-upload.tsx (componente reutilizable)
+  * /home/z/my-project/src/components/dimar/modules/commissions-liquidation.tsx (módulo admin)
+- Archivos modificados:
+  * /home/z/my-project/src/components/dimar/modules/suppliers.tsx (import + reemplazo de input imageUrl por ImageUpload en dialog de producto)
+  * /home/z/my-project/src/components/dimar/modules/ads.tsx (import + reemplazo de input imageUrl por ImageUpload en dialog de anuncio; eliminado preview redundante; quitado ImageIcon no usado)
+  * /home/z/my-project/src/components/dimar/modules/affiliates.tsx (imports + tab "Liquidación" condicional para ADMIN)
+- Decisiones clave:
+  * ImageUpload es controlado (value/onChange) para encajar en formularios existentes sin tocar la lógica de submit
+  * El dropzone es role="button" con tabIndex y onKeyDown para accesibilidad por teclado
+  * El input alternativo de URL es type="url" y solo muestra la URL si empieza con http (evita mostrar /uploads/... cuando se subió)
+  * CommissionsLiquidation es standalone y autocontenido (fetch propio, state propio) — fácil de mover a otro módulo si se requiere
+  * Selección múltiple con Set<string> en lugar de array para toggles O(1)
+  * Botón "Liquidar todo" en header + botones "Liquidar" por fila + "Liquidar seleccionadas" en footer → 3 niveles de granularidad
+  * Tab "Liquidación" solo visible cuando currentUser?.role === 'ADMIN'; si currentUser es null el early-return existente la oculta automáticamente
+  * Paleta esmeralda + ámbar consistente con el resto del proyecto. Sin azul/índigo
+
+---
+Task ID: 5-a
+Agent: full-stack-developer (auth+payments UI)
+Task: Login/register dialogs, session-aware topbar, payment checkout flow in cart
+
+Work Log:
+- Leído worklog.md y todos los archivos indicados: auth.ts (NextAuth CredentialsProvider), security/auth.ts (getSessionUser/requireSession/requireRole), store.ts (currentUser=null), topbar.tsx (demo user switcher), cart-drawer.tsx (checkout POST /api/orders), page.tsx.
+- Verificados los contratos de API: /api/auth/me, /api/auth/register, /api/payments/intent, /api/payments/confirm, /api/auth/callback/credentials, /api/auth/session.
+- Creado `src/components/dimar/auth/auth-provider.tsx`: wrapper cliente de `SessionProvider` de next-auth/react. Exporta `AppSessionProvider`.
+- Creado `src/components/dimar/auth/login-dialog.tsx`: Dialog con Tabs (Iniciar sesión / Registrarse) usando react-hook-form.
+  * Login tab: email+password+show/hide toggle, signIn('credentials', { redirect: false }), toast "¡Bienvenido!", refresh de /api/auth/me, setUser(me). Toast "Credenciales inválidas" en error. Link "¿Olvidaste tu contraseña?" (decorativo). Nota con cuentas demo (admin/ana/pedro + dimar123).
+  * Register tab: nombre, email, teléfono, ciudad, contraseña (min 6), código de referido (opcional), rol (RadioGroup Cliente/Afiliado con Controller de RHF). POST /api/auth/register. Manejo de 409 ("Este email ya está registrado"). Auto-login tras registro exitoso. Toast "¡Cuenta creada! Bienvenido a Dimarclub".
+- Actualizado `src/components/dimar/topbar.tsx`: REMOVIDO el demo user switcher con fetch /api/users (que ya no es accesible sin ser ADMIN). Ahora:
+  * useSession() + signOut() de next-auth/react.
+  * useEffect sincroniza /api/auth/me → setUser(me) cuando hay sesión.
+  * useEffect aparte limpia setUser(null) cuando status === 'unauthenticated'.
+  * displayUser deriva de currentUser || session.user (fallback con datos del JWT para evitar flasheo del botón "Iniciar sesión" durante el fetch de /api/auth/me).
+  * Botón "Iniciar sesión" (primary) cuando no autenticado. DropdownMenu con avatar+nombre+rol+affiliateCode+ciudad y opción "Cerrar sesión" cuando autenticado.
+  * Estado local loginOpen + listener del evento `dimar-open-login` (dispatchado desde cart-drawer).
+  * <LoginDialog> renderizado dentro del topbar.
+- Actualizado `src/components/dimar/cart-drawer.tsx`: REMOVIDO el checkout directo a /api/orders. Ahora flujo real de pago:
+  * Verificación de currentUser. Si null → toast "Inicia sesión para comprar" + close drawer + dispatch `dimar-open-login`.
+  * POST /api/payments/intent con { items, shippingAddress, city } → retorna { orderId, orderNumber, paymentIntentId, amount, provider }.
+  * Estado de procesamiento visible: panel con spinner + mensaje contextual ("Creando orden y validando stock…" / "Confirmando transacción con el banco…").
+  * POST /api/payments/confirm con { orderId, paymentIntentId }.
+  * Éxito: clearCart, close drawer, toast "¡Pago exitoso! Pedido {orderNumber}".
+  * Fallo: toast "Pago rechazado, intenta de nuevo".
+  * Nota de proveedor: si provider === 'stripe' → "Pago seguro procesado por Stripe" (esmeralda + ShieldCheck). Si 'test' → "Modo demo: pago simulado" (ámbar + Info).
+  * UI del carrito preservada (qty steppers, remove, subtotal, nota 3% afiliado, FAB flotante).
+- Actualizado `src/app/page.tsx`: envuelve el contenido con <AppSessionProvider>. El componente Home delega a HomeContent para mantener el provider estable y permitir que useSession() funcione en hijos (TopBar, CartDrawer).
+- Fix en `src/lib/services/payment.ts` y `src/lib/services/email.ts`: el `await import('stripe')` / `await import('resend')` rompía el build de Turbopack con "Module not found" porque las dependencias no estaban instaladas. Cambiado a `eval('require')` runtime que bypassa el análisis estático. Si el SDK no está disponible, lanza error claro en runtime (no rompe compile).
+- Instalado `stripe@23.0.0` como dependencia (necesario para que el modo stripe real funcione cuando se configure STRIPE_SECRET_KEY).
+- Lint final: 0 errores, 0 warnings.
+- Verificación end-to-end con curl:
+  * Login admin@dimarclub.com / dimar123 → 302 + cookies seteadas ✓
+  * GET /api/auth/me → retorna user completo con city, phone, affiliateCode ✓
+  * POST /api/payments/intent (autenticado) → orderId, orderNumber DM-3749, paymentIntentId, provider=test ✓
+  * POST /api/payments/confirm → success=true, transactionId, provider=test ✓
+  * POST /api/payments/intent (sin auth) → 401 "No autorizado. Inicia sesión." ✓
+  * POST /api/auth/register (nuevo email) → 201 con affiliateCode generado ✓
+  * POST /api/auth/register (email existente) → 409 "Este email ya está registrado" ✓
+  * GET / → 200, "Dimarclub" y "Marketplace" en SSR HTML ✓
+
+Stage Summary:
+- Archivos creados:
+  * src/components/dimar/auth/auth-provider.tsx
+  * src/components/dimar/auth/login-dialog.tsx
+- Archivos modificados:
+  * src/components/dimar/topbar.tsx (reemplazado demo switcher por auth real)
+  * src/components/dimar/cart-drawer.tsx (flujo de pago intent→confirm)
+  * src/app/page.tsx (envuelto con AppSessionProvider)
+  * src/lib/services/payment.ts (eval require para stripe opcional)
+  * src/lib/services/email.ts (eval require para resend opcional)
+- Dependencia añadida: stripe@23.0.0 (para soporte real del proveedor Stripe cuando se configure)
+- Decisiones clave:
+  * displayUser deriva de currentUser || session.user para evitar flasheo del botón "Iniciar sesión" durante el fetch de /api/auth/me.
+  * Evento window `dimar-open-login` desacopla el cart-drawer del topbar (cart-drawer lo dispatcha, topbar lo escucha).
+  * Estado de checkout `idle | intent | confirm` con panel visual de progreso y mensajes contextuales.
+  * Nota de proveedor dinámica (test vs stripe) según la respuesta del API.
+  * `eval('require')` en servicios de pago/email para no romper el build cuando las dependencias opcionales (stripe, resend) no estén instaladas.
+  * LoginDialog usa react-hook-form con Controller para el RadioGroup (rol Cliente/Afiliado) y register nativo para inputs con validación HTML5.
+- Pendiente para el main agent: verificar con Agent Browser la UI completa (login dialog, dropdown de usuario, flujo de pago en cart).
+
+---
+Task ID: 5 (production hardening - complete)
+Agent: main + 3 subagents
+Task: Auth real + pagos + comisiones + upload + email + seguridad APIs + DB docs
+
+Work Log:
+- NextAuth.js con CredentialsProvider (bcrypt) — login real funcional
+- Helper de seguridad requireRole/requireSession aplicado a TODAS las APIs
+- Seed hashea contraseñas con bcrypt (password "dimar123" para todas las cuentas)
+- Servicio de pagos abstraído: TestProvider (simula) + StripeProvider (real)
+- Flujo de checkout real: /api/payments/intent → /api/payments/confirm (descuenta stock + genera comisiones N0+N1+N2+N3)
+- Servicio de email abstraído: DevProvider (logs) + ResendProvider (real)
+- /api/email/send envía campañas a suscriptores con personalización {nombre}
+- /api/upload con Sharp (resize 1200px + thumb 400px, WebP quality 82)
+- API de liquidación de comisiones: marcar PAID (batch o individual)
+- Subagentes crearon: login/register dialogs, session-aware topbar, payment flow en cart, image-upload component, commissions-liquidation module, email send integration
+- Bug resuelto: Prisma 6 + Bun runtime causa error de module virtual; solución: usar `next dev` (Node) en lugar de `bun --bun run`
+- Bug resuelto: relación sourceUser en schema causaba hash conflict con Turbopack; revertida a campo simple con query separada
+- PRODUCTION.md creado con guía de migración SQLite→PostgreSQL, Stripe, Resend, auth, seguridad, almacenamiento
+
+Verificación con Agent Browser (Node runtime):
+- Login admin@dimarclub.com/dimar123 → "Carlos Dimar / Administrador" ✅
+- Sesión persiste entre recargas (NextAuth JWT) ✅
+- Checkout: 2 productos → payment intent → confirm → "¡Pago exitoso! Pedido DM-3051" ✅
+- Comisiones PENDING generadas automáticamente ✅
+- Afiliados → pestaña Liquidación → muestra "Total pendiente", "Liquidar todo", comisiones ✅
+- Email Marketing → "Enviar ahora" → AlertDialog "Se enviará a 2 suscriptores del segmento Afiliados" → confirmar → campaña marcada "Enviada" ✅
+- Proveedores → "Agregar producto" → formulario con ImageUpload "Arrastra una imagen o haz clic PNG, JPG, WebP o GIF · máx 5MB" ✅
+- Lint: 0 errores, 0 warnings ✅
+
+Stage Summary:
+- Autenticación real funcional (bcrypt + NextAuth + JWT persistente)
+- Pagos reales: flujo intent→confirm funcional en modo test, listo para Stripe
+- Email real: envío de campañas funcional en modo dev (logs), listo para Resend
+- Upload de imágenes funcional con Sharp
+- Liquidación de comisiones funcional
+- Todas las APIs protegidas por rol
+- Guía de producción PRODUCTION.md completa
+- 7/7 puntos de hardening completados

@@ -1,7 +1,16 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ShoppingCart, Trash2, Minus, Plus, Loader2 } from 'lucide-react'
+import {
+  ShoppingCart,
+  Trash2,
+  Minus,
+  Plus,
+  Loader2,
+  Lock,
+  ShieldCheck,
+  Info,
+} from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -70,9 +79,31 @@ function CartLineRow({ line, onUpdateQty, onRemove }: CartLineProps) {
   )
 }
 
+interface PaymentIntentResponse {
+  orderId: string
+  orderNumber: string
+  paymentIntentId: string
+  clientSecret?: string
+  amount: number
+  provider: string
+}
+
+interface PaymentConfirmResponse {
+  success: boolean
+  orderId: string
+  orderNumber: string
+  transactionId?: string
+  provider: string
+  error?: string
+}
+
+type CheckoutStage = 'idle' | 'intent' | 'confirm'
+
 export function CartDrawer() {
   const [open, setOpen] = useState(false)
-  const [checkingOut, setCheckingOut] = useState(false)
+  const [stage, setStage] = useState<CheckoutStage>('idle')
+  // provider se setea tras el intent; por defecto 'test' para la nota informativa
+  const [provider, setProvider] = useState<string>('test')
   const cart = useAppStore((s) => s.cart)
   const updateQty = useAppStore((s) => s.updateQty)
   const removeFromCart = useAppStore((s) => s.removeFromCart)
@@ -89,52 +120,101 @@ export function CartDrawer() {
   const subtotal = cart.reduce((s, l) => s + l.price * l.quantity, 0)
   const itemCount = cart.reduce((s, l) => s + l.quantity, 0)
   const affiliateCommission = +(subtotal * 0.03).toFixed(2)
+  const checkingOut = stage !== 'idle'
 
   const handleCheckout = async () => {
     if (cart.length === 0) {
       toast('El carrito está vacío', 'error')
       return
     }
-    setCheckingOut(true)
+    // 1. Verificar sesión
+    if (!currentUser) {
+      toast('Inicia sesión para comprar', 'info')
+      setOpen(false)
+      window.dispatchEvent(new CustomEvent('dimar-open-login'))
+      return
+    }
+
+    const items = cart.map((l) => ({
+      productId: l.productId,
+      quantity: l.quantity,
+    }))
+    const shippingAddress = currentUser.city || 'Guayaquil'
+    const city = currentUser.city || 'Guayaquil'
+
+    setStage('intent')
     try {
-      let userId = currentUser?.id
-      let city = currentUser?.city || 'Guayaquil'
-      // Si no hay sesión, obtener un usuario cliente por defecto
-      if (!userId) {
-        const uRes = await fetch('/api/users')
-        const users = await uRes.json()
-        const fallback = users.find((u: { role: string }) => u.role === 'CLIENT') || users[0]
-        if (!fallback) throw new Error('Sin usuario disponible')
-        userId = fallback.id
-        city = fallback.city || 'Guayaquil'
+      // 2. Crear intención de pago + orden PENDING
+      const intentRes = await fetch('/api/payments/intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items, shippingAddress, city }),
+      })
+      if (!intentRes.ok) {
+        const e = await intentRes.json().catch(() => null)
+        toast(e?.error || 'Error al iniciar el pago', 'error')
+        setStage('idle')
+        return
       }
-      const items = cart.map((l) => ({
-        productId: l.productId,
-        quantity: l.quantity,
-        price: l.price,
-      }))
-      const res = await fetch('/api/orders', {
+      const intent: PaymentIntentResponse = await intentRes.json()
+      setProvider(intent.provider)
+
+      // 3. Confirmar el pago
+      setStage('confirm')
+      const confirmRes = await fetch('/api/payments/confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId,
-          items,
-          shippingAddress: city,
-          city,
-          paymentMethod: 'TARJETA',
+          orderId: intent.orderId,
+          paymentIntentId: intent.paymentIntentId,
         }),
       })
-      if (!res.ok) throw new Error('Error al crear el pedido')
-      const order = await res.json()
+      const confirm: PaymentConfirmResponse = await confirmRes.json().catch(() => ({
+        success: false,
+        orderId: '',
+        orderNumber: '',
+        provider: intent.provider,
+      }))
+      if (!confirmRes.ok || !confirm.success) {
+        toast('Pago rechazado, intenta de nuevo', 'error')
+        setStage('idle')
+        return
+      }
+      // 4. Éxito
       clearCart()
       setOpen(false)
-      toast(`¡Pedido creado! Nº ${order.orderNumber}`, 'success')
+      setStage('idle')
+      toast(`¡Pago exitoso! Pedido ${confirm.orderNumber}`, 'success')
     } catch {
-      toast('Error al procesar el pedido', 'error')
-    } finally {
-      setCheckingOut(false)
+      toast('Error al procesar el pago', 'error')
+      setStage('idle')
     }
   }
+
+  const handleOpenChange = (v: boolean) => {
+    setOpen(v)
+    if (!v) setStage('idle')
+  }
+
+  const providerNote =
+    provider === 'stripe' ? (
+      <div className="flex items-center justify-center gap-1.5 text-[10px] text-emerald-700 dark:text-emerald-400">
+        <ShieldCheck className="size-3" />
+        Pago seguro procesado por Stripe
+      </div>
+    ) : (
+      <div className="flex items-center justify-center gap-1.5 text-[10px] text-amber-700 dark:text-amber-400">
+        <Info className="size-3" />
+        Modo demo: pago simulado
+      </div>
+    )
+
+  const buttonLabel =
+    stage === 'intent'
+      ? 'Procesando pago…'
+      : stage === 'confirm'
+      ? 'Confirmando transacción…'
+      : `Finalizar compra · $${subtotal.toFixed(2)}`
 
   return (
     <>
@@ -153,7 +233,7 @@ export function CartDrawer() {
         )}
       </button>
 
-      <Sheet open={open} onOpenChange={setOpen}>
+      <Sheet open={open} onOpenChange={handleOpenChange}>
         <SheetContent
           side="right"
           className="w-full sm:max-w-md p-0 gap-0 flex flex-col"
@@ -222,6 +302,25 @@ export function CartDrawer() {
                   <span className="tabular-nums">${subtotal.toFixed(2)}</span>
                 </div>
               </div>
+
+              {checkingOut && (
+                <div
+                  className="rounded-lg border bg-primary/5 p-3 text-center"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <div className="flex items-center justify-center gap-2 text-sm font-medium text-primary">
+                    <Loader2 className="size-4 animate-spin" />
+                    Procesando pago…
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    {stage === 'intent'
+                      ? 'Creando orden y validando stock…'
+                      : 'Confirmando transacción con el banco…'}
+                  </p>
+                </div>
+              )}
+
               <Button
                 onClick={handleCheckout}
                 disabled={checkingOut}
@@ -230,14 +329,17 @@ export function CartDrawer() {
               >
                 {checkingOut ? (
                   <>
-                    <Loader2 className="size-4 animate-spin" /> Procesando…
+                    <Loader2 className="size-4 animate-spin" /> {buttonLabel}
                   </>
                 ) : (
-                  <>Finalizar compra · ${subtotal.toFixed(2)}</>
+                  <>
+                    <Lock className="size-4" /> {buttonLabel}
+                  </>
                 )}
               </Button>
+              {providerNote}
               <p className="text-[10px] text-center text-muted-foreground">
-                Pago seguro · Comisiones N0-N3 distribuidas automáticamente
+                Comisiones N0-N3 distribuidas automáticamente al confirmar
               </p>
             </SheetFooter>
           )}

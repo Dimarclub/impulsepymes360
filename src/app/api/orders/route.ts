@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requireSession, requireRole } from '@/lib/security/auth'
 
 export async function GET(req: NextRequest) {
+  const auth = await requireRole('ADMIN', 'AFFILIATE')
+  if (auth instanceof NextResponse) return auth
   const { searchParams } = new URL(req.url)
   const userId = searchParams.get('userId')
   const status = searchParams.get('status')
@@ -22,7 +25,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireSession()
+  if (auth instanceof NextResponse) return auth
   const body = await req.json()
+  // Forzar userId al usuario autenticado (no se puede falsear)
+  body.userId = (auth as { id: string }).id
   const { userId, items, shippingAddress, city, paymentMethod } = body as {
     userId: string
     items: { productId: string; quantity: number; price: number }[]

@@ -69,6 +69,9 @@ import {
   CheckCircle2,
   Pencil,
   Eye,
+  Loader2,
+  Terminal,
+  Zap,
 } from 'lucide-react'
 import type { EmailCampaign } from '@/lib/types'
 import { useAppStore } from '@/lib/store'
@@ -127,6 +130,11 @@ export function EmailModule() {
   const [createOpen, setCreateOpen] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<EmailCampaign | null>(null)
   const [subOpen, setSubOpen] = useState(false)
+  const [sendingId, setSendingId] = useState<string | null>(null)
+  const [confirmTarget, setConfirmTarget] = useState<EmailCampaign | null>(null)
+  // El proveedor de email se conoce del lado del servidor (env var EMAIL_PROVIDER).
+  // En cliente arrancamos con el default (dev) y lo refrescamos con cada envío.
+  const [provider, setProvider] = useState<'dev' | 'resend'>('dev')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -187,18 +195,58 @@ export function EmailModule() {
     }
   }
 
-  const handleSend = async (c: EmailCampaign) => {
+  // Cuenta de suscriptores activos que coincide con la audiencia de la campaña.
+  // Úsalo solo como referencia previa; el conteo real lo hace el servidor al enviar.
+  const audienceCount = useCallback(
+    (c: EmailCampaign) => {
+      const list = c.audience === 'ALL'
+        ? subscribers.filter((s) => s.active)
+        : subscribers.filter((s) => s.active && s.segment === c.audience)
+      return list.length
+    },
+    [subscribers]
+  )
+
+  const handleSendRequest = (c: EmailCampaign) => {
+    setConfirmTarget(c)
+  }
+
+  const handleSendConfirm = async () => {
+    const c = confirmTarget
+    if (!c) return
+    setSendingId(c.id)
+    setConfirmTarget(null)
     try {
-      const res = await fetch(`/api/email/campaigns/${c.id}`, {
-        method: 'PATCH',
+      const res = await fetch('/api/email/send', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'SENT', recipientCount: c.recipientCount }),
+        body: JSON.stringify({ campaignId: c.id }),
       })
-      if (!res.ok) throw new Error('No se pudo enviar la campaña')
-      toast(`Campaña "${c.name}" enviada a ${c.recipientCount} destinatarios`)
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || 'No se pudo enviar la campaña')
+      }
+      const data = (await res.json()) as {
+        sent: number
+        failed: number
+        total: number
+        provider: string
+        errors: string[]
+      }
+      // Refrescar el badge del proveedor con la respuesta real
+      if (data.provider === 'resend') setProvider('resend')
+      else setProvider('dev')
+
+      if (data.failed > 0) {
+        toast(`${data.sent} enviados, ${data.failed} fallidos`, 'warning')
+      } else {
+        toast(`Campaña enviada a ${data.sent}/${data.total} suscriptores`, 'success')
+      }
       load()
     } catch (err) {
-      toast((err as Error).message, 'error')
+      toast('Error al enviar la campaña', 'error')
+    } finally {
+      setSendingId(null)
     }
   }
 
@@ -245,7 +293,12 @@ export function EmailModule() {
 
   return (
     <div className="space-y-6">
-      <Header loading={loading} onReload={load} onNew={() => setCreateOpen(true)} />
+      <Header
+        loading={loading}
+        onReload={load}
+        onNew={() => setCreateOpen(true)}
+        provider={provider}
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -292,7 +345,9 @@ export function EmailModule() {
                 <CampaignCard
                   key={c.id}
                   campaign={c}
-                  onSend={() => handleSend(c)}
+                  sending={sendingId === c.id}
+                  audienceCount={audienceCount(c)}
+                  onSend={() => handleSendRequest(c)}
                   onDelete={() => setDeleteTarget(c)}
                 />
               ))}
@@ -390,6 +445,53 @@ export function EmailModule() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Send confirmation */}
+      <AlertDialog open={!!confirmTarget} onOpenChange={(o) => !o && setConfirmTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Enviar campaña ahora?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmTarget ? (
+                <>
+                  Se enviará la campaña
+                  <span className="font-medium"> “{confirmTarget.name}” </span>
+                  a <span className="font-semibold text-foreground">{audienceCount(confirmTarget)}</span>{' '}
+                  suscriptores
+                  {confirmTarget.audience !== 'ALL' && (
+                    <>
+                      {' '}del segmento{' '}
+                      <span className="font-medium">{AUDIENCES[confirmTarget.audience] || confirmTarget.audience}</span>
+                    </>
+                  )}
+                  {confirmTarget.status === 'SCHEDULED' && confirmTarget.scheduledAt && (
+                    <>
+                      {' '}(estaba programada para{' '}
+                      <span className="font-medium">{shortDate(confirmTarget.scheduledAt)}</span>,
+                      no se esperará a esa fecha).
+                    </>
+                  )}
+                  .
+                  {provider === 'dev' && (
+                    <span className="block mt-2 text-amber-700">
+                      Modo demo: los correos se registrarán en consola del servidor (no se enviarán realmente).
+                    </span>
+                  )}
+                </>
+              ) : null}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() => void handleSendConfirm()}
+            >
+              <Send className="size-4" /> Enviar ahora
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
@@ -400,19 +502,30 @@ function Header({
   loading,
   onReload,
   onNew,
+  provider,
 }: {
   loading: boolean
   onReload: () => void
   onNew: () => void
+  provider: 'dev' | 'resend'
 }) {
+  const isDev = provider === 'dev'
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <h2 className="text-2xl font-semibold tracking-tight text-gradient">
-          Email Marketing
-        </h2>
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="space-y-2 min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="text-2xl font-semibold tracking-tight text-gradient">
+            Email Marketing
+          </h2>
+          <ProviderBadge provider={provider} />
+        </div>
         <p className="text-sm text-muted-foreground">
           Crea, programa y mide tus campañas de correo.
+        </p>
+        <p className={`text-xs ${isDev ? 'text-amber-700' : 'text-emerald-700'}`}>
+          {isDev
+            ? 'Modo demo — los correos se registran en consola'
+            : 'Resend — envíos reales activados'}
         </p>
       </div>
       <div className="flex items-center gap-2">
@@ -425,6 +538,21 @@ function Header({
         </Button>
       </div>
     </div>
+  )
+}
+
+function ProviderBadge({ provider }: { provider: 'dev' | 'resend' }) {
+  if (provider === 'resend') {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-700 ring-1 ring-emerald-200/60">
+        <Zap className="size-3" /> Resend
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700 ring-1 ring-amber-200/60">
+      <Terminal className="size-3" /> Dev (logs)
+    </span>
   )
 }
 
@@ -464,10 +592,14 @@ function StatCard({
 
 function CampaignCard({
   campaign,
+  sending,
+  audienceCount,
   onSend,
   onDelete,
 }: {
   campaign: EmailCampaign
+  sending: boolean
+  audienceCount: number
   onSend: () => void
   onDelete: () => void
 }) {
@@ -478,6 +610,10 @@ function CampaignCard({
     campaign.recipientCount > 0 ? (campaign.clickCount / campaign.recipientCount) * 100 : 0
   const isSent = status === 'SENT'
   const isDraft = status === 'DRAFT'
+  const isScheduled = status === 'SCHEDULED' && !!campaign.scheduledAt
+  const scheduledFuture =
+    isScheduled && new Date(campaign.scheduledAt as string).getTime() > Date.now()
+  const canSend = (isDraft || isScheduled) && !sending
 
   return (
     <Card className="gap-0 overflow-hidden">
@@ -502,6 +638,12 @@ function CampaignCard({
               {TEMPLATES[campaign.template] || campaign.template}
             </Badge>
           )}
+          {!isSent && (
+            <Badge variant="outline" className="text-[10px] text-muted-foreground">
+              <Users className="size-3 mr-1" />
+              {audienceCount} suscriptores
+            </Badge>
+          )}
         </div>
         <div className="grid grid-cols-3 gap-2 text-center">
           <Metric label="Destinatarios" value={String(campaign.recipientCount)} />
@@ -514,9 +656,11 @@ function CampaignCard({
               <>
                 <CheckCircle2 className="size-3 text-emerald-600" /> Enviada {shortDate(campaign.sentAt)}
               </>
-            ) : campaign.scheduledAt ? (
+            ) : isScheduled ? (
               <>
-                <CalendarClock className="size-3 text-amber-600" /> Programada {shortDate(campaign.scheduledAt)}
+                <CalendarClock className="size-3 text-amber-600" />
+                {scheduledFuture ? 'Programada para ' : 'Programada '}
+                {shortDate(campaign.scheduledAt)}
               </>
             ) : (
               <>
@@ -532,11 +676,23 @@ function CampaignCard({
           variant="default"
           className="flex-1"
           onClick={onSend}
-          disabled={!isDraft && status !== 'SCHEDULED'}
+          disabled={!canSend}
         >
-          <Send className="size-3.5" /> Enviar ahora
+          {sending ? (
+            <>
+              <Loader2 className="size-3.5 animate-spin" /> Enviando…
+            </>
+          ) : isScheduled && scheduledFuture ? (
+            <>
+              <Send className="size-3.5" /> Enviar ahora (no esperar)
+            </>
+          ) : (
+            <>
+              <Send className="size-3.5" /> Enviar ahora
+            </>
+          )}
         </Button>
-        <Button size="sm" variant="outline" onClick={onDelete} className="text-destructive hover:text-destructive">
+        <Button size="sm" variant="outline" onClick={onDelete} className="text-destructive hover:text-destructive" disabled={sending}>
           <Trash2 className="size-3.5" />
         </Button>
       </CardFooter>

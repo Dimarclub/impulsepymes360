@@ -21,6 +21,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
 import { useAppStore } from '@/lib/store'
+import { ImageUpload } from '@/components/dimar/image-upload'
 import type { Category, Product, Supplier } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
@@ -597,8 +598,11 @@ export function SuppliersModule() {
               <Textarea rows={2} value={productForm.description} onChange={(e) => setProductForm({ ...productForm, description: e.target.value })} placeholder="Breve descripción del producto…" />
             </div>
             <div className="grid gap-1.5">
-              <Label>URL de imagen</Label>
-              <Input value={productForm.imageUrl} onChange={(e) => setProductForm({ ...productForm, imageUrl: e.target.value })} placeholder="https://…" />
+              <Label>Imagen del producto</Label>
+              <ImageUpload
+                value={productForm.imageUrl}
+                onChange={(url) => setProductForm({ ...productForm, imageUrl: url })}
+              />
             </div>
           </div>
           <DialogFooter>

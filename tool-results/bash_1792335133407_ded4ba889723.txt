@@ -1,0 +1,700 @@
+     1→'use client'
+     2→
+     3→import { useEffect, useState, useMemo, useRef } from 'react'
+     4→import {
+     5→  Building2, CheckCircle2, Star, Package, Plus, Upload, FileDown, Search,
+     6→  Phone, MapPin, FileText, Boxes, ShieldCheck, Loader2, ImageIcon,
+     7→} from 'lucide-react'
+     8→import { Button } from '@/components/ui/button'
+     9→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+    10→import { Badge } from '@/components/ui/badge'
+    11→import { Input } from '@/components/ui/input'
+    12→import { Label } from '@/components/ui/label'
+    13→import { Textarea } from '@/components/ui/textarea'
+    14→import {
+    15→  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+    16→} from '@/components/ui/dialog'
+    17→import {
+    18→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    19→} from '@/components/ui/select'
+    20→import {
+    21→  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+    22→} from '@/components/ui/table'
+    23→import { useAppStore } from '@/lib/store'
+    24→import type { Category, Product, Supplier } from '@/lib/types'
+    25→import { cn } from '@/lib/utils'
+    26→
+    27→interface SupplierWithRelations extends Supplier {
+    28→  user?: { name: string; email: string; phone?: string | null; city?: string | null }
+    29→  products?: Pick<Product, 'id' | 'name' | 'price' | 'stock' | 'status'>[]
+    30→}
+    31→
+    32→const usd = (n: number) =>
+    33→  new Intl.NumberFormat('es-EC', { style: 'currency', currency: 'USD' }).format(n || 0)
+    34→
+    35→const CSV_TEMPLATE = `name,price,stock,sku,categoryid,description,imageurl
+    36→Camiseta Algodón Premium,14.99,120,CAM-001,"Camiseta 100% algodón orgánico","https://picsum.photos/seed/cam-001/600/600"
+    37→Termo Acero Inoxidable 500ml,19.50,80,TERM-500,"Termo de doble pared, mantiene temperatura 12h","https://picsum.photos/seed/termo-500/600/600"
+    38→Mochila Urbana 20L,39.90,40,MOCH-20L,"Mochila impermeable con puerto USB","https://picsum.photos/seed/moch-20l/600/600"
+    39→`
+    40→
+    41→function Stars({ value }: { value: number }) {
+    42→  const full = Math.floor(value)
+    43→  const half = value - full >= 0.5
+    44→  return (
+    45→    <div className="flex items-center gap-0.5" aria-label={`Rating ${value} de 5`}>
+    46→      {[0, 1, 2, 3, 4].map((i) => (
+    47→        <Star
+    48→          key={i}
+    49→          className={cn(
+    50→            'size-3.5',
+    51→            i < full ? 'fill-amber-400 text-amber-400' : i === full && half ? 'fill-amber-200 text-amber-400' : 'text-muted-foreground/40'
+    52→          )}
+    53→        />
+    54→      ))}
+    55→      <span className="ml-1 text-xs text-muted-foreground">{value.toFixed(1)}</span>
+    56→    </div>
+    57→  )
+    58→}
+    59→
+    60→const PLACEHOLDER_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    61→  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><rect width="80" height="80" fill="#e2e8f0"/><text x="50%" y="50%" font-size="9" text-anchor="middle" dy=".35em" fill="#64748b">sin img</text></svg>`
+    62→)
+    63→
+    64→export function SuppliersModule() {
+    65→  const toast = useAppStore((s) => s.toast)
+    66→  const [suppliers, setSuppliers] = useState<SupplierWithRelations[]>([])
+    67→  const [categories, setCategories] = useState<Category[]>([])
+    68→  const [loading, setLoading] = useState(true)
+    69→  const [selectedId, setSelectedId] = useState<string | null>(null)
+    70→  const [search, setSearch] = useState('')
+    71→
+    72→  const [products, setProducts] = useState<Product[]>([])
+    73→  const [loadingProducts, setLoadingProducts] = useState(false)
+    74→
+    75→  // Dialogs
+    76→  const [newSupplierOpen, setNewSupplierOpen] = useState(false)
+    77→  const [newProductOpen, setNewProductOpen] = useState(false)
+    78→  const [bulkOpen, setBulkOpen] = useState(false)
+    79→  const [submitting, setSubmitting] = useState(false)
+    80→
+    81→  // Forms
+    82→  const [supplierForm, setSupplierForm] = useState({
+    83→    companyName: '', email: '', phone: '', taxId: '', address: '', city: '', category: '',
+    84→  })
+    85→  const [productForm, setProductForm] = useState({
+    86→    name: '', price: '', compareAtPrice: '', stock: '', sku: '', categoryId: '', description: '', imageUrl: '',
+    87→  })
+    88→  const [csvText, setCsvText] = useState('')
+    89→  const fileRef = useRef<HTMLInputElement>(null)
+    90→
+    91→  const fetchSuppliers = async () => {
+    92→    setLoading(true)
+    93→    try {
+    94→      const res = await fetch('/api/suppliers')
+    95→      const data = await res.json()
+    96→      setSuppliers(data)
+    97→      if (data.length && !selectedId) setSelectedId(data[0].id)
+    98→    } catch {
+    99→      toast('Error al cargar proveedores', 'error')
+   100→    } finally {
+   101→      setLoading(false)
+   102→    }
+   103→  }
+   104→
+   105→  const fetchCategories = async () => {
+   106→    try {
+   107→      const res = await fetch('/api/categories')
+   108→      const data = await res.json()
+   109→      setCategories(data)
+   110→    } catch {
+   111→      /* noop */
+   112→    }
+   113→  }
+   114→
+   115→  const fetchProducts = async (supplierId: string) => {
+   116→    setLoadingProducts(true)
+   117→    try {
+   118→      const res = await fetch(`/api/suppliers/${supplierId}/products`)
+   119→      const data = await res.json()
+   120→      setProducts(data)
+   121→    } catch {
+   122→      setProducts([])
+   123→    } finally {
+   124→      setLoadingProducts(false)
+   125→    }
+   126→  }
+   127→
+   128→  useEffect(() => { fetchSuppliers(); fetchCategories() }, [])
+   129→  useEffect(() => {
+   130→    if (selectedId) fetchProducts(selectedId)
+   131→    else setProducts([])
+   132→  }, [selectedId])
+   133→
+   134→  const filtered = useMemo(() => {
+   135→    if (!search) return suppliers
+   136→    const q = search.toLowerCase()
+   137→    return suppliers.filter((s) =>
+   138→      s.companyName.toLowerCase().includes(q) ||
+   139→      (s.city || '').toLowerCase().includes(q) ||
+   140→      (s.category || '').toLowerCase().includes(q)
+   141→    )
+   142→  }, [suppliers, search])
+   143→
+   144→  const selected = suppliers.find((s) => s.id === selectedId) || null
+   145→
+   146→  const stats = useMemo(() => {
+   147→    const total = suppliers.length
+   148→    const verified = suppliers.filter((s) => s.verified).length
+   149→    const productsTotal = suppliers.reduce((acc, s) => acc + (s.products?.length || 0), 0)
+   150→    const avgRating = total ? suppliers.reduce((acc, s) => acc + (s.rating || 0), 0) / total : 0
+   151→    return { total, verified, productsTotal, avgRating }
+   152→  }, [suppliers])
+   153→
+   154→  const allCategories = useMemo(() => {
+   155→    const flat: Category[] = []
+   156→    categories.forEach((c) => {
+   157→      flat.push(c)
+   158→      if (c.children) c.children.forEach((ch) => flat.push(ch))
+   159→    })
+   160→    return flat
+   161→  }, [categories])
+   162→
+   163→  const handleCreateSupplier = async () => {
+   164→    if (!supplierForm.companyName || !supplierForm.email) {
+   165→      toast('Empresa y email son obligatorios', 'error')
+   166→      return
+   167→    }
+   168→    setSubmitting(true)
+   169→    try {
+   170→      const res = await fetch('/api/suppliers', {
+   171→        method: 'POST',
+   172→        headers: { 'Content-Type': 'application/json' },
+   173→        body: JSON.stringify(supplierForm),
+   174→      })
+   175→      if (!res.ok) throw new Error()
+   176→      await fetchSuppliers()
+   177→      setNewSupplierOpen(false)
+   178→      setSupplierForm({ companyName: '', email: '', phone: '', taxId: '', address: '', city: '', category: '' })
+   179→      toast('Proveedor creado correctamente')
+   180→    } catch {
+   181→      toast('Error al crear proveedor', 'error')
+   182→    } finally {
+   183→      setSubmitting(false)
+   184→    }
+   185→  }
+   186→
+   187→  const handleCreateProduct = async () => {
+   188→    if (!selectedId) return
+   189→    if (!productForm.name || !productForm.price || !productForm.categoryId) {
+   190→      toast('Nombre, precio y categoría son obligatorios', 'error')
+   191→      return
+   192→    }
+   193→    setSubmitting(true)
+   194→    try {
+   195→      const payload = {
+   196→        name: productForm.name,
+   197→        price: parseFloat(productForm.price),
+   198→        compareAtPrice: productForm.compareAtPrice ? parseFloat(productForm.compareAtPrice) : null,
+   199→        stock: parseInt(productForm.stock || '0'),
+   200→        sku: productForm.sku || null,
+   201→        categoryId: productForm.categoryId,
+   202→        supplierId: selectedId,
+   203→        description: productForm.description,
+   204→        imageUrl: productForm.imageUrl || null,
+   205→      }
+   206→      const res = await fetch('/api/products', {
+   207→        method: 'POST',
+   208→        headers: { 'Content-Type': 'application/json' },
+   209→        body: JSON.stringify(payload),
+   210→      })
+   211→      if (!res.ok) throw new Error()
+   212→      await fetchProducts(selectedId)
+   213→      await fetchSuppliers()
+   214→      setNewProductOpen(false)
+   215→      setProductForm({ name: '', price: '', compareAtPrice: '', stock: '', sku: '', categoryId: '', description: '', imageUrl: '' })
+   216→      toast('Producto agregado correctamente')
+   217→    } catch {
+   218→      toast('Error al agregar producto', 'error')
+   219→    } finally {
+   220→      setSubmitting(false)
+   221→    }
+   222→  }
+   223→
+   224→  const downloadTemplate = () => {
+   225→    const blob = new Blob([CSV_TEMPLATE], { type: 'text/csv;charset=utf-8' })
+   226→    const url = URL.createObjectURL(blob)
+   227→    const a = document.createElement('a')
+   228→    a.href = url
+   229→    a.download = 'plantilla_productos.csv'
+   230→    document.body.appendChild(a)
+   231→    a.click()
+   232→    document.body.removeChild(a)
+   233→    URL.revokeObjectURL(url)
+   234→  }
+   235→
+   236→  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+   237→    const file = e.target.files?.[0]
+   238→    if (!file) return
+   239→    const reader = new FileReader()
+   240→    reader.onload = (ev) => {
+   241→      const text = String(ev.target?.result || '')
+   242→      setCsvText(text)
+   243→      toast(`Archivo "${file.name}" cargado`)
+   244→    }
+   245→    reader.readAsText(file)
+   246→    e.target.value = ''
+   247→  }
+   248→
+   249→  const handleBulk = async () => {
+   250→    if (!selectedId) return
+   251→    if (!csvText.trim()) {
+   252→      toast('Pega o sube un CSV primero', 'error')
+   253→      return
+   254→    }
+   255→    setSubmitting(true)
+   256→    try {
+   257→      const res = await fetch('/api/products/bulk', {
+   258→        method: 'POST',
+   259→        headers: { 'Content-Type': 'application/json' },
+   260→        body: JSON.stringify({ csv: csvText, supplierId: selectedId }),
+   261→      })
+   262→      const data = await res.json()
+   263→      if (!res.ok) throw new Error()
+   264→      await fetchProducts(selectedId)
+   265→      await fetchSuppliers()
+   266→      setBulkOpen(false)
+   267→      setCsvText('')
+   268→      toast(`Importación: ${data.created} creados, ${data.errors?.length || 0} errores de ${data.total}`, data.errors?.length ? 'info' : 'success')
+   269→    } catch {
+   270→      toast('Error en la carga masiva', 'error')
+   271→    } finally {
+   272→      setSubmitting(false)
+   273→    }
+   274→  }
+   275→
+   276→  return (
+   277→    <div className="space-y-6">
+   278→      {/* Header */}
+   279→      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+   280→        <div>
+   281→          <h1 className="text-2xl font-bold tracking-tight text-gradient">Proveedores</h1>
+   282→          <p className="text-sm text-muted-foreground">Gestiona tu red de proveedores y su catálogo de productos.</p>
+   283→        </div>
+   284→        <Button onClick={() => setNewSupplierOpen(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+   285→          <Plus className="size-4" /> Nuevo proveedor
+   286→        </Button>
+   287→      </div>
+   288→
+   289→      {/* Stats */}
+   290→      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+   291→        <StatCard icon={<Building2 className="size-5" />} label="Total proveedores" value={stats.total} accent="emerald" />
+   292→        <StatCard icon={<ShieldCheck className="size-5" />} label="Verificados" value={stats.verified} accent="emerald" />
+   293→        <StatCard icon={<Boxes className="size-5" />} label="Productos totales" value={stats.productsTotal} accent="amber" />
+   294→        <StatCard icon={<Star className="size-5" />} label="Rating promedio" value={stats.avgRating.toFixed(2)} accent="amber" />
+   295→      </div>
+   296→
+   297→      {/* Main grid */}
+   298→      <div className="grid lg:grid-cols-[320px_1fr] gap-4">
+   299→        {/* List */}
+   300→        <Card className="lg:sticky lg:top-4 h-fit">
+   301→          <CardHeader className="pb-3">
+   302→            <div className="flex items-center justify-between">
+   303→              <CardTitle className="text-base">Listado</CardTitle>
+   304→              <Badge variant="secondary" className="bg-emerald-50 text-emerald-700">{filtered.length}</Badge>
+   305→            </div>
+   306→            <div className="relative mt-1">
+   307→              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+   308→              <Input
+   309→                placeholder="Buscar proveedor…"
+   310→                className="pl-8 h-9"
+   311→                value={search}
+   312→                onChange={(e) => setSearch(e.target.value)}
+   313→              />
+   314→            </div>
+   315→          </CardHeader>
+   316→          <CardContent className="pt-0">
+   317→            {loading ? (
+   318→              <div className="flex items-center justify-center py-10 text-muted-foreground">
+   319→                <Loader2 className="size-5 animate-spin" />
+   320→              </div>
+   321→            ) : filtered.length === 0 ? (
+   322→              <div className="text-center py-10 text-sm text-muted-foreground">
+   323→                <Building2 className="size-8 mx-auto mb-2 opacity-40" />
+   324→                Sin proveedores
+   325→              </div>
+   326→            ) : (
+   327→              <ul className="max-h-[70vh] overflow-y-auto scroll-thin -mx-2 px-2 space-y-1">
+   328→                {filtered.map((s) => (
+   329→                  <li key={s.id}>
+   330→                    <button
+   331→                      onClick={() => setSelectedId(s.id)}
+   332→                      className={cn(
+   333→                        'w-full text-left rounded-lg border p-3 transition-colors',
+   334→                        s.id === selectedId
+   335→                          ? 'border-emerald-500 bg-emerald-50/60'
+   336→                          : 'border-transparent hover:bg-muted/60'
+   337→                      )}
+   338→                    >
+   339→                      <div className="flex items-start justify-between gap-2">
+   340→                        <div className="min-w-0 flex-1">
+   341→                          <div className="flex items-center gap-1.5">
+   342→                            <span className="font-medium text-sm truncate">{s.companyName}</span>
+   343→                            {s.verified && <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />}
+   344→                          </div>
+   345→                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+   346→                            <span className="inline-flex items-center gap-0.5"><MapPin className="size-3" />{s.city || '—'}</span>
+   347→                          </div>
+   348→                        </div>
+   349→                        {s.category && (
+   350→                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-amber-300 text-amber-700 bg-amber-50 shrink-0">
+   351→                            {s.category}
+   352→                          </Badge>
+   353→                        )}
+   354→                      </div>
+   355→                      <div className="flex items-center justify-between mt-2">
+   356→                        <Stars value={s.rating || 0} />
+   357→                        <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+   358→                          <Package className="size-3" /> {s.products?.length || 0}
+   359→                        </span>
+   360→                      </div>
+   361→                    </button>
+   362→                  </li>
+   363→                ))}
+   364→              </ul>
+   365→            )}
+   366→          </CardContent>
+   367→        </Card>
+   368→
+   369→        {/* Detail */}
+   370→        <Card>
+   371→          {selected ? (
+   372→            <>
+   373→              <CardHeader className="border-b bg-gradient-to-br from-emerald-50/60 to-amber-50/40">
+   374→                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+   375→                  <div>
+   376→                    <div className="flex items-center gap-2 flex-wrap">
+   377→                      <CardTitle className="text-xl">{selected.companyName}</CardTitle>
+   378→                      {selected.verified ? (
+   379→                        <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">
+   380→                          <CheckCircle2 className="size-3" /> Verificado
+   381→                        </Badge>
+   382→                      ) : (
+   383→                        <Badge variant="outline" className="text-muted-foreground">No verificado</Badge>
+   384→                      )}
+   385→                      {selected.category && (
+   386→                        <Badge variant="outline" className="border-amber-300 text-amber-700 bg-amber-50">
+   387→                          {selected.category}
+   388→                        </Badge>
+   389→                      )}
+   390→                    </div>
+   391→                    <div className="mt-2"><Stars value={selected.rating || 0} /></div>
+   392→                  </div>
+   393→                  <div className="flex flex-wrap gap-2">
+   394→                    <Button onClick={() => setNewProductOpen(true)} size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
+   395→                      <Plus className="size-4" /> Agregar producto
+   396→                    </Button>
+   397→                    <Button onClick={() => setBulkOpen(true)} size="sm" variant="outline" className="border-amber-400 text-amber-700 hover:bg-amber-50">
+   398→                      <Upload className="size-4" /> Carga masiva CSV
+   399→                    </Button>
+   400→                  </div>
+   401→                </div>
+   402→                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4 text-sm">
+   403→                  <InfoLine icon={<FileText className="size-3.5" />} label="RUC / Tax ID" value={selected.taxId || '—'} />
+   404→                  <InfoLine icon={<Phone className="size-3.5" />} label="Teléfono" value={selected.phone || '—'} />
+   405→                  <InfoLine icon={<MapPin className="size-3.5" />} label="Dirección" value={selected.address || '—'} />
+   406→                  <InfoLine icon={<Building2 className="size-3.5" />} label="Ciudad" value={selected.city || '—'} />
+   407→                </div>
+   408→              </CardHeader>
+   409→              <CardContent className="pt-4">
+   410→                <div className="flex items-center justify-between mb-3">
+   411→                  <h3 className="text-sm font-semibold flex items-center gap-2">
+   412→                    <Package className="size-4 text-emerald-600" /> Productos del proveedor
+   413→                  </h3>
+   414→                  <span className="text-xs text-muted-foreground">{products.length} productos</span>
+   415→                </div>
+   416→                {loadingProducts ? (
+   417→                  <div className="flex items-center justify-center py-10 text-muted-foreground">
+   418→                    <Loader2 className="size-5 animate-spin" />
+   419→                  </div>
+   420→                ) : products.length === 0 ? (
+   421→                  <div className="text-center py-10 border border-dashed rounded-lg">
+   422→                    <ImageIcon className="size-8 mx-auto mb-2 text-muted-foreground/40" />
+   423→                    <p className="text-sm text-muted-foreground">Este proveedor aún no tiene productos.</p>
+   424→                    <Button onClick={() => setNewProductOpen(true)} size="sm" variant="outline" className="mt-3">
+   425→                      <Plus className="size-4" /> Agregar el primero
+   426→                    </Button>
+   427→                  </div>
+   428→                ) : (
+   429→                  <div className="rounded-md border max-h-[55vh] overflow-y-auto scroll-thin">
+   430→                    <Table>
+   431→                      <TableHeader className="sticky top-0 bg-card z-10">
+   432→                        <TableRow>
+   433→                          <TableHead className="w-14">Imagen</TableHead>
+   434→                          <TableHead>Nombre</TableHead>
+   435→                          <TableHead>SKU</TableHead>
+   436→                          <TableHead className="text-right">Precio</TableHead>
+   437→                          <TableHead className="text-center">Stock</TableHead>
+   438→                          <TableHead className="text-center">Estado</TableHead>
+   439→                        </TableRow>
+   440→                      </TableHeader>
+   441→                      <TableBody>
+   442→                        {products.map((p) => (
+   443→                          <TableRow key={p.id}>
+   444→                            <TableCell>
+   445→                              <img
+   446→                                src={p.imageUrl || PLACEHOLDER_IMG}
+   447→                                alt={p.name}
+   448→                                className="size-10 rounded-md object-cover border bg-muted"
+   449→                                loading="lazy"
+   450→                              />
+   451→                            </TableCell>
+   452→                            <TableCell className="font-medium max-w-[260px] truncate">{p.name}</TableCell>
+   453→                            <TableCell className="text-muted-foreground font-mono text-xs">{p.sku || '—'}</TableCell>
+   454→                            <TableCell className="text-right">
+   455→                              <div className="font-semibold">{usd(p.price)}</div>
+   456→                              {p.compareAtPrice ? (
+   457→                                <div className="text-xs text-muted-foreground line-through">{usd(p.compareAtPrice)}</div>
+   458→                              ) : null}
+   459→                            </TableCell>
+   460→                            <TableCell className="text-center">
+   461→                              <Badge
+   462→                                className={
+   463→                                  p.stock > 0
+   464→                                    ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100'
+   465→                                    : 'bg-red-100 text-red-700 hover:bg-red-100'
+   466→                                }
+   467→                              >
+   468→                                {p.stock}
+   469→                              </Badge>
+   470→                            </TableCell>
+   471→                            <TableCell className="text-center">
+   472→                              <Badge variant="outline" className="text-xs">
+   473→                                {p.status === 'ACTIVE' ? 'Activo' : p.status === 'DRAFT' ? 'Borrador' : 'Archivado'}
+   474→                              </Badge>
+   475→                            </TableCell>
+   476→                          </TableRow>
+   477→                        ))}
+   478→                      </TableBody>
+   479→                    </Table>
+   480→                  </div>
+   481→                )}
+   482→              </CardContent>
+   483→            </>
+   484→          ) : (
+   485→            <CardContent className="py-20">
+   486→              <div className="text-center max-w-md mx-auto">
+   487→                <div className="size-16 rounded-2xl bg-emerald-50 mx-auto flex items-center justify-center mb-4">
+   488→                  <Building2 className="size-8 text-emerald-600" />
+   489→                </div>
+   490→                <h3 className="text-lg font-semibold">Selecciona un proveedor</h3>
+   491→                <p className="text-sm text-muted-foreground mt-1">
+   492→                  Elige un proveedor del listado para ver su información y gestionar su catálogo de productos.
+   493→                </p>
+   494→              </div>
+   495→            </CardContent>
+   496→          )}
+   497→        </Card>
+   498→      </div>
+   499→
+   500→      {/* New supplier dialog */}
+   501→      <Dialog open={newSupplierOpen} onOpenChange={setNewSupplierOpen}>
+   502→        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto scroll-thin">
+   503→          <DialogHeader>
+   504→            <DialogTitle>Nuevo proveedor</DialogTitle>
+   505→            <DialogDescription>Registra un nuevo proveedor en la plataforma.</DialogDescription>
+   506→          </DialogHeader>
+   507→          <div className="grid gap-3">
+   508→            <div className="grid gap-1.5">
+   509→              <Label>Empresa *</Label>
+   510→              <Input value={supplierForm.companyName} onChange={(e) => setSupplierForm({ ...supplierForm, companyName: e.target.value })} placeholder="TecnoExpress S.A." />
+   511→            </div>
+   512→            <div className="grid grid-cols-2 gap-3">
+   513→              <div className="grid gap-1.5">
+   514→                <Label>Email *</Label>
+   515→                <Input type="email" value={supplierForm.email} onChange={(e) => setSupplierForm({ ...supplierForm, email: e.target.value })} placeholder="ventas@empresa.com" />
+   516→              </div>
+   517→              <div className="grid gap-1.5">
+   518→                <Label>Teléfono</Label>
+   519→                <Input value={supplierForm.phone} onChange={(e) => setSupplierForm({ ...supplierForm, phone: e.target.value })} placeholder="04 222-2333" />
+   520→              </div>
+   521→            </div>
+   522→            <div className="grid grid-cols-2 gap-3">
+   523→              <div className="grid gap-1.5">
+   524→                <Label>RUC / Tax ID</Label>
+   525→                <Input value={supplierForm.taxId} onChange={(e) => setSupplierForm({ ...supplierForm, taxId: e.target.value })} placeholder="0992345678001" />
+   526→              </div>
+   527→              <div className="grid gap-1.5">
+   528→                <Label>Ciudad</Label>
+   529→                <Input value={supplierForm.city} onChange={(e) => setSupplierForm({ ...supplierForm, city: e.target.value })} placeholder="Guayaquil" />
+   530→              </div>
+   531→            </div>
+   532→            <div className="grid gap-1.5">
+   533→              <Label>Dirección</Label>
+   534→              <Input value={supplierForm.address} onChange={(e) => setSupplierForm({ ...supplierForm, address: e.target.value })} placeholder="Av. Principal 123" />
+   535→            </div>
+   536→            <div className="grid gap-1.5">
+   537→              <Label>Rubro / Categoría</Label>
+   538→              <Input value={supplierForm.category} onChange={(e) => setSupplierForm({ ...supplierForm, category: e.target.value })} placeholder="Electrónica" />
+   539→            </div>
+   540→          </div>
+   541→          <DialogFooter>
+   542→            <Button variant="outline" onClick={() => setNewSupplierOpen(false)}>Cancelar</Button>
+   543→            <Button onClick={handleCreateSupplier} disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+   544→              {submitting ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />} Crear proveedor
+   545→            </Button>
+   546→          </DialogFooter>
+   547→        </DialogContent>
+   548→      </Dialog>
+   549→
+   550→      {/* New product dialog */}
+   551→      <Dialog open={newProductOpen} onOpenChange={setNewProductOpen}>
+   552→        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto scroll-thin">
+   553→          <DialogHeader>
+   554→            <DialogTitle>Agregar producto</DialogTitle>
+   555→            <DialogDescription>
+   556→              Para: <span className="font-medium text-emerald-700">{selected?.companyName}</span>
+   557→            </DialogDescription>
+   558→          </DialogHeader>
+   559→          <div className="grid gap-3">
+   560→            <div className="grid gap-1.5">
+   561→              <Label>Nombre *</Label>
+   562→              <Input value={productForm.name} onChange={(e) => setProductForm({ ...productForm, name: e.target.value })} placeholder="Camiseta de algodón" />
+   563→            </div>
+   564→            <div className="grid grid-cols-3 gap-3">
+   565→              <div className="grid gap-1.5">
+   566→                <Label>Precio USD *</Label>
+   567→                <Input type="number" step="0.01" value={productForm.price} onChange={(e) => setProductForm({ ...productForm, price: e.target.value })} placeholder="14.99" />
+   568→              </div>
+   569→              <div className="grid gap-1.5">
+   570→                <Label>Antes</Label>
+   571→                <Input type="number" step="0.01" value={productForm.compareAtPrice} onChange={(e) => setProductForm({ ...productForm, compareAtPrice: e.target.value })} placeholder="19.99" />
+   572→              </div>
+   573→              <div className="grid gap-1.5">
+   574→                <Label>Stock</Label>
+   575→                <Input type="number" value={productForm.stock} onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })} placeholder="100" />
+   576→              </div>
+   577→            </div>
+   578→            <div className="grid grid-cols-2 gap-3">
+   579→              <div className="grid gap-1.5">
+   580→                <Label>SKU</Label>
+   581→                <Input value={productForm.sku} onChange={(e) => setProductForm({ ...productForm, sku: e.target.value })} placeholder="CAM-001" />
+   582→              </div>
+   583→              <div className="grid gap-1.5">
+   584→                <Label>Categoría *</Label>
+   585→                <Select value={productForm.categoryId} onValueChange={(v) => setProductForm({ ...productForm, categoryId: v })}>
+   586→                  <SelectTrigger className="w-full"><SelectValue placeholder="Selecciona…" /></SelectTrigger>
+   587→                  <SelectContent className="max-h-72">
+   588→                    {allCategories.map((c) => (
+   589→                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+   590→                    ))}
+   591→                  </SelectContent>
+   592→                </Select>
+   593→              </div>
+   594→            </div>
+   595→            <div className="grid gap-1.5">
+   596→              <Label>Descripción</Label>
+   597→              <Textarea rows={2} value={productForm.description} onChange={(e) => setProductForm({ ...productForm, description: e.target.value })} placeholder="Breve descripción del producto…" />
+   598→            </div>
+   599→            <div className="grid gap-1.5">
+   600→              <Label>URL de imagen</Label>
+   601→              <Input value={productForm.imageUrl} onChange={(e) => setProductForm({ ...productForm, imageUrl: e.target.value })} placeholder="https://…" />
+   602→            </div>
+   603→          </div>
+   604→          <DialogFooter>
+   605→            <Button variant="outline" onClick={() => setNewProductOpen(false)}>Cancelar</Button>
+   606→            <Button onClick={handleCreateProduct} disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+   607→              {submitting ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />} Agregar
+   608→            </Button>
+   609→          </DialogFooter>
+   610→        </DialogContent>
+   611→      </Dialog>
+   612→
+   613→      {/* Bulk CSV dialog */}
+   614→      <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
+   615→        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto scroll-thin">
+   616→          <DialogHeader>
+   617→            <DialogTitle>Carga masiva CSV</DialogTitle>
+   618→            <DialogDescription>
+   619→              Pega el contenido CSV o sube un archivo. Cabecera:{' '}
+   620→              <code className="text-xs bg-muted px-1 py-0.5 rounded">name,price,stock,sku,categoryid,description,imageurl</code>
+   621→            </DialogDescription>
+   622→          </DialogHeader>
+   623→          <div className="grid gap-3">
+   624→            <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border bg-muted/40 p-3">
+   625→              <div className="text-xs text-muted-foreground">
+   626→                <FileDown className="size-3.5 inline mr-1 -mt-0.5" />
+   627→                ¿No tienes el formato? Descarga la plantilla.
+   628→              </div>
+   629→              <div className="flex gap-2">
+   630→                <Button type="button" size="sm" variant="outline" onClick={downloadTemplate}>
+   631→                  <FileDown className="size-4" /> Descargar plantilla
+   632→                </Button>
+   633→                <Button type="button" size="sm" variant="outline" onClick={() => fileRef.current?.click()} className="border-amber-400 text-amber-700 hover:bg-amber-50">
+   634→                  <Upload className="size-4" /> Subir archivo
+   635→                </Button>
+   636→                <input
+   637→                  ref={fileRef}
+   638→                  type="file"
+   639→                  accept=".csv,text/csv,text/plain"
+   640→                  className="hidden"
+   641→                  onChange={handleFileUpload}
+   642→                />
+   643→              </div>
+   644→            </div>
+   645→            <div className="grid gap-1.5">
+   646→              <Label>Contenido CSV</Label>
+   647→              <Textarea
+   648→                rows={10}
+   649→                value={csvText}
+   650→                onChange={(e) => setCsvText(e.target.value)}
+   651→                placeholder={CSV_TEMPLATE}
+   652→                className="font-mono text-xs"
+   653→              />
+   654→            </div>
+   655→          </div>
+   656→          <DialogFooter>
+   657→            <Button variant="outline" onClick={() => setBulkOpen(false)}>Cancelar</Button>
+   658→            <Button onClick={handleBulk} disabled={submitting} className="bg-amber-500 hover:bg-amber-600 text-white">
+   659→              {submitting ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />} Importar productos
+   660→            </Button>
+   661→          </DialogFooter>
+   662→        </DialogContent>
+   663→      </Dialog>
+   664→    </div>
+   665→  )
+   666→}
+   667→
+   668→function StatCard({
+   669→  icon, label, value, accent,
+   670→}: { icon: React.ReactNode; label: string; value: React.ReactNode; accent: 'emerald' | 'amber' }) {
+   671→  return (
+   672→    <Card className="overflow-hidden">
+   673→      <CardContent className="p-4 flex items-center gap-3">
+   674→        <div className={cn(
+   675→          'size-10 rounded-lg flex items-center justify-center shrink-0',
+   676→          accent === 'emerald' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+   677→        )}>
+   678→          {icon}
+   679→        </div>
+   680→        <div className="min-w-0">
+   681→          <div className="text-xs text-muted-foreground truncate">{label}</div>
+   682→          <div className="text-xl font-bold leading-tight">{value}</div>
+   683→        </div>
+   684→      </CardContent>
+   685→    </Card>
+   686→  )
+   687→}
+   688→
+   689→function InfoLine({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+   690→  return (
+   691→    <div className="flex items-start gap-2">
+   692→      <span className="text-muted-foreground mt-0.5">{icon}</span>
+   693→      <div className="min-w-0">
+   694→        <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
+   695→        <div className="font-medium text-sm truncate">{value}</div>
+   696→      </div>
+   697→    </div>
+   698→  )
+   699→}
+   700→

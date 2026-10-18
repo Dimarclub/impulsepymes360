@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requireRole } from '@/lib/security/auth'
 
 export async function GET() {
+  const auth = await requireRole('ADMIN')
+  if (auth instanceof NextResponse) return auth
   const campaigns = await db.emailCampaign.findMany({ orderBy: { createdAt: 'desc' } })
   return NextResponse.json(campaigns)
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireRole('ADMIN')
+  if (auth instanceof NextResponse) return auth
   const body = await req.json()
   // Calcular destinatarios según audiencia
   const segment = body.audience || 'ALL'

@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requireRole } from '@/lib/security/auth'
 
 export async function GET(req: NextRequest) {
+  const auth = await requireRole('ADMIN')
+  if (auth instanceof NextResponse) return auth
   const { searchParams } = new URL(req.url)
   const contactId = searchParams.get('contactId')
   const where: Record<string, unknown> = {}
@@ -15,6 +18,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireRole('ADMIN')
+  if (auth instanceof NextResponse) return auth
   const body = await req.json()
   const activity = await db.crmActivity.create({
     data: {

@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requireRole } from '@/lib/security/auth'
 
 export async function GET() {
+  const auth = await requireRole('ADMIN', 'AFFILIATE', 'SUPPLIER', 'PARTNER')
+  if (auth instanceof NextResponse) return auth
   const [
     totalUsers, totalProducts, totalOrders, totalSuppliers,
     totalCouriers, totalPartners, totalAffiliates, pendingApps,

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAppStore } from '@/lib/store'
+import { AppSessionProvider } from '@/components/dimar/auth/auth-provider'
 import { Sidebar } from '@/components/dimar/sidebar'
 import { TopBar } from '@/components/dimar/topbar'
 import { MarketplaceModule } from '@/components/dimar/modules/marketplace'
@@ -19,10 +20,18 @@ import { BenefitsModule } from '@/components/dimar/modules/benefits'
 import { Footer } from '@/components/dimar/footer'
 
 export default function Home() {
+  return (
+    <AppSessionProvider>
+      <HomeContent />
+    </AppSessionProvider>
+  )
+}
+
+function HomeContent() {
   const activeModule = useAppStore((s) => s.activeModule)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  // Escuchar toasts dispatchados desde el store
+  // Escuchar toasts dispatchados desde el store (delegan a Sonner)
   useEffect(() => {
     const handler = (e: Event) => {
       const { msg, type } = (e as CustomEvent).detail

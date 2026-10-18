@@ -1,0 +1,826 @@
+     1→'use client'
+     2→
+     3→import { useState, useEffect, useMemo } from 'react'
+     4→import {
+     5→  Card, CardContent, CardDescription, CardHeader, CardTitle,
+     6→} from '@/components/ui/card'
+     7→import { Skeleton } from '@/components/ui/skeleton'
+     8→import { Badge } from '@/components/ui/badge'
+     9→import {
+    10→  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+    11→} from '@/components/ui/table'
+    12→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+    13→import {
+    14→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    15→} from '@/components/ui/select'
+    16→import {
+    17→  Network, Users, Coins, GitBranch, ShoppingBag, Filter,
+    18→  Wallet, TrendingUp, MapPin, Mail, Award, UserCircle2,
+    19→} from 'lucide-react'
+    20→import { useAppStore } from '@/lib/store'
+    21→import type { AffiliateNode, Commission, Order } from '@/lib/types'
+    22→import { ORDER_STATUS_LABELS } from '@/lib/types'
+    23→import { cn } from '@/lib/utils'
+    24→
+    25→// ---------- helpers ----------
+    26→const fmtUSD = (n: number) => `$${(n || 0).toFixed(2)}`
+    27→const fmtNum = (n: number) => (n || 0).toLocaleString('es-EC')
+    28→const fmtDate = (iso: string) => {
+    29→  try {
+    30→    return new Date(iso).toLocaleDateString('es-EC', {
+    31→      day: '2-digit', month: 'short', year: 'numeric',
+    32→    })
+    33→  } catch {
+    34→    return iso
+    35→  }
+    36→}
+    37→
+    38→// Colores por nivel (avatar + acentos)
+    39→const LEVEL_STYLES: Record<
+    40→  number, { ring: string; bg: string; text: string; label: string; chip: string }
+    41→> = {
+    42→  0: {
+    43→    ring: 'ring-primary/30',
+    44→    bg: 'bg-primary text-primary-foreground',
+    45→    text: 'text-primary',
+    46→    label: 'N0 · Tú',
+    47→    chip: 'bg-primary/15 text-primary border-primary/20',
+    48→  },
+    49→  1: {
+    50→    ring: 'ring-amber-400/40',
+    51→    bg: 'bg-accent text-accent-foreground',
+    52→    text: 'text-amber-700',
+    53→    label: 'N1',
+    54→    chip: 'bg-amber-100 text-amber-800 border-amber-200',
+    55→  },
+    56→  2: {
+    57→    ring: 'ring-teal-400/40',
+    58→    bg: 'bg-teal-600 text-white',
+    59→    text: 'text-teal-700',
+    60→    label: 'N2',
+    61→    chip: 'bg-teal-100 text-teal-800 border-teal-200',
+    62→  },
+    63→  3: {
+    64→    ring: 'ring-muted-foreground/30',
+    65→    bg: 'bg-muted text-muted-foreground',
+    66→    text: 'text-muted-foreground',
+    67→    label: 'N3',
+    68→    chip: 'bg-muted text-muted-foreground border-border',
+    69→  },
+    70→}
+    71→const getLevelStyle = (level: number) =>
+    72→  LEVEL_STYLES[Math.min(level, 3)] || LEVEL_STYLES[3]
+    73→
+    74→const ROLE_LABELS: Record<string, string> = {
+    75→  ADMIN: 'Administrador',
+    76→  AFFILIATE: 'Afiliado',
+    77→  CLIENT: 'Cliente',
+    78→  SUPPLIER: 'Proveedor',
+    79→  COURIER: 'Mensajero',
+    80→  PARTNER: 'Socio',
+    81→}
+    82→
+    83→const ROLE_COLORS: Record<string, string> = {
+    84→  ADMIN: 'bg-primary/10 text-primary border-primary/20',
+    85→  AFFILIATE: 'bg-accent/20 text-accent-foreground border-accent/30',
+    86→  CLIENT: 'bg-muted text-muted-foreground border-border',
+    87→  SUPPLIER: 'bg-teal-100 text-teal-800 border-teal-200',
+    88→  COURIER: 'bg-amber-100 text-amber-800 border-amber-200',
+    89→  PARTNER: 'bg-primary/10 text-primary border-primary/20',
+    90→}
+    91→
+    92→const COMMISSION_STATUS_LABELS: Record<string, string> = {
+    93→  PENDING: 'Pendiente',
+    94→  APPROVED: 'Aprobada',
+    95→  PAID: 'Pagada',
+    96→  CANCELLED: 'Cancelada',
+    97→}
+    98→const COMMISSION_STATUS_COLORS: Record<string, string> = {
+    99→  PENDING: 'bg-amber-100 text-amber-800 border-amber-200',
+   100→  APPROVED: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+   101→  PAID: 'bg-primary/15 text-primary border-primary/20',
+   102→  CANCELLED: 'bg-red-100 text-red-800 border-red-200',
+   103→}
+   104→
+   105→const ORDER_STATUS_COLORS: Record<string, string> = {
+   106→  PENDING: 'bg-amber-100 text-amber-800 border-amber-200',
+   107→  CONFIRMED: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+   108→  SHIPPED: 'bg-teal-100 text-teal-800 border-teal-200',
+   109→  DELIVERED: 'bg-primary/15 text-primary border-primary/20',
+   110→  CANCELLED: 'bg-red-100 text-red-800 border-red-200',
+   111→}
+   112→
+   113→const N0_RATE = 0.03 // 3% comisión propia
+   114→
+   115→// ---------- helpers de red ----------
+   116→function getInitials(name: string) {
+   117→  return name
+   118→    .trim()
+   119→    .split(/\s+/)
+   120→    .slice(0, 2)
+   121→    .map((w) => w[0]?.toUpperCase() || '')
+   122→    .join('')
+   123→}
+   124→
+   125→function countNetwork(node: AffiliateNode): number {
+   126→  let n = 0
+   127→  for (const c of node.children) {
+   128→    n += 1 + countNetwork(c)
+   129→  }
+   130→  return n
+   131→}
+   132→
+   133→function sumCommissions(node: AffiliateNode): number {
+   134→  let s = node.stats?.commissions || 0
+   135→  for (const c of node.children) s += sumCommissions(c)
+   136→  return s
+   137→}
+   138→
+   139→// ---------- Nodo de árbol ----------
+   140→function NodeCard({ node, level }: { node: AffiliateNode; level: number }) {
+   141→  const style = getLevelStyle(level)
+   142→  return (
+   143→    <div className="w-[200px] max-w-full">
+   144→      <div
+   145→        className={cn(
+   146→          'relative rounded-xl border bg-card p-3 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5',
+   147→          level === 0 ? 'border-primary/40' : 'border-border',
+   148→        )}
+   149→      >
+   150→        {/* encabezado: avatar + código */}
+   151→        <div className="flex items-center gap-2.5">
+   152→          <div
+   153→            className={cn(
+   154→              'grid place-items-center size-10 rounded-full text-sm font-bold ring-2 shrink-0',
+   155→              style.bg,
+   156→              style.ring,
+   157→            )}
+   158→          >
+   159→            {getInitials(node.name)}
+   160→          </div>
+   161→          <div className="min-w-0 flex-1">
+   162→            <p className="text-sm font-semibold text-foreground truncate">{node.name}</p>
+   163→            <p className="text-[11px] text-muted-foreground truncate">{node.email}</p>
+   164→          </div>
+   165→        </div>
+   166→
+   167→        {/* badges */}
+   168→        <div className="mt-2 flex flex-wrap items-center gap-1">
+   169→          <Badge variant="outline" className={cn('border', style.chip)}>
+   170→            {style.label}
+   171→          </Badge>
+   172→          <Badge
+   173→            variant="outline"
+   174→            className={cn('border', ROLE_COLORS[node.role] || ROLE_COLORS.CLIENT)}
+   175→          >
+   176→            {ROLE_LABELS[node.role] || node.role}
+   177→          </Badge>
+   178→        </div>
+   179→
+   180→        {/* info */}
+   181→        <div className="mt-2.5 space-y-1 text-[11px] text-muted-foreground">
+   182→          {node.city && (
+   183→            <div className="flex items-center gap-1.5">
+   184→              <MapPin className="size-3 shrink-0" />
+   185→              <span className="truncate">{node.city}</span>
+   186→            </div>
+   187→          )}
+   188→          {node.affiliateCode && (
+   189→            <div className="flex items-center gap-1.5">
+   190→              <Award className="size-3 shrink-0" />
+   191→              <span className="font-mono truncate">{node.affiliateCode}</span>
+   192→            </div>
+   193→          )}
+   194→        </div>
+   195→
+   196→        {/* stats */}
+   197→        <div className="mt-2.5 grid grid-cols-3 gap-1 border-t border-border/60 pt-2">
+   198→          <div className="text-center">
+   199→            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+   200→              Referidos
+   201→            </p>
+   202→            <p className="text-sm font-bold text-foreground">
+   203→              {node.stats?.referrals ?? 0}
+   204→            </p>
+   205→          </div>
+   206→          <div className="text-center border-x border-border/60">
+   207→            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+   208→              Ventas
+   209→            </p>
+   210→            <p className="text-sm font-bold text-foreground">
+   211→              {node.stats?.sales ?? 0}
+   212→            </p>
+   213→          </div>
+   214→          <div className="text-center">
+   215→            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+   216→              Comisión
+   217→            </p>
+   218→            <p className={cn('text-sm font-bold', style.text)}>
+   219→              {fmtUSD(node.stats?.commissions || 0)}
+   220→            </p>
+   221→          </div>
+   222→        </div>
+   223→      </div>
+   224→    </div>
+   225→  )
+   226→}
+   227→
+   228→// ---------- TreeNode recursivo ----------
+   229→function TreeNode({ node, level }: { node: AffiliateNode; level: number }) {
+   230→  const hasChildren = node.children.length > 0
+   231→  const childCount = node.children.length
+   232→
+   233→  return (
+   234→    <div className="relative flex flex-col items-center">
+   235→      <NodeCard node={node} level={level} />
+   236→
+   237→      {hasChildren && (
+   238→        <>
+   239→          {/* línea vertical hacia abajo */}
+   240→          <div className="w-px h-5 bg-border" aria-hidden />
+   241→
+   242→          {/* contenedor de hijos */}
+   243→          <div
+   244→            className="relative flex justify-center"
+   245→            style={{ gap: 0 }}
+   246→          >
+   247→            {/* línea horizontal conectora (solo si hay 2+ hijos) */}
+   248→            {childCount > 1 && (
+   249→              <div
+   250→                className="absolute top-0 h-px bg-border"
+   251→                style={{
+   252→                  left: `calc(50% / ${childCount})`,
+   253→                  right: `calc(50% / ${childCount})`,
+   254→                }}
+   255→                aria-hidden
+   256→              />
+   257→            )}
+   258→
+   259→            {node.children.map((child) => (
+   260→              <div
+   261→                key={child.id}
+   262→                className="relative flex flex-col items-center px-2"
+   263→              >
+   264→                {/* línea vertical hacia arriba (hijo) */}
+   265→                <div className="w-px h-5 bg-border" aria-hidden />
+   266→                <TreeNode node={child} level={level + 1} />
+   267→              </div>
+   268→            ))}
+   269→          </div>
+   270→        </>
+   271→      )}
+   272→    </div>
+   273→  )
+   274→}
+   275→
+   276→// ---------- Skeletons ----------
+   277→function TreeSkeleton() {
+   278→  return (
+   279→    <div className="space-y-6">
+   280→      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+   281→        {Array.from({ length: 4 }).map((_, i) => (
+   282→          <Card key={i} className="p-4">
+   283→            <Skeleton className="h-3 w-20" />
+   284→            <Skeleton className="h-7 w-24 mt-2" />
+   285→          </Card>
+   286→        ))}
+   287→      </div>
+   288→      <Card className="p-6">
+   289→        <div className="flex flex-col items-center gap-6">
+   290→          <Skeleton className="h-32 w-64 rounded-xl" />
+   291→          <div className="flex gap-4">
+   292→            <Skeleton className="h-32 w-48 rounded-xl" />
+   293→            <Skeleton className="h-32 w-48 rounded-xl" />
+   294→          </div>
+   295→        </div>
+   296→      </Card>
+   297→    </div>
+   298→  )
+   299→}
+   300→
+   301→function TableSkeleton({ rows = 5 }: { rows?: number }) {
+   302→  return (
+   303→    <Card className="p-0">
+   304→      <CardHeader>
+   305→        <Skeleton className="h-5 w-40" />
+   306→      </CardHeader>
+   307→      <CardContent>
+   308→        {Array.from({ length: rows }).map((_, i) => (
+   309→          <Skeleton key={i} className="h-10 w-full mb-2" />
+   310→        ))}
+   311→      </CardContent>
+   312→    </Card>
+   313→  )
+   314→}
+   315→
+   316→// ---------- Mini stat card ----------
+   317→function MiniStat({
+   318→  icon, label, value, accent = 'primary',
+   319→}: {
+   320→  icon: React.ReactNode
+   321→  label: string
+   322→  value: string
+   323→  accent?: 'primary' | 'accent' | 'muted' | 'teal'
+   324→}) {
+   325→  const accentClass =
+   326→    accent === 'primary'
+   327→      ? 'bg-primary/10 text-primary'
+   328→      : accent === 'accent'
+   329→        ? 'bg-accent/20 text-accent-foreground'
+   330→        : accent === 'teal'
+   331→          ? 'bg-teal-100 text-teal-700'
+   332→          : 'bg-muted text-muted-foreground'
+   333→  return (
+   334→    <Card className="p-4 gap-0">
+   335→      <div className="flex items-center gap-3">
+   336→        <div className={cn('grid place-items-center size-9 rounded-lg shrink-0', accentClass)}>
+   337→          {icon}
+   338→        </div>
+   339→        <div className="min-w-0">
+   340→          <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
+   341→            {label}
+   342→          </p>
+   343→          <p className="text-lg font-bold text-foreground truncate">{value}</p>
+   344→        </div>
+   345→      </div>
+   346→    </Card>
+   347→  )
+   348→}
+   349→
+   350→// ===================== TAB: MI RED =====================
+   351→function MiRedTab({ userId }: { userId?: string }) {
+   352→  const [tree, setTree] = useState<AffiliateNode | null>(null)
+   353→  const [loading, setLoading] = useState(true)
+   354→
+   355→  useEffect(() => {
+   356→    let mounted = true
+   357→    const url = userId
+   358→      ? `/api/affiliates/tree?userId=${encodeURIComponent(userId)}`
+   359→      : '/api/affiliates/tree'
+   360→    fetch(url)
+   361→      .then((r) => r.json())
+   362→      .then((d: AffiliateNode) => {
+   363→        if (mounted) {
+   364→          setTree(d)
+   365→          setLoading(false)
+   366→        }
+   367→      })
+   368→      .catch(() => mounted && setLoading(false))
+   369→    return () => {
+   370→      mounted = false
+   371→    }
+   372→  }, [userId])
+   373→
+   374→  if (loading || !tree) return <TreeSkeleton />
+   375→
+   376→  const networkSize = countNetwork(tree)
+   377→  const totalCommissions = sumCommissions(tree)
+   378→  const directReferrals = tree.stats?.referrals ?? 0
+   379→
+   380→  return (
+   381→    <div className="space-y-6">
+   382→      {/* Resumen */}
+   383→      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+   384→        <Card className="p-4 md:col-span-2 gap-0">
+   385→          <div className="flex items-center gap-3">
+   386→            <div className="grid place-items-center size-12 rounded-xl bg-primary text-primary-foreground shrink-0">
+   387→              <Award className="size-6" />
+   388→            </div>
+   389→            <div className="min-w-0">
+   390→              <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
+   391→                Tu código de afiliado
+   392→              </p>
+   393→              <p className="text-2xl font-bold text-foreground font-mono truncate">
+   394→                {tree.affiliateCode || '—'}
+   395→              </p>
+   396→              <p className="text-xs text-muted-foreground truncate">
+   397→                {tree.name} · {ROLE_LABELS[tree.role] || tree.role}
+   398→              </p>
+   399→            </div>
+   400→          </div>
+   401→        </Card>
+   402→        <MiniStat
+   403→          icon={<Users className="size-4" />}
+   404→          label="Referidos directos"
+   405→          value={fmtNum(directReferrals)}
+   406→          accent="primary"
+   407→        />
+   408→        <MiniStat
+   409→          icon={<Coins className="size-4" />}
+   410→          label="Comisiones totales"
+   411→          value={fmtUSD(totalCommissions)}
+   412→          accent="accent"
+   413→        />
+   414→      </div>
+   415→
+   416→      <Card className="p-4">
+   417→        <MiniStat
+   418→          icon={<GitBranch className="size-4" />}
+   419→          label="Tamaño total de la red"
+   420→          value={`${fmtNum(networkSize)} afiliados`}
+   421→          accent="teal"
+   422→        />
+   423→      </Card>
+   424→
+   425→      {/* Árbol visual */}
+   426→      <Card className="p-0">
+   427→        <CardHeader>
+   428→          <CardTitle className="flex items-center gap-2">
+   429→            <Network className="size-5 text-primary" />
+   430→            Árbol de afiliados
+   431→          </CardTitle>
+   432→          <CardDescription>
+   433→            Estructura jerárquica de tu red · 3 niveles de profundidad
+   434→          </CardDescription>
+   435→        </CardHeader>
+   436→        <CardContent>
+   437→          <div className="w-full overflow-x-auto scroll-thin pb-4">
+   438→            <div className="min-w-max mx-auto py-2">
+   439→              <TreeNode node={tree} level={0} />
+   440→            </div>
+   441→          </div>
+   442→
+   443→          {/* Leyenda */}
+   444→          <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-border/60 pt-4">
+   445→            <span className="text-xs font-medium text-muted-foreground">Niveles:</span>
+   446→            {Object.entries(LEVEL_STYLES).map(([lvl, s]) => (
+   447→              <div key={lvl} className="flex items-center gap-1.5">
+   448→                <span className={cn('size-3 rounded-sm', s.bg)} />
+   449→                <Badge variant="outline" className={cn('border', s.chip)}>
+   450→                  {s.label}
+   451→                </Badge>
+   452→              </div>
+   453→            ))}
+   454→          </div>
+   455→        </CardContent>
+   456→      </Card>
+   457→    </div>
+   458→  )
+   459→}
+   460→
+   461→// ===================== TAB: COMISIONES =====================
+   462→function ComisionesTab({ userId }: { userId?: string }) {
+   463→  const [commissions, setCommissions] = useState<Commission[]>([])
+   464→  const [loading, setLoading] = useState(true)
+   465→  const [filter, setFilter] = useState<string>('ALL')
+   466→
+   467→  useEffect(() => {
+   468→    let mounted = true
+   469→    const url = userId
+   470→      ? `/api/affiliates/commissions?userId=${encodeURIComponent(userId)}`
+   471→      : '/api/affiliates/commissions'
+   472→    fetch(url)
+   473→      .then((r) => r.json())
+   474→      .then((d: Commission[]) => {
+   475→        if (mounted) {
+   476→          setCommissions(d)
+   477→          setLoading(false)
+   478→        }
+   479→      })
+   480→      .catch(() => mounted && setLoading(false))
+   481→    return () => {
+   482→      mounted = false
+   483→    }
+   484→  }, [userId])
+   485→
+   486→  const totalsByLevel = useMemo(() => {
+   487→    const map: Record<string, number> = { N0: 0, N1: 0, N2: 0, N3: 0 }
+   488→    for (const c of commissions) {
+   489→      const key = `N${c.level}`
+   490→      map[key] = (map[key] || 0) + c.amount
+   491→    }
+   492→    return map
+   493→  }, [commissions])
+   494→
+   495→  const total = useMemo(
+   496→    () => commissions.reduce((s, c) => s + c.amount, 0),
+   497→    [commissions],
+   498→  )
+   499→
+   500→  const filtered = useMemo(() => {
+   501→    if (filter === 'ALL') return commissions
+   502→    return commissions.filter((c) => `N${c.level}` === filter)
+   503→  }, [commissions, filter])
+   504→
+   505→  if (loading) return <TableSkeleton rows={6} />
+   506→
+   507→  return (
+   508→    <div className="space-y-6">
+   509→      {/* Resumen */}
+   510→      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+   511→        <MiniStat
+   512→          icon={<Wallet className="size-4" />}
+   513→          label="Total comisiones"
+   514→          value={fmtUSD(total)}
+   515→          accent="primary"
+   516→        />
+   517→        <MiniStat
+   518→          icon={<Coins className="size-4" />}
+   519→          label="Nivel 0 (3%)"
+   520→          value={fmtUSD(totalsByLevel.N0 || 0)}
+   521→          accent="primary"
+   522→        />
+   523→        <MiniStat
+   524→          icon={<Coins className="size-4" />}
+   525→          label="Nivel 1 (2%)"
+   526→          value={fmtUSD(totalsByLevel.N1 || 0)}
+   527→          accent="accent"
+   528→        />
+   529→        <MiniStat
+   530→          icon={<Coins className="size-4" />}
+   531→          label="Niveles 2+3"
+   532→          value={fmtUSD((totalsByLevel.N2 || 0) + (totalsByLevel.N3 || 0))}
+   533→          accent="teal"
+   534→        />
+   535→      </div>
+   536→
+   537→      {/* Filtro + tabla */}
+   538→      <Card className="p-0">
+   539→        <CardHeader>
+   540→          <div className="flex items-center justify-between gap-3 flex-wrap">
+   541→            <div>
+   542→              <CardTitle>Historial de comisiones</CardTitle>
+   543→              <CardDescription>
+   544→                {filtered.length} registros · Total {fmtUSD(filtered.reduce((s, c) => s + c.amount, 0))}
+   545→              </CardDescription>
+   546→            </div>
+   547→            <div className="flex items-center gap-2">
+   548→              <Filter className="size-4 text-muted-foreground" />
+   549→              <Select value={filter} onValueChange={setFilter}>
+   550→                <SelectTrigger className="w-[160px]" size="sm">
+   551→                  <SelectValue placeholder="Nivel" />
+   552→                </SelectTrigger>
+   553→                <SelectContent>
+   554→                  <SelectItem value="ALL">Todos los niveles</SelectItem>
+   555→                  <SelectItem value="N0">Nivel 0 (3%)</SelectItem>
+   556→                  <SelectItem value="N1">Nivel 1 (2%)</SelectItem>
+   557→                  <SelectItem value="N2">Nivel 2 (1%)</SelectItem>
+   558→                  <SelectItem value="N3">Nivel 3 (0.5%)</SelectItem>
+   559→                </SelectContent>
+   560→              </Select>
+   561→            </div>
+   562→          </div>
+   563→        </CardHeader>
+   564→        <CardContent>
+   565→          <div className="max-h-[480px] overflow-y-auto scroll-thin rounded-md border border-border/60">
+   566→            <Table>
+   567→              <TableHeader className="sticky top-0 bg-card z-10">
+   568→                <TableRow>
+   569→                  <TableHead className="px-4">Fecha</TableHead>
+   570→                  <TableHead className="px-4">Origen</TableHead>
+   571→                  <TableHead className="px-4">Nivel</TableHead>
+   572→                  <TableHead className="px-4 text-right">Tasa</TableHead>
+   573→                  <TableHead className="px-4 text-right">Monto</TableHead>
+   574→                  <TableHead className="px-4">Estado</TableHead>
+   575→                </TableRow>
+   576→              </TableHeader>
+   577→              <TableBody>
+   578→                {filtered.map((c) => {
+   579→                  const style = getLevelStyle(c.level)
+   580→                  return (
+   581→                    <TableRow key={c.id}>
+   582→                      <TableCell className="px-4 text-xs text-muted-foreground">
+   583→                        {fmtDate(c.createdAt)}
+   584→                      </TableCell>
+   585→                      <TableCell className="px-4 font-medium">
+   586→                        {c.sourceUser?.name || 'Venta directa'}
+   587→                      </TableCell>
+   588→                      <TableCell className="px-4">
+   589→                        <Badge variant="outline" className={cn('border', style.chip)}>
+   590→                          N{c.level}
+   591→                        </Badge>
+   592→                      </TableCell>
+   593→                      <TableCell className="px-4 text-right text-muted-foreground">
+   594→                        {(c.rate * 100).toFixed(1)}%
+   595→                      </TableCell>
+   596→                      <TableCell className="px-4 text-right font-semibold text-primary">
+   597→                        {fmtUSD(c.amount)}
+   598→                      </TableCell>
+   599→                      <TableCell className="px-4">
+   600→                        <Badge
+   601→                          variant="outline"
+   602→                          className={cn(
+   603→                            'border',
+   604→                            COMMISSION_STATUS_COLORS[c.status] ||
+   605→                              'bg-muted text-muted-foreground border-border',
+   606→                          )}
+   607→                        >
+   608→                          {COMMISSION_STATUS_LABELS[c.status] || c.status}
+   609→                        </Badge>
+   610→                      </TableCell>
+   611→                    </TableRow>
+   612→                  )
+   613→                })}
+   614→                {filtered.length === 0 && (
+   615→                  <TableRow>
+   616→                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+   617→                      No hay comisiones para este filtro
+   618→                    </TableCell>
+   619→                  </TableRow>
+   620→                )}
+   621→              </TableBody>
+   622→            </Table>
+   623→          </div>
+   624→        </CardContent>
+   625→      </Card>
+   626→    </div>
+   627→  )
+   628→}
+   629→
+   630→// ===================== TAB: MIS VENTAS =====================
+   631→function MisVentasTab({ userId }: { userId?: string }) {
+   632→  const [orders, setOrders] = useState<Order[]>([])
+   633→  const [loading, setLoading] = useState(true)
+   634→
+   635→  useEffect(() => {
+   636→    let mounted = true
+   637→    const url = userId
+   638→      ? `/api/affiliates/sales?userId=${encodeURIComponent(userId)}`
+   639→      : '/api/affiliates/sales'
+   640→    fetch(url)
+   641→      .then((r) => r.json())
+   642→      .then((d: Order[]) => {
+   643→        if (mounted) {
+   644→          setOrders(d)
+   645→          setLoading(false)
+   646→        }
+   647→      })
+   648→      .catch(() => mounted && setLoading(false))
+   649→    return () => {
+   650→      mounted = false
+   651→    }
+   652→  }, [userId])
+   653→
+   654→  if (loading) return <TableSkeleton rows={6} />
+   655→
+   656→  const totalVentas = orders.reduce((s, o) => s + o.total, 0)
+   657→  const totalComisionN0 = orders.reduce((s, o) => s + o.total * N0_RATE, 0)
+   658→
+   659→  return (
+   660→    <div className="space-y-6">
+   661→      {/* Resumen */}
+   662→      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+   663→        <MiniStat
+   664→          icon={<ShoppingBag className="size-4" />}
+   665→          label="Total ventas"
+   666→          value={fmtNum(orders.length)}
+   667→          accent="primary"
+   668→        />
+   669→        <MiniStat
+   670→          icon={<TrendingUp className="size-4" />}
+   671→          label="Monto vendido"
+   672→          value={fmtUSD(totalVentas)}
+   673→          accent="primary"
+   674→        />
+   675→        <MiniStat
+   676→          icon={<Coins className="size-4" />}
+   677→          label="Comisión N0 (3%)"
+   678→          value={fmtUSD(totalComisionN0)}
+   679→          accent="accent"
+   680→        />
+   681→        <MiniStat
+   682→          icon={<UserCircle2 className="size-4" />}
+   683→          label="Ticket promedio"
+   684→          value={orders.length > 0 ? fmtUSD(totalVentas / orders.length) : '$0.00'}
+   685→          accent="teal"
+   686→        />
+   687→      </div>
+   688→
+   689→      {/* Tabla */}
+   690→      <Card className="p-0">
+   691→        <CardHeader>
+   692→          <CardTitle>Tus ventas directas</CardTitle>
+   693→          <CardDescription>
+   694→            Generas {N0_RATE * 100}% de comisión por cada venta propia
+   695→          </CardDescription>
+   696→        </CardHeader>
+   697→        <CardContent>
+   698→          <div className="max-h-[480px] overflow-y-auto scroll-thin rounded-md border border-border/60">
+   699→            <Table>
+   700→              <TableHeader className="sticky top-0 bg-card z-10">
+   701→                <TableRow>
+   702→                  <TableHead className="px-4">Pedido</TableHead>
+   703→                  <TableHead className="px-4">Fecha</TableHead>
+   704→                  <TableHead className="px-4 text-center">Items</TableHead>
+   705→                  <TableHead className="px-4 text-right">Total</TableHead>
+   706→                  <TableHead className="px-4">Estado</TableHead>
+   707→                  <TableHead className="px-4 text-right">Comisión N0</TableHead>
+   708→                </TableRow>
+   709→              </TableHeader>
+   710→              <TableBody>
+   711→                {orders.map((o) => (
+   712→                  <TableRow key={o.id}>
+   713→                    <TableCell className="px-4 font-mono text-xs text-foreground">
+   714→                      {o.orderNumber}
+   715→                    </TableCell>
+   716→                    <TableCell className="px-4 text-xs text-muted-foreground">
+   717→                      {fmtDate(o.createdAt)}
+   718→                    </TableCell>
+   719→                    <TableCell className="px-4 text-center text-muted-foreground">
+   720→                      {o.items?.length || 0}
+   721→                    </TableCell>
+   722→                    <TableCell className="px-4 text-right font-semibold">
+   723→                      {fmtUSD(o.total)}
+   724→                    </TableCell>
+   725→                    <TableCell className="px-4">
+   726→                      <Badge
+   727→                        variant="outline"
+   728→                        className={cn(
+   729→                          'border',
+   730→                          ORDER_STATUS_COLORS[o.status] ||
+   731→                            'bg-muted text-muted-foreground border-border',
+   732→                        )}
+   733→                      >
+   734→                        {ORDER_STATUS_LABELS[o.status] || o.status}
+   735→                      </Badge>
+   736→                    </TableCell>
+   737→                    <TableCell className="px-4 text-right font-semibold text-primary">
+   738→                      {fmtUSD(o.total * N0_RATE)}
+   739→                    </TableCell>
+   740→                  </TableRow>
+   741→                ))}
+   742→                {orders.length === 0 && (
+   743→                  <TableRow>
+   744→                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+   745→                      Aún no tienes ventas registradas
+   746→                    </TableCell>
+   747→                  </TableRow>
+   748→                )}
+   749→              </TableBody>
+   750→            </Table>
+   751→          </div>
+   752→        </CardContent>
+   753→      </Card>
+   754→    </div>
+   755→  )
+   756→}
+   757→
+   758→// ===================== Módulo principal =====================
+   759→export function AffiliatesModule() {
+   760→  const currentUser = useAppStore((s) => s.currentUser)
+   761→  const [tab, setTab] = useState('red')
+   762→
+   763→  if (!currentUser) {
+   764→    return (
+   765→      <div className="flex flex-col items-center justify-center py-20 text-center">
+   766→        <div className="grid place-items-center size-16 rounded-2xl bg-muted text-muted-foreground mb-4">
+   767→          <UserCircle2 className="size-8" />
+   768→        </div>
+   769→        <h2 className="text-xl font-bold text-foreground">Inicia sesión para ver tu red</h2>
+   770→        <p className="text-sm text-muted-foreground mt-1 max-w-md">
+   771→          Necesitas una cuenta activa para acceder al back-office de afiliados,
+   772→          visualizar tu árbol de referidos y consultar tus comisiones.
+   773→        </p>
+   774→      </div>
+   775→    )
+   776→  }
+   777→
+   778→  return (
+   779→    <div className="space-y-6">
+   780→      {/* Header */}
+   781→      <div className="flex flex-col gap-1">
+   782→        <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
+   783→          <Network className="size-7 text-primary" />
+   784→          Back-office de afiliados
+   785→        </h1>
+   786→        <p className="text-muted-foreground text-sm">
+   787→          {currentUser.name} · Código{' '}
+   788→          <span className="font-mono font-semibold text-foreground">
+   789→            {currentUser.affiliateCode || '—'}
+   790→          </span>
+   791→        </p>
+   792→      </div>
+   793→
+   794→      <Tabs value={tab} onValueChange={setTab}>
+   795→        <TabsList className="w-full md:w-auto grid grid-cols-3 md:inline-grid">
+   796→          <TabsTrigger value="red">
+   797→            <Network className="size-4 mr-1.5" />
+   798→            <span className="hidden sm:inline">Mi Red</span>
+   799→            <span className="sm:hidden">Red</span>
+   800→          </TabsTrigger>
+   801→          <TabsTrigger value="comisiones">
+   802→            <Coins className="size-4 mr-1.5" />
+   803→            <span className="hidden sm:inline">Comisiones</span>
+   804→            <span className="sm:hidden">Comis.</span>
+   805→          </TabsTrigger>
+   806→          <TabsTrigger value="ventas">
+   807→            <ShoppingBag className="size-4 mr-1.5" />
+   808→            <span className="hidden sm:inline">Mis Ventas</span>
+   809→            <span className="sm:hidden">Ventas</span>
+   810→          </TabsTrigger>
+   811→        </TabsList>
+   812→
+   813→        <TabsContent value="red" className="mt-6">
+   814→          <MiRedTab userId={currentUser.id} />
+   815→        </TabsContent>
+   816→        <TabsContent value="comisiones" className="mt-6">
+   817→          <ComisionesTab userId={currentUser.id} />
+   818→        </TabsContent>
+   819→        <TabsContent value="ventas" className="mt-6">
+   820→          <MisVentasTab userId={currentUser.id} />
+   821→        </TabsContent>
+   822→      </Tabs>
+   823→    </div>
+   824→  )
+   825→}
+   826→

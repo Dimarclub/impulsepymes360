@@ -15,9 +15,10 @@ import {
 } from '@/components/ui/select'
 import {
   Network, Users, Coins, GitBranch, ShoppingBag, Filter,
-  Wallet, TrendingUp, MapPin, Mail, Award, UserCircle2,
+  Wallet, TrendingUp, MapPin, Mail, Award, UserCircle2, BanknoteIcon,
 } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
+import { CommissionsLiquidation } from '@/components/dimar/modules/commissions-liquidation'
 import type { AffiliateNode, Commission, Order } from '@/lib/types'
 import { ORDER_STATUS_LABELS } from '@/lib/types'
 import { cn } from '@/lib/utils'
@@ -775,6 +776,9 @@ export function AffiliatesModule() {
     )
   }
 
+  const isAdmin = currentUser.role === 'ADMIN'
+  const tabCount = isAdmin ? 4 : 3
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -792,7 +796,10 @@ export function AffiliatesModule() {
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="w-full md:w-auto grid grid-cols-3 md:inline-grid">
+        <TabsList className={cn(
+          'w-full md:w-auto grid',
+          tabCount === 4 ? 'grid-cols-4 md:inline-grid' : 'grid-cols-3 md:inline-grid',
+        )}>
           <TabsTrigger value="red">
             <Network className="size-4 mr-1.5" />
             <span className="hidden sm:inline">Mi Red</span>
@@ -808,6 +815,13 @@ export function AffiliatesModule() {
             <span className="hidden sm:inline">Mis Ventas</span>
             <span className="sm:hidden">Ventas</span>
           </TabsTrigger>
+          {isAdmin && (
+            <TabsTrigger value="liquidacion">
+              <BanknoteIcon className="size-4 mr-1.5" />
+              <span className="hidden sm:inline">Liquidación</span>
+              <span className="sm:hidden">Liq.</span>
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="red" className="mt-6">
@@ -819,6 +833,11 @@ export function AffiliatesModule() {
         <TabsContent value="ventas" className="mt-6">
           <MisVentasTab userId={currentUser.id} />
         </TabsContent>
+        {isAdmin && (
+          <TabsContent value="liquidacion" className="mt-6">
+            <CommissionsLiquidation />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   )

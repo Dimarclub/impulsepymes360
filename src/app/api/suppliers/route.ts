@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import bcrypt from 'bcryptjs'
+import { requireRole } from '@/lib/security/auth'
 
 export async function GET() {
   const suppliers = await db.supplier.findMany({
@@ -13,8 +15,10 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireRole('ADMIN')
+  if (auth instanceof NextResponse) return auth
   const body = await req.json()
-  // Crear usuario + proveedor
+  // Crear usuario + proveedor con contraseña hasheada
   const user = await db.user.create({
     data: {
       email: body.email,
@@ -22,7 +26,7 @@ export async function POST(req: NextRequest) {
       role: 'SUPPLIER',
       phone: body.phone,
       city: body.city,
-      password: 'dimar123',
+      password: await bcrypt.hash(body.password || 'dimar123', 10),
     },
   })
   const supplier = await db.supplier.create({

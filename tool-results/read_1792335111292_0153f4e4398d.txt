@@ -1,0 +1,857 @@
+     1→'use client'
+     2→
+     3→import { useEffect, useState, useMemo, useCallback } from 'react'
+     4→import {
+     5→  Card,
+     6→  CardContent,
+     7→  CardHeader,
+     8→  CardTitle,
+     9→  CardDescription,
+    10→  CardFooter,
+    11→} from '@/components/ui/card'
+    12→import { Button } from '@/components/ui/button'
+    13→import { Input } from '@/components/ui/input'
+    14→import { Textarea } from '@/components/ui/textarea'
+    15→import { Label } from '@/components/ui/label'
+    16→import { Badge } from '@/components/ui/badge'
+    17→import { Switch } from '@/components/ui/switch'
+    18→import {
+    19→  Dialog,
+    20→  DialogContent,
+    21→  DialogDescription,
+    22→  DialogFooter,
+    23→  DialogHeader,
+    24→  DialogTitle,
+    25→} from '@/components/ui/dialog'
+    26→import {
+    27→  AlertDialog,
+    28→  AlertDialogAction,
+    29→  AlertDialogCancel,
+    30→  AlertDialogContent,
+    31→  AlertDialogDescription,
+    32→  AlertDialogFooter,
+    33→  AlertDialogHeader,
+    34→  AlertDialogTitle,
+    35→} from '@/components/ui/alert-dialog'
+    36→import {
+    37→  Select,
+    38→  SelectContent,
+    39→  SelectItem,
+    40→  SelectTrigger,
+    41→  SelectValue,
+    42→} from '@/components/ui/select'
+    43→import {
+    44→  Tabs,
+    45→  TabsList,
+    46→  TabsTrigger,
+    47→  TabsContent,
+    48→} from '@/components/ui/tabs'
+    49→import {
+    50→  Table,
+    51→  TableBody,
+    52→  TableCell,
+    53→  TableHead,
+    54→  TableHeader,
+    55→  TableRow,
+    56→} from '@/components/ui/table'
+    57→import { Skeleton } from '@/components/ui/skeleton'
+    58→import {
+    59→  Mail,
+    60→  MailPlus,
+    61→  Send,
+    62→  Trash2,
+    63→  Users,
+    64→  MailCheck,
+    65→  MousePointerClick,
+    66→  Plus,
+    67→  RefreshCw,
+    68→  CalendarClock,
+    69→  CheckCircle2,
+    70→  Pencil,
+    71→  Eye,
+    72→} from 'lucide-react'
+    73→import type { EmailCampaign } from '@/lib/types'
+    74→import { useAppStore } from '@/lib/store'
+    75→
+    76→interface Subscriber {
+    77→  id: string
+    78→  email: string
+    79→  name?: string | null
+    80→  segment: string
+    81→  active: boolean
+    82→  createdAt: string
+    83→}
+    84→
+    85→const TEMPLATES: Record<string, string> = {
+    86→  PROMOTION: 'Promoción',
+    87→  NEW_MEMBER: 'Nuevo miembro',
+    88→  COMMISSION: 'Comisión',
+    89→  NEWSLETTER: 'Newsletter',
+    90→}
+    91→const AUDIENCES: Record<string, string> = {
+    92→  ALL: 'Todos',
+    93→  CLIENTS: 'Clientes',
+    94→  AFFILIATES: 'Afiliados',
+    95→  SUPPLIERS: 'Proveedores',
+    96→  PARTNERS: 'Socios',
+    97→}
+    98→const SEGMENTS: Record<string, string> = AUDIENCES
+    99→
+   100→const STATUS_STYLES: Record<string, string> = {
+   101→  DRAFT: 'bg-muted text-muted-foreground',
+   102→  SCHEDULED: 'bg-amber-100 text-amber-700',
+   103→  SENT: 'bg-emerald-100 text-emerald-700',
+   104→}
+   105→const STATUS_LABELS: Record<string, string> = {
+   106→  DRAFT: 'Borrador',
+   107→  SCHEDULED: 'Programada',
+   108→  SENT: 'Enviada',
+   109→}
+   110→
+   111→const shortDate = (s?: string | null) => {
+   112→  if (!s) return '—'
+   113→  const d = new Date(s)
+   114→  if (isNaN(d.getTime())) return '—'
+   115→  return d.toLocaleDateString('es-EC', {
+   116→    day: '2-digit',
+   117→    month: 'short',
+   118→    year: 'numeric',
+   119→  })
+   120→}
+   121→
+   122→export function EmailModule() {
+   123→  const toast = useAppStore((s) => s.toast)
+   124→  const [campaigns, setCampaigns] = useState<EmailCampaign[]>([])
+   125→  const [subscribers, setSubscribers] = useState<Subscriber[]>([])
+   126→  const [loading, setLoading] = useState(true)
+   127→  const [createOpen, setCreateOpen] = useState(false)
+   128→  const [deleteTarget, setDeleteTarget] = useState<EmailCampaign | null>(null)
+   129→  const [subOpen, setSubOpen] = useState(false)
+   130→
+   131→  const load = useCallback(async () => {
+   132→    setLoading(true)
+   133→    try {
+   134→      const [cRes, sRes] = await Promise.all([
+   135→        fetch('/api/email/campaigns', { cache: 'no-store' }),
+   136→        fetch('/api/email/subscribers', { cache: 'no-store' }),
+   137→      ])
+   138→      if (cRes.ok) setCampaigns(await cRes.json())
+   139→      if (sRes.ok) setSubscribers(await sRes.json())
+   140→    } catch {
+   141→      toast('Error al cargar email marketing', 'error')
+   142→    } finally {
+   143→      setLoading(false)
+   144→    }
+   145→  }, [toast])
+   146→
+   147→  useEffect(() => {
+   148→    load()
+   149→  }, [load])
+   150→
+   151→  const stats = useMemo(() => {
+   152→    const total = campaigns.length
+   153→    const sent = campaigns.filter((c) => c.status === 'SENT')
+   154→    const sentCount = sent.length
+   155→    const totalRecipients = sent.reduce((s, c) => s + (c.recipientCount || 0), 0)
+   156→    const totalOpens = sent.reduce((s, c) => s + (c.openCount || 0), 0)
+   157→    const avgOpen = totalRecipients > 0 ? (totalOpens / totalRecipients) * 100 : 0
+   158→    return {
+   159→      total,
+   160→      sentCount,
+   161→      subscribers: subscribers.length,
+   162→      avgOpen,
+   163→    }
+   164→  }, [campaigns, subscribers])
+   165→
+   166→  const handleCreate = async (form: Record<string, string>) => {
+   167→    try {
+   168→      const res = await fetch('/api/email/campaigns', {
+   169→        method: 'POST',
+   170→        headers: { 'Content-Type': 'application/json' },
+   171→        body: JSON.stringify({
+   172→          name: form.name,
+   173→          subject: form.subject,
+   174→          content: form.content,
+   175→          template: form.template || 'PROMOTION',
+   176→          audience: form.audience || 'ALL',
+   177→          status: form.status || 'DRAFT',
+   178→          scheduledAt: form.scheduledAt || null,
+   179→        }),
+   180→      })
+   181→      if (!res.ok) throw new Error('No se pudo crear la campaña')
+   182→      toast('Campaña creada correctamente')
+   183→      setCreateOpen(false)
+   184→      load()
+   185→    } catch (err) {
+   186→      toast((err as Error).message, 'error')
+   187→    }
+   188→  }
+   189→
+   190→  const handleSend = async (c: EmailCampaign) => {
+   191→    try {
+   192→      const res = await fetch(`/api/email/campaigns/${c.id}`, {
+   193→        method: 'PATCH',
+   194→        headers: { 'Content-Type': 'application/json' },
+   195→        body: JSON.stringify({ status: 'SENT', recipientCount: c.recipientCount }),
+   196→      })
+   197→      if (!res.ok) throw new Error('No se pudo enviar la campaña')
+   198→      toast(`Campaña "${c.name}" enviada a ${c.recipientCount} destinatarios`)
+   199→      load()
+   200→    } catch (err) {
+   201→      toast((err as Error).message, 'error')
+   202→    }
+   203→  }
+   204→
+   205→  const handleDelete = async (c: EmailCampaign) => {
+   206→    try {
+   207→      const res = await fetch(`/api/email/campaigns/${c.id}`, { method: 'DELETE' })
+   208→      if (!res.ok) throw new Error('No se pudo eliminar la campaña')
+   209→      toast('Campaña eliminada')
+   210→      setDeleteTarget(null)
+   211→      load()
+   212→    } catch (err) {
+   213→      toast((err as Error).message, 'error')
+   214→    }
+   215→  }
+   216→
+   217→  const handleAddSubscriber = async (form: { email: string; name: string; segment: string }) => {
+   218→    try {
+   219→      const res = await fetch('/api/email/subscribers', {
+   220→        method: 'POST',
+   221→        headers: { 'Content-Type': 'application/json' },
+   222→        body: JSON.stringify(form),
+   223→      })
+   224→      if (!res.ok) throw new Error('No se pudo agregar el suscriptor')
+   225→      toast('Suscriptor agregado')
+   226→      setSubOpen(false)
+   227→      load()
+   228→    } catch (err) {
+   229→      toast((err as Error).message, 'error')
+   230→    }
+   231→  }
+   232→
+   233→  const toggleSubscriber = (sub: Subscriber) => {
+   234→    // El API actual solo soporta POST (upsert activando). Mostramos feedback.
+   235→    setSubscribers((prev) =>
+   236→      prev.map((s) => (s.id === sub.id ? { ...s, active: !s.active } : s))
+   237→    )
+   238→    toast(
+   239→      sub.active
+   240→        ? 'Suscriptor desactivado (demo local)'
+   241→        : 'Suscriptor reactivado (demo local)',
+   242→      'info'
+   243→    )
+   244→  }
+   245→
+   246→  return (
+   247→    <div className="space-y-6">
+   248→      <Header loading={loading} onReload={load} onNew={() => setCreateOpen(true)} />
+   249→
+   250→      {/* Stats */}
+   251→      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+   252→        <StatCard icon={Mail} label="Total campañas" value={String(stats.total)} tone="emerald" />
+   253→        <StatCard icon={Send} label="Enviadas" value={String(stats.sentCount)} tone="emerald" />
+   254→        <StatCard icon={Users} label="Suscriptores" value={String(stats.subscribers)} tone="amber" />
+   255→        <StatCard icon={MailCheck} label="Open rate promedio" value={`${stats.avgOpen.toFixed(1)}%`} tone="amber" />
+   256→      </div>
+   257→
+   258→      <Tabs defaultValue="campaigns">
+   259→        <TabsList>
+   260→          <TabsTrigger value="campaigns">
+   261→            <Mail className="size-4" />
+   262→            Campañas ({campaigns.length})
+   263→          </TabsTrigger>
+   264→          <TabsTrigger value="subscribers">
+   265→            <Users className="size-4" />
+   266→            Suscriptores ({subscribers.length})
+   267→          </TabsTrigger>
+   268→        </TabsList>
+   269→
+   270→        {/* Campaigns */}
+   271→        <TabsContent value="campaigns" className="space-y-3">
+   272→          {loading ? (
+   273→            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   274→              {[1, 2, 3].map((i) => (
+   275→                <Skeleton key={i} className="h-52 w-full rounded-xl" />
+   276→              ))}
+   277→            </div>
+   278→          ) : campaigns.length === 0 ? (
+   279→            <Card className="p-8 text-center">
+   280→              <Mail className="size-10 mx-auto text-muted-foreground mb-2" />
+   281→              <p className="font-medium">No hay campañas todavía</p>
+   282→              <p className="text-sm text-muted-foreground mb-3">
+   283→                Crea tu primera campaña de email marketing.
+   284→              </p>
+   285→              <Button size="sm" onClick={() => setCreateOpen(true)}>
+   286→                <Plus /> Nueva campaña
+   287→              </Button>
+   288→            </Card>
+   289→          ) : (
+   290→            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   291→              {campaigns.map((c) => (
+   292→                <CampaignCard
+   293→                  key={c.id}
+   294→                  campaign={c}
+   295→                  onSend={() => handleSend(c)}
+   296→                  onDelete={() => setDeleteTarget(c)}
+   297→                />
+   298→              ))}
+   299→            </div>
+   300→          )}
+   301→        </TabsContent>
+   302→
+   303→        {/* Subscribers */}
+   304→        <TabsContent value="subscribers">
+   305→          <Card>
+   306→            <CardHeader className="flex-row items-center justify-between space-y-0">
+   307→              <div>
+   308→                <CardTitle className="text-base">Suscriptores</CardTitle>
+   309→                <CardDescription className="text-xs">
+   310→                  Lista de contactos suscritos a tu boletín y comunicaciones.
+   311→                </CardDescription>
+   312→              </div>
+   313→              <Button size="sm" onClick={() => setSubOpen(true)}>
+   314→                <MailPlus /> Agregar suscriptor
+   315→              </Button>
+   316→            </CardHeader>
+   317→            <CardContent>
+   318→              {loading ? (
+   319→                <div className="space-y-2">
+   320→                  {[1, 2, 3, 4].map((i) => (
+   321→                    <Skeleton key={i} className="h-10 w-full" />
+   322→                  ))}
+   323→                </div>
+   324→              ) : subscribers.length === 0 ? (
+   325→                <div className="text-center py-8 text-sm text-muted-foreground">
+   326→                  Aún no hay suscriptores registrados.
+   327→                </div>
+   328→              ) : (
+   329→                <div className="max-h-[28rem] overflow-y-auto scroll-thin">
+   330→                  <Table>
+   331→                    <TableHeader>
+   332→                      <TableRow>
+   333→                        <TableHead>Email</TableHead>
+   334→                        <TableHead>Nombre</TableHead>
+   335→                        <TableHead>Segmento</TableHead>
+   336→                        <TableHead className="text-center">Activo</TableHead>
+   337→                      </TableRow>
+   338→                    </TableHeader>
+   339→                    <TableBody>
+   340→                      {subscribers.map((s) => (
+   341→                        <TableRow key={s.id}>
+   342→                          <TableCell className="font-medium truncate max-w-[16rem]">{s.email}</TableCell>
+   343→                          <TableCell className="text-muted-foreground truncate max-w-[12rem]">
+   344→                            {s.name || '—'}
+   345→                          </TableCell>
+   346→                          <TableCell>
+   347→                            <Badge variant="outline" className="text-[10px]">
+   348→                              {SEGMENTS[s.segment] || s.segment}
+   349→                            </Badge>
+   350→                          </TableCell>
+   351→                          <TableCell className="text-center">
+   352→                            <Switch checked={s.active} onCheckedChange={() => toggleSubscriber(s)} />
+   353→                          </TableCell>
+   354→                        </TableRow>
+   355→                      ))}
+   356→                    </TableBody>
+   357→                  </Table>
+   358→                </div>
+   359→              )}
+   360→            </CardContent>
+   361→          </Card>
+   362→        </TabsContent>
+   363→      </Tabs>
+   364→
+   365→      {/* Create campaign */}
+   366→      <CreateCampaignDialog open={createOpen} onOpenChange={setCreateOpen} onSubmit={handleCreate} />
+   367→
+   368→      {/* Add subscriber */}
+   369→      <AddSubscriberDialog open={subOpen} onOpenChange={setSubOpen} onSubmit={handleAddSubscriber} />
+   370→
+   371→      {/* Delete confirmation */}
+   372→      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+   373→        <AlertDialogContent>
+   374→          <AlertDialogHeader>
+   375→            <AlertDialogTitle>¿Eliminar campaña?</AlertDialogTitle>
+   376→            <AlertDialogDescription>
+   377→              Esta acción no se puede deshacer. La campaña
+   378→              <span className="font-medium"> {deleteTarget?.name} </span>
+   379→              se eliminará permanentemente.
+   380→            </AlertDialogDescription>
+   381→          </AlertDialogHeader>
+   382→          <AlertDialogFooter>
+   383→            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+   384→            <AlertDialogAction
+   385→              className="bg-destructive text-white hover:bg-destructive/90"
+   386→              onClick={() => deleteTarget && handleDelete(deleteTarget)}
+   387→            >
+   388→              <Trash2 className="size-4" /> Eliminar
+   389→            </AlertDialogAction>
+   390→          </AlertDialogFooter>
+   391→        </AlertDialogContent>
+   392→      </AlertDialog>
+   393→    </div>
+   394→  )
+   395→}
+   396→
+   397→/* ---------------- Header ---------------- */
+   398→
+   399→function Header({
+   400→  loading,
+   401→  onReload,
+   402→  onNew,
+   403→}: {
+   404→  loading: boolean
+   405→  onReload: () => void
+   406→  onNew: () => void
+   407→}) {
+   408→  return (
+   409→    <div className="flex flex-wrap items-center justify-between gap-3">
+   410→      <div>
+   411→        <h2 className="text-2xl font-semibold tracking-tight text-gradient">
+   412→          Email Marketing
+   413→        </h2>
+   414→        <p className="text-sm text-muted-foreground">
+   415→          Crea, programa y mide tus campañas de correo.
+   416→        </p>
+   417→      </div>
+   418→      <div className="flex items-center gap-2">
+   419→        <Button variant="outline" size="sm" onClick={onReload} disabled={loading}>
+   420→          <RefreshCw className={loading ? 'animate-spin' : ''} />
+   421→          Refrescar
+   422→        </Button>
+   423→        <Button size="sm" onClick={onNew}>
+   424→          <Plus /> Nueva campaña
+   425→        </Button>
+   426→      </div>
+   427→    </div>
+   428→  )
+   429→}
+   430→
+   431→/* ---------------- Stat card ---------------- */
+   432→
+   433→function StatCard({
+   434→  icon: Icon,
+   435→  label,
+   436→  value,
+   437→  tone,
+   438→}: {
+   439→  icon: typeof Mail
+   440→  label: string
+   441→  value: string
+   442→  tone: 'emerald' | 'amber'
+   443→}) {
+   444→  const toneCls =
+   445→    tone === 'emerald'
+   446→      ? 'bg-emerald-50 text-emerald-700 ring-emerald-200/60'
+   447→      : 'bg-amber-50 text-amber-700 ring-amber-200/60'
+   448→  return (
+   449→    <Card className="p-4 gap-3">
+   450→      <div className="flex items-center gap-3">
+   451→        <div className={`size-10 rounded-lg flex items-center justify-center ring-1 ${toneCls}`}>
+   452→          <Icon className="size-5" />
+   453→        </div>
+   454→        <div className="min-w-0">
+   455→          <p className="text-xs text-muted-foreground truncate">{label}</p>
+   456→          <p className="text-lg font-semibold leading-tight truncate">{value}</p>
+   457→        </div>
+   458→      </div>
+   459→    </Card>
+   460→  )
+   461→}
+   462→
+   463→/* ---------------- Campaign card ---------------- */
+   464→
+   465→function CampaignCard({
+   466→  campaign,
+   467→  onSend,
+   468→  onDelete,
+   469→}: {
+   470→  campaign: EmailCampaign
+   471→  onSend: () => void
+   472→  onDelete: () => void
+   473→}) {
+   474→  const status = campaign.status
+   475→  const openRate =
+   476→    campaign.recipientCount > 0 ? (campaign.openCount / campaign.recipientCount) * 100 : 0
+   477→  const clickRate =
+   478→    campaign.recipientCount > 0 ? (campaign.clickCount / campaign.recipientCount) * 100 : 0
+   479→  const isSent = status === 'SENT'
+   480→  const isDraft = status === 'DRAFT'
+   481→
+   482→  return (
+   483→    <Card className="gap-0 overflow-hidden">
+   484→      <CardHeader className="pb-3">
+   485→        <div className="flex items-start justify-between gap-2">
+   486→          <div className="min-w-0">
+   487→            <CardTitle className="text-sm truncate">{campaign.name}</CardTitle>
+   488→            <CardDescription className="text-xs truncate">{campaign.subject}</CardDescription>
+   489→          </div>
+   490→          <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium shrink-0 ${STATUS_STYLES[status]}`}>
+   491→            {STATUS_LABELS[status] || status}
+   492→          </span>
+   493→        </div>
+   494→      </CardHeader>
+   495→      <CardContent className="space-y-3 pb-3">
+   496→        <div className="flex flex-wrap items-center gap-1.5">
+   497→          <Badge variant="outline" className="text-[10px]">
+   498→            {AUDIENCES[campaign.audience] || campaign.audience}
+   499→          </Badge>
+   500→          {campaign.template && (
+   501→            <Badge variant="secondary" className="text-[10px]">
+   502→              {TEMPLATES[campaign.template] || campaign.template}
+   503→            </Badge>
+   504→          )}
+   505→        </div>
+   506→        <div className="grid grid-cols-3 gap-2 text-center">
+   507→          <Metric label="Destinatarios" value={String(campaign.recipientCount)} />
+   508→          <Metric label="Open rate" value={`${openRate.toFixed(0)}%`} icon={MailCheck} />
+   509→          <Metric label="Click rate" value={`${clickRate.toFixed(0)}%`} icon={MousePointerClick} />
+   510→        </div>
+   511→        <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t">
+   512→          <span className="flex items-center gap-1">
+   513→            {isSent ? (
+   514→              <>
+   515→                <CheckCircle2 className="size-3 text-emerald-600" /> Enviada {shortDate(campaign.sentAt)}
+   516→              </>
+   517→            ) : campaign.scheduledAt ? (
+   518→              <>
+   519→                <CalendarClock className="size-3 text-amber-600" /> Programada {shortDate(campaign.scheduledAt)}
+   520→              </>
+   521→            ) : (
+   522→              <>
+   523→                <Pencil className="size-3" /> Borrador · {shortDate(campaign.createdAt)}
+   524→              </>
+   525→            )}
+   526→          </span>
+   527→        </div>
+   528→      </CardContent>
+   529→      <CardFooter className="gap-2 pt-0 pb-4 px-6">
+   530→        <Button
+   531→          size="sm"
+   532→          variant="default"
+   533→          className="flex-1"
+   534→          onClick={onSend}
+   535→          disabled={!isDraft && status !== 'SCHEDULED'}
+   536→        >
+   537→          <Send className="size-3.5" /> Enviar ahora
+   538→        </Button>
+   539→        <Button size="sm" variant="outline" onClick={onDelete} className="text-destructive hover:text-destructive">
+   540→          <Trash2 className="size-3.5" />
+   541→        </Button>
+   542→      </CardFooter>
+   543→    </Card>
+   544→  )
+   545→}
+   546→
+   547→function Metric({
+   548→  label,
+   549→  value,
+   550→  icon: Icon,
+   551→}: {
+   552→  label: string
+   553→  value: string
+   554→  icon?: typeof MailCheck
+   555→}) {
+   556→  return (
+   557→    <div className="rounded-md bg-muted/50 p-2">
+   558→      <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
+   559→        {Icon && <Icon className="size-3" />}
+   560→        {label}
+   561→      </p>
+   562→      <p className="text-sm font-semibold">{value}</p>
+   563→    </div>
+   564→  )
+   565→}
+   566→
+   567→/* ---------------- Create campaign dialog ---------------- */
+   568→
+   569→function CreateCampaignDialog({
+   570→  open,
+   571→  onOpenChange,
+   572→  onSubmit,
+   573→}: {
+   574→  open: boolean
+   575→  onOpenChange: (v: boolean) => void
+   576→  onSubmit: (form: Record<string, string>) => void
+   577→}) {
+   578→  return (
+   579→    <Dialog open={open} onOpenChange={onOpenChange}>
+   580→      <DialogContent className="sm:max-w-[760px] max-h-[90vh] overflow-y-auto scroll-thin">
+   581→        <DialogHeader>
+   582→          <DialogTitle>Nueva campaña</DialogTitle>
+   583→          <DialogDescription>
+   584→            Configura el contenido y la audiencia. La vista previa se actualiza en vivo.
+   585→          </DialogDescription>
+   586→        </DialogHeader>
+   587→        <CreateCampaignFormBody
+   588→          onSubmit={onSubmit}
+   589→          onCancel={() => onOpenChange(false)}
+   590→        />
+   591→      </DialogContent>
+   592→    </Dialog>
+   593→  )
+   594→}
+   595→
+   596→function CreateCampaignFormBody({
+   597→  onSubmit,
+   598→  onCancel,
+   599→}: {
+   600→  onSubmit: (form: Record<string, string>) => void
+   601→  onCancel: () => void
+   602→}) {
+   603→  const [form, setForm] = useState({
+   604→    name: '',
+   605→    subject: '',
+   606→    content: '',
+   607→    template: 'PROMOTION',
+   608→    audience: 'ALL',
+   609→    status: 'DRAFT',
+   610→    scheduledAt: '',
+   611→  })
+   612→
+   613→  const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }))
+   614→  const valid = form.name.trim() && form.subject.trim() && form.content.trim()
+   615→
+   616→  return (
+   617→    <>
+   618→      <div className="grid md:grid-cols-2 gap-4 py-1">
+   619→        {/* Form */}
+   620→        <div className="space-y-3">
+   621→          <div className="space-y-1.5">
+   622→            <Label htmlFor="e-name">Nombre *</Label>
+   623→            <Input
+   624→              id="e-name"
+   625→              value={form.name}
+   626→              onChange={(e) => set('name', e.target.value)}
+   627→              placeholder="Promo de fin de mes"
+   628→            />
+   629→          </div>
+   630→          <div className="space-y-1.5">
+   631→            <Label htmlFor="e-subject">Asunto *</Label>
+   632→            <Input
+   633→              id="e-subject"
+   634→              value={form.subject}
+   635→              onChange={(e) => set('subject', e.target.value)}
+   636→              placeholder="Aprovecha 20% off en marketplace"
+   637→            />
+   638→          </div>
+   639→          <div className="grid grid-cols-2 gap-3">
+   640→            <div className="space-y-1.5">
+   641→              <Label htmlFor="e-template">Plantilla</Label>
+   642→              <Select value={form.template} onValueChange={(v) => set('template', v)}>
+   643→                <SelectTrigger id="e-template" className="w-full">
+   644→                  <SelectValue />
+   645→                </SelectTrigger>
+   646→                <SelectContent>
+   647→                  {Object.entries(TEMPLATES).map(([k, v]) => (
+   648→                    <SelectItem key={k} value={k}>{v}</SelectItem>
+   649→                  ))}
+   650→                </SelectContent>
+   651→              </Select>
+   652→            </div>
+   653→            <div className="space-y-1.5">
+   654→              <Label htmlFor="e-audience">Audiencia</Label>
+   655→              <Select value={form.audience} onValueChange={(v) => set('audience', v)}>
+   656→                <SelectTrigger id="e-audience" className="w-full">
+   657→                  <SelectValue />
+   658→                </SelectTrigger>
+   659→                <SelectContent>
+   660→                  {Object.entries(AUDIENCES).map(([k, v]) => (
+   661→                    <SelectItem key={k} value={k}>{v}</SelectItem>
+   662→                  ))}
+   663→                </SelectContent>
+   664→              </Select>
+   665→            </div>
+   666→          </div>
+   667→          <div className="grid grid-cols-2 gap-3">
+   668→            <div className="space-y-1.5">
+   669→              <Label htmlFor="e-status">Estado</Label>
+   670→              <Select value={form.status} onValueChange={(v) => set('status', v)}>
+   671→                <SelectTrigger id="e-status" className="w-full">
+   672→                  <SelectValue />
+   673→                </SelectTrigger>
+   674→                <SelectContent>
+   675→                  <SelectItem value="DRAFT">Borrador</SelectItem>
+   676→                  <SelectItem value="SCHEDULED">Programada</SelectItem>
+   677→                </SelectContent>
+   678→              </Select>
+   679→            </div>
+   680→            <div className="space-y-1.5">
+   681→              <Label htmlFor="e-when">Programar para</Label>
+   682→              <Input
+   683→                id="e-when"
+   684→                type="datetime-local"
+   685→                value={form.scheduledAt}
+   686→                onChange={(e) => set('scheduledAt', e.target.value)}
+   687→              />
+   688→            </div>
+   689→          </div>
+   690→          <div className="space-y-1.5">
+   691→            <Label htmlFor="e-content">Contenido *</Label>
+   692→            <Textarea
+   693→              id="e-content"
+   694→              value={form.content}
+   695→              onChange={(e) => set('content', e.target.value)}
+   696→              placeholder="Hola {nombre}, te traemos una oferta especial…"
+   697→              rows={5}
+   698→            />
+   699→          </div>
+   700→        </div>
+   701→
+   702→        {/* Live preview */}
+   703→        <div className="space-y-1.5">
+   704→          <Label className="flex items-center gap-1.5 text-xs">
+   705→            <Eye className="size-3" /> Vista previa
+   706→          </Label>
+   707→          <EmailPreview
+   708→            subject={form.subject}
+   709→            content={form.content}
+   710→            template={form.template}
+   711→            audience={form.audience}
+   712→          />
+   713→        </div>
+   714→      </div>
+   715→      <DialogFooter>
+   716→        <Button variant="outline" onClick={onCancel}>
+   717→          Cancelar
+   718→        </Button>
+   719→        <Button disabled={!valid} onClick={() => onSubmit(form)}>
+   720→          <Plus /> Crear campaña
+   721→        </Button>
+   722→      </DialogFooter>
+   723→    </>
+   724→  )
+   725→}
+   726→
+   727→function EmailPreview({
+   728→  subject,
+   729→  content,
+   730→  template,
+   731→  audience,
+   732→}: {
+   733→  subject: string
+   734→  content: string
+   735→  template: string
+   736→  audience: string
+   737→}) {
+   738→  const headerBg =
+   739→    template === 'PROMOTION'
+   740→      ? 'from-emerald-600 to-emerald-500'
+   741→      : template === 'NEW_MEMBER'
+   742→      ? 'from-amber-500 to-amber-400'
+   743→      : template === 'COMMISSION'
+   744→      ? 'from-emerald-700 to-amber-500'
+   745→      : 'from-emerald-500 to-teal-500'
+   746→  return (
+   747→    <div className="rounded-lg border bg-white overflow-hidden shadow-sm">
+   748→      <div className={`bg-gradient-to-r ${headerBg} text-white p-3`}>
+   749→        <p className="text-[10px] uppercase tracking-wider opacity-80">Dimarclub · {TEMPLATES[template]}</p>
+   750→        <p className="text-sm font-semibold leading-tight mt-0.5 line-clamp-2">
+   751→          {subject || 'Asunto de tu campaña'}
+   752→        </p>
+   753→      </div>
+   754→      <div className="p-3">
+   755→        <p className="text-[11px] text-muted-foreground mb-2">
+   756→          Para: {AUDIENCES[audience] || 'Todos'} · hola@dimarclub.com
+   757→        </p>
+   758→        <div className="text-xs text-foreground whitespace-pre-wrap leading-relaxed min-h-[8rem]">
+   759→          {content || 'La vista previa de tu contenido aparecerá aquí a medida que escribas…'}
+   760→        </div>
+   761→        <div className="mt-3 pt-2 border-t text-[10px] text-muted-foreground">
+   762→          © Dimarclub — Marketplace con comunidad. Cancela tu suscripción cuando quieras.
+   763→        </div>
+   764→      </div>
+   765→    </div>
+   766→  )
+   767→}
+   768→
+   769→/* ---------------- Add subscriber dialog ---------------- */
+   770→
+   771→function AddSubscriberDialog({
+   772→  open,
+   773→  onOpenChange,
+   774→  onSubmit,
+   775→}: {
+   776→  open: boolean
+   777→  onOpenChange: (v: boolean) => void
+   778→  onSubmit: (form: { email: string; name: string; segment: string }) => void
+   779→}) {
+   780→  return (
+   781→    <Dialog open={open} onOpenChange={onOpenChange}>
+   782→      <DialogContent className="sm:max-w-[440px]">
+   783→        <DialogHeader>
+   784→          <DialogTitle>Agregar suscriptor</DialogTitle>
+   785→          <DialogDescription>
+   786→            Si el email ya existe, se actualizará su nombre y segmento.
+   787→          </DialogDescription>
+   788→        </DialogHeader>
+   789→        <AddSubscriberFormBody
+   790→          onSubmit={onSubmit}
+   791→          onCancel={() => onOpenChange(false)}
+   792→        />
+   793→      </DialogContent>
+   794→    </Dialog>
+   795→  )
+   796→}
+   797→
+   798→function AddSubscriberFormBody({
+   799→  onSubmit,
+   800→  onCancel,
+   801→}: {
+   802→  onSubmit: (form: { email: string; name: string; segment: string }) => void
+   803→  onCancel: () => void
+   804→}) {
+   805→  const [form, setForm] = useState({ email: '', name: '', segment: 'ALL' })
+   806→
+   807→  const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }))
+   808→  const valid = /\S+@\S+\.\S+/.test(form.email)
+   809→
+   810→  return (
+   811→    <>
+   812→      <div className="space-y-3 py-1">
+   813→        <div className="space-y-1.5">
+   814→          <Label htmlFor="s-email">Email *</Label>
+   815→          <Input
+   816→            id="s-email"
+   817→            type="email"
+   818→            value={form.email}
+   819→            onChange={(e) => set('email', e.target.value)}
+   820→            placeholder="cliente@correo.com"
+   821→          />
+   822→        </div>
+   823→        <div className="space-y-1.5">
+   824→          <Label htmlFor="s-name">Nombre</Label>
+   825→          <Input
+   826→            id="s-name"
+   827→            value={form.name}
+   828→            onChange={(e) => set('name', e.target.value)}
+   829→            placeholder="María González"
+   830→          />
+   831→        </div>
+   832→        <div className="space-y-1.5">
+   833→          <Label htmlFor="s-segment">Segmento</Label>
+   834→          <Select value={form.segment} onValueChange={(v) => set('segment', v)}>
+   835→            <SelectTrigger id="s-segment" className="w-full">
+   836→              <SelectValue />
+   837→            </SelectTrigger>
+   838→            <SelectContent>
+   839→              {Object.entries(SEGMENTS).map(([k, v]) => (
+   840→                <SelectItem key={k} value={k}>{v}</SelectItem>
+   841→              ))}
+   842→            </SelectContent>
+   843→          </Select>
+   844→        </div>
+   845→      </div>
+   846→      <DialogFooter>
+   847→        <Button variant="outline" onClick={onCancel}>
+   848→          Cancelar
+   849→        </Button>
+   850→        <Button disabled={!valid} onClick={() => onSubmit(form)}>
+   851→          <Plus /> Agregar
+   852→        </Button>
+   853→      </DialogFooter>
+   854→    </>
+   855→  )
+   856→}
+   857→

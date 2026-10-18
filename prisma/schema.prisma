@@ -154,7 +154,7 @@ model Commission {
   userId    String   // quien gana la comisión
   user      User     @relation(fields: [userId], references: [id])
   orderId   String?
-  sourceUserId String? // quién generó la venta
+  sourceUserId String? // quién generó la venta (sin relación para evitar problemas con Turbopack)
   amount    Float
   level     Int      // 0 = venta propia/autoconsumo, 1, 2, 3 = niveles
   rate      Float    // porcentaje aplicado

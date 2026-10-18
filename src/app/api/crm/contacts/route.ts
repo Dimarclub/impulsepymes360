@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requireRole } from '@/lib/security/auth'
 
 export async function GET() {
+  const auth = await requireRole('ADMIN')
+  if (auth instanceof NextResponse) return auth
   const contacts = await db.crmContact.findMany({
     include: { activities: true },
     orderBy: { createdAt: 'desc' },
@@ -10,6 +13,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireRole('ADMIN')
+  if (auth instanceof NextResponse) return auth
   const body = await req.json()
   const contact = await db.crmContact.create({
     data: {

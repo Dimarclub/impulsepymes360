@@ -1,10 +1,16 @@
 import { db } from '../src/lib/db'
+import bcrypt from 'bcryptjs'
 
 const slugify = (s: string) =>
   s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 
 async function main() {
   console.log('🌱 Iniciando seed de Dimarclub...')
+
+  // Hashear la contraseña por defecto
+  const DEFAULT_PASSWORD = 'dimar123'
+  const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 10)
+  const pwd = () => hashedPassword
 
   // Limpiar
   await db.emailCampaign.deleteMany()
@@ -264,7 +270,15 @@ async function main() {
     await db.cart.create({ data: { userId: u.id } })
   }
 
+  // Hashear todas las contraseñas (el default del schema es texto plano "dimar123")
+  console.log('🔒 Hasheando contraseñas...')
+  await db.user.updateMany({
+    where: { password: 'dimar123' },
+    data: { password: hashedPassword },
+  })
+
   console.log('🎉 Seed completado.')
+  console.log('   Credenciales de acceso: email + contraseña "dimar123"')
 }
 
 main()
