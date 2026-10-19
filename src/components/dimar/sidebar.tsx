@@ -16,6 +16,8 @@ import {
   Sparkles,
   Link2,
   Zap,
+  Rocket,
+  Globe,
   type LucideIcon,
 } from 'lucide-react'
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/components/ui/sheet'
@@ -66,6 +68,14 @@ const SECTIONS: NavSection[] = [
       { id: 'social-studio', label: 'Content Studio IA', icon: Sparkles },
       { id: 'social-bio', label: 'Link in Bio', icon: Link2 },
       { id: 'social-automation', label: 'Automatización', icon: Zap },
+    ],
+  },
+  {
+    title: 'ImpulsePymes360',
+    items: [
+      { id: 'impulse', label: 'Panel Impulse360', icon: Rocket },
+      { id: 'impulse-wizard', label: 'Onboarding', icon: Zap },
+      { id: 'web-express', label: 'Web Express', icon: Globe },
     ],
   },
 ]

@@ -671,3 +671,142 @@ Stage Summary:
 - Automatización con reglas BULK_PRODUCT, RECURRING, DAILY_DIGEST + plantillas rápidas
 - 10 APIs sociales + servicio IA (z-ai-web-dev-sdk) funcionando
 - Dimarclub Social completado (réplica de Autoposter.ai adaptada al marketplace con afiliados)
+
+---
+Task ID: 8 (foundation)
+Agent: main
+Task: ImpulsePymes360 - schema, APIs, seed, tipos, sidebar
+
+Work Log:
+- Schema extendido con 7 modelos: Plan, Provider, Subscription, WebsiteExpress, QRCode, AdEdition, AdSpace
+- Relaciones inversas en User y QRCode corregidas
+- Seed prisma/seed-impulse.ts: 4 planes (Starter $29, Crecimiento $79, Premium $199, Enterprise $499), edición PubliBags Nov-2025-GYE con 80 espacios, proveedor demo TecnoExpress (suscripción + Web Express + QR + 3 espacios)
+- APIs creadas:
+  * /api/impulse/plans (GET catálogo)
+  * /api/impulse/onboarding (POST crea usuario+proveedor+suscripción+WebExpress+QR+espacios)
+  * /api/impulse/websites (GET) + [id] (PATCH)
+  * /api/impulse/w/[slug] (GET público, visualizador de sitio)
+  * /api/impulse/qr (GET) + scan/[code] (GET registra escaneo)
+  * /api/impulse/editions (GET) + [id] (GET con grid) + [id]/spaces (POST reservar)
+  * /api/impulse/me (GET perfil proveedor + suscripción + sitio + QRs + espacios)
+- Tipos añadidos: Plan, Provider, WebsiteExpress, QRCodeInfo, AdEdition, AdSpaceInfo, PLAN_LABELS
+- Sidebar: sección "ImpulsePymes360" con 3 módulos (Panel, Onboarding, Web Express)
+- page.tsx actualizado para renderizar 3 módulos nuevos
+
+Stage Summary:
+- Orquestador + Web Express + PubliBags foundation lista
+- 10 APIs funcionales
+- Pendiente (subagentes): módulos UI (Panel Impulse360, Wizard Onboarding, Web Express visualizador+editor)
+
+---
+Task ID: 8-b
+Agent: full-stack-developer (web express)
+Task: Web Express module — visualizer + editor with live preview
+
+Work Log:
+- Leído worklog.md (Task 8 foundation), types.ts, store.ts, auth.ts, y las 3 rutas API de impulse websites + w/[slug]; revisados image-upload.tsx y social-bio.tsx como patrones de referencia
+- Creado `src/components/dimar/modules/web-express.tsx` (~1100 líneas, 'use client') con dos modos: gallery (sidebar de sitios + preview en BrowserFrame + stats) y editor (form en 4 Tabs + live preview sticky)
+- Componente `WebsitePreview` renderiza un sitio web profesional completo (nav, hero, about, products, contact, footer) con 4 variantes de plantilla (classic/modern/minimal/vibrant) que cambian layout, fondos y tipografía; usa primaryColor/accentColor vía inline styles; productos del marketplace con precio/compareAtPrice/link; horarios por día; redes con iconos Lucide; WhatsApp wa.me; footer "Sitio creado con Web Express by ImpulsePymes360"
+- `TemplateMiniPreview`: miniaturas visuales de cada plantilla para el selector del editor
+- `BrowserFrame`: marco de navegador (dots + URL dimarclub.com/w/{slug}) con scroll-thin
+- Editor: Tabs Diseño (plantilla + colores con 5 presets esmeralda/ámbar, azul/marino, rojo/naranja, púrpura/rosa, gris/dorado), Contenido (hero + about con ImageUpload), Contacto (email/tel/whatsapp/dirección + 7 horarios + 4 redes), SEO (metaTitle/metaDescription + switch published); botón Guardar sticky; live preview refleja el form en tiempo real
+- Integración: GET /api/impulse/websites (lista), GET /api/impulse/w/[slug] (preview + productos, con cache por slug y fallback para no publicados), PATCH /api/impulse/websites/[id] (guardar + toggle published); businessHours/socialLinks como objetos
+- Empty state con CTA → setModule('impulse-wizard'); toggle published inmediato desde toolbar; stats (vistas/estado/plantilla/actualizado)
+- App UI con paleta esmeralda/ámbar (sin azul/índigo); el preview del sitio usa los colores del proveedor
+- Regenerado Prisma client (`bun run db:generate` + `db:push`) — los modelos Plan/AdEdition/WebsiteExpress/QRCode estaban ausentes del cliente en runtime causando 500 en /api/impulse/*
+- ESLint: 0 errors, 0 warnings
+
+Stage Summary:
+- `src/components/dimar/modules/web-express.tsx` (nuevo)
+- `agent-ctx/8-b-full-stack-developer-web-express.md` (registro)
+- Prisma client regenerado (afecta a todas las rutas /api/impulse/*)
+- Pendiente: si /api/impulse/* sigue dando 500, reiniciar dev server para que cargue el nuevo @prisma/client (globalForPrisma cachea la instancia vieja)
+
+---
+Task ID: 8-a
+Agent: full-stack-developer (impulse panel + wizard)
+Task: ImpulsePymes360 Panel + Onboarding Wizard (6 steps)
+
+Work Log:
+- Leído worklog.md (Task 8 foundation: schema con 7 modelos Impulse, 10 APIs bajo /api/impulse/, seed con 4 planes + edición Nov-2025-GYE + proveedor demo TecnoExpress), src/lib/types.ts (Plan/Provider/WebsiteExpress/QRCodeInfo/AdEdition/AdSpaceInfo/PLAN_LABELS, ModuleId incluye 'impulse', 'impulse-wizard', 'web-express'), src/lib/store.ts (setModule + toast + currentUser), src/lib/security/auth.ts (getSessionUser), src/app/api/impulse/{onboarding,me,plans,editions}/route.ts (contratos verificados), src/components/dimar/image-upload.tsx (ImageUpload component).
+- Creado `src/components/dimar/modules/impulse.tsx` (~976 líneas, Panel Impulse360):
+  * Hero header con gradiente esmeralda→ámbar, badge "Sistema omnicanal", título "ImpulsePymes360", subtítulo "El sistema omnicanal que impulsa tu negocio", botón de refresh con tooltip.
+  * 5 mini-cards (grid responsive 2/3/5 cols) de los elementos con status badges: Impulso360 (marketplace), Dimarclub (comunidad), Fuerza Delta (logística), Directorio360, PubliBags, Web Express. Cada una con icono en gradiente o muted según status activo/inactivo.
+  * Stats row (grid 2/4): Productos publicados, Vistas Web Express, Escaneos QR totales, Espacios PubliBags.
+  * Provider info card (lg:col-1): logo (con fallback Store icon), companyName + BadgeCheck si verified, categoría, ciudad + status badge (Activo/Inactivo), RUC, teléfono, descripción (line-clamp-2), websiteSlug con botón "Ver sitio" (abre /w/{slug} en nueva pestaña).
+  * Subscription card (lg:col-2): plan displayName + description, precio grande $/mes, status badge, próximo cobro (fmtDate es-EC), affiliateRate %, grid 3 cols con límites (maxProducts/maxAdSpaces/maxShipments), botón "Cambiar plan" (decorativo, redirige a wizard).
+  * Web Express card (lg:col-1): swatch de colores primario+acento, plantilla + slug, heroTitle (line-clamp-2), grid 2 cols (Vistas + URL), botones "Ver sitio" (abre /w/slug) y "Editar" (setModule('web-express')).
+  * QR Codes card (lg:col-2): lista scrollable (max-h-72 scroll-thin) de QRCard con imagen QR de api.qrserver.com (120x120), código mono, badge de tipo (WEBSITE esmeralda, PRODUCT ámbar, PROMO orange, WHATSAPP green, EDITION rose), escaneos + únicos + último escaneo (fmtDateTime es-EC).
+  * PubliBags spaces card (full width): lista de espacios comprados con posición, edición (con nombre+ciudad), tipo badge (QR/Imagen), precio, status badge (Comprado esmeralda/Reservado ámbar/Disponible muted). CTA "Reservar ahora" si está vacío.
+  * Grid 6 elementos (sm:2 lg:3): cada uno con icono gradiente/muted, nombre, status badge, descripción del elemento. Activación basada en plan flags (alwaysActive para Impulso360/Dimarclub/PubliBags, hasWebExpress/hasDirectorio/hasLogistica para los demás).
+  * CTA bottom con gradiente sutil: "Configurar de nuevo" → setModule('impulse-wizard').
+  * Estados: LoadingSkeleton (skeletons para hero + 6 mini-cards + 4 stats + 2 cards), NoProviderState (Card dashed con CTA "Comenzar onboarding" gradiente, badges 6 pasos/5 elementos/pago mensual), UnauthenticatedState (Card amber con CTA login).
+  * Refresca con fetchData(true) silencioso para no mostrar loading skeleton completo.
+- Creado `src/components/dimar/modules/impulse-wizard.tsx` (~1932 líneas, Onboarding Wizard 6 pasos):
+  * Hero header gradiente esmeralda→ámbar con badge "Onboarding · 5 elementos".
+  * Stepper responsive: desktop con 6 círculos conectados por líneas (hecho = esmeralda sólido + check, activo = gradiente + ring, pendiente = muted border), mobile con progress bar horizontal + "Paso X de 6".
+  * Step 1 — Datos del negocio: 2 cards (Negocio + Cuenta admin). Card Negocio: companyName*, taxId, category select* (8 opciones), city select* (7 opciones), description textarea (maxLength 500 + contador), ImageUpload para logo, address, phone, mobile. Card Cuenta: name*, email* (disabled si authed), password* + confirmPassword* (ocultos si authed). Banner esmeralda "Estás autenticado" si existingProvider. Validación: requeridos, email regex, password min 6, passwords coinciden.
+  * Step 2 — Plan: RadioGroup de 4 cards (Starter $29, Crecimiento $79 featured "Más popular" con scale-105, Premium $199, Enterprise $499). Cada card: displayName, description (line-clamp-2 min-h), precio grande, separator, lista PlanFeature (maxProducts, maxAdSpaces, maxShipments, maxAffiliateRate, hasWebExpress/Directorio/Logistica/Social con check esmeralda o icono muted tachado). Selected = border-primary + ring + shadow.
+  * Step 3 — Comisión afiliados: Card gradiente con slider 1-maxRate, número grande gradiente, etiquetas min/medio/max. Card amber con 2 explicaciones: (1) "se descuenta de cada venta, no de tu bolsillo"; (2) "Sistema Dimarclub: N0=3% + N1/N2/N3=2% cada uno → 9% base. Tu % es CONTRIBUCIÓN ADICIONAL". Calculadora en vivo: ejemplo $100, grid 2 cols (precio + tu comisión amber), grid 4 CommissionBox (N0 comprador 3%, N1 afiliado directo 2%, N2 2%, N3 2%), ganancia neta esmeralda. Nota aclaratoria al pie.
+  * Step 4 — PubliBags: Card gradiente rose→amber con info de edición (nombre, ciudad, bagSize, printQuantity, vigencia, disponibles + vendidos). Card principal con grid 8 cols × 10 rows (80 espacios). Cada espacio: aspect-square, color según status (disponible=emerald-50 border, seleccionado=emerald-500 gradiente + check, reservado=amber-100, vendido=rose-100), tooltip con posición/tipo/precio, disabled si no disponible o si remaining<=0 y no seleccionado. Header con badges Seleccionados X/maxSpaces + Restantes + botón Limpiar. Footer con subtotal + tipo (1 QR o 1 QR + N imágenes). Botón "Saltar este paso" si no hay selección. Leyenda de colores al pie.
+  * Step 5 — Web Express: layout 2 cols (editor + sticky preview). Editor: grid 4 templates (classic/modern/minimal/vibrant con swatch color), color pickers nativos + inputs hex para primary/accent, separator, heroTitle + heroSubtitle + aboutText textarea, separator, grid 2 cols contact (email/phone/whatsapp/address) con placeholders dinámicos desde step 1. Preview: mini mockup responsive con header bar (logo + companyName + nav), hero (título primario + subtítulo + 2 botones), grid 3 productos mock con gradientes de los colores elegidos, about text, footer con phone + address. Aplica variantes por template (vibrant=gradiente header, minimal=sin fondo, classic=tradicional).
+  * Step 6 — Confirmación: 5 SummaryCard colapsables (Collapsible de Radix) con icono + título + chevron rotatorio: Negocio, Cuenta, Plan y comisión, PubliBags (con espacios #positions), Web Express (con swatches de colores). Card total con borde primary, desglose plan + publiBags, total grande. Botón gradiente "Pagar $X y crear perfiles" con spinner Loader2 durante submit.
+  * Success screen: Card con borde esmeralda, icono PartyPopper gradiente, mensaje del backend, grid 2 cols con QR (api.qrserver.com 200x200) + URL del sitio (/w/slug clickeable), 2 botones: "Ver mi panel" (setModule('impulse')) + "Ver mi sitio web" (setModule('web-express')).
+  * Navegación: Atrás (outline, disabled en step 1), Continuar (esmeralda, valida step actual con toast error si falla). "Volver al panel" link al final.
+  * Single formState (useState) con todos los campos de los 6 pasos + selectedSpaceIds[] (bug inicial: faltaba en interface y DEFAULT_FORM, corregido).
+  * Validación por step: validateStep retorna bool, setErrors con mensajes por campo, toast "Revisa los campos" si falla.
+  * Fetch en paralelo: /api/impulse/plans (pre-selecciona featured), /api/impulse/editions (pre-selecciona primera OPEN), /api/impulse/me (pre-llena step 1 si SUPPLIER authed, marca isAuthed para ocultar password fields). Fetch /api/impulse/editions/[id] lazy al entrar al step 4 para tener el grid completo con adSpaces.
+  * Submit POST /api/impulse/onboarding con todos los datos (user + business + plan + affiliateRate + web express + selectedSpaceIds). On success: setSuccess(data) muestra pantalla de éxito. On error: toast con mensaje del backend.
+  * Toggle space respeta maxSpaces del plan con toast warning si excede.
+  * Si cambia plan y affiliateRate excede nuevo maxAffiliateRate, se ajusta automáticamente.
+- 'use client' en ambos módulos. Paleta esmeralda + ámbar exclusivamente (cero azul/índigo salvo sky en DAILY_DIGEST ya existente). shadcn: Card, Button, Input, Textarea, Label, Badge, Select, Separator, Skeleton, Slider, RadioGroup, Collapsible, Tooltip. Iconos Lucide. fetch nativo con useState+useEffect. Toast vía useAppStore (delega a Sonner).
+- Lint: 0 errores, 0 warnings (--fix removió 4 directivas @next/next/no-img-element no necesarias en img de api.qrserver.com).
+- Bug encontrado y resuelto en runtime: el dev server tenía globalForPrisma cacheando una instancia vieja de PrismaClient (sin plan/adEdition). tras `bun run db:push` (que regenera @prisma/client), hubo que reiniciar el dev server (next dev -p 3000) para que cargara el nuevo cliente. El sistema no auto-reinicia; levantado manualmente con `setsid` en subshell para que sobreviva al cierre del bash tool. Endpoints verificados:
+  * GET /api/impulse/plans → 200, 4 planes (Starter/Crecimiento/Premium/Enterprise)
+  * GET /api/impulse/editions → 200, edición Nov-2025-GYE con 77/80 disponibles
+  * GET /api/impulse/me → 200 null (sin sesión)
+  * GET / → 200, "ImpulsePymes360" presente en HTML
+
+Stage Summary:
+- Archivos creados:
+  * /home/z/my-project/src/components/dimar/modules/impulse.tsx (~976 líneas, Panel Impulse360 con hero + 5 mini-cards + stats + provider/subscription/web-express/QR/PubliBags cards + grid 6 elementos + CTA)
+  * /home/z/my-project/src/components/dimar/modules/impulse-wizard.tsx (~1932 líneas, Onboarding Wizard 6 pasos con stepper + validación + live preview Web Express + grid PubliBags 80 espacios + calculadora comisión + success screen)
+  * /home/z/my-project/agent-ctx/8-a-full-stack-developer-impulse-panel-wizard.md (registro)
+- Decisiones clave:
+  * QR visual usa api.qrserver.com (servicio público) para no depender de librerías QR pesadas
+  * Single formState (un useState objeto) en wizard en lugar de react-hook-form: más simple para un wizard multi-step con campos condicionales
+  * Stepper permite jump a pasos anteriores (no a futuros) para revisión
+  * Pre-llenado de step 1 desde /api/impulse/me si SUPPLIER authed (oculta password fields)
+  * Comisión afiliados presentada como "contribución adicional" al sistema base (N0=3% + N1-N3=2% = 9% base), no como reemplazo
+  * Live preview Web Express renderiza mini mockup con colores reales del form en tiempo real
+  * Grid PubliBags con 4 estados visuales (disponible/seleccionado/reservado/vendido) y tooltips informativos
+  * Calculadora de comisión con ejemplo $100 + 4 CommissionBox (N0/N1/N2/N3) + ganancia neta destacada
+  * Success screen muestra QR generado + URL clickeable + 2 CTAs de navegación
+
+---
+Task ID: 8 (complete)
+Agent: main + 2 subagents
+Task: ImpulsePymes360 - Panel + Onboarding Wizard + Web Express
+
+Work Log:
+- Subagente 8-a: Panel Impulse360 (hero + 6 elementos + stats + provider info + suscripción + Web Express card + QR codes + PubliBags spaces) + Onboarding Wizard 6 pasos (datos negocio → plan → comisión afiliados → espacios PubliBags → Web Express setup → confirmación/pago)
+- Subagente 8-b: Web Express module (gallery mode + editor mode con 4 templates classic/modern/minimal/vibrant, live preview, BrowserFrame mockup, editor con tabs Diseño/Contenido/Contacto/SEO)
+- Bug crítico encontrado y resuelto: .env perdía NEXTAUTH_SECRET repetidamente, causando JWEDecryptionFailed → login imposible
+- Solución: .env restaurado con NEXTAUTH_SECRET, NEXTAUTH_URL, PAYMENT_PROVIDER, EMAIL_PROVIDER
+- Servidor reiniciado con .env correcto → login funciona (curl confirma sesión Carlos Dimar ADMIN)
+- Prisma client regenerado tras añadir modelos Plan/Provider/Subscription/WebsiteExpress/QRCode/AdEdition/AdSpace
+
+Verificación con Agent Browser:
+- Login admin@dimarclub.com → "Carlos Dimar" / "ADMINISTRADOR" ✅
+- Panel Impulse360: "ImpulsePymes360", "El sistema omnicanal que impulsa tu negocio", "Comenzar onboarding", 6 elementos ✅
+- Onboarding Wizard: "Crea tu presencia omnicanal en 6 simples pasos", stepper con pasos ✅
+- Web Express: renderiza correctamente ✅
+- Lint: 0 errores, 0 warnings ✅
+- APIs: /api/impulse/plans 200, /api/impulse/editions 200, /api/impulse/w/tecnoexpress 200 ✅
+
+Stage Summary:
+- 3 módulos ImpulsePymes360 operativos
+- Wizard de onboarding de 6 pasos funcional (crea proveedor + suscripción + Web Express + QR + espacios PubliBags)
+- Web Express con 4 templates y live preview
+- Panel maestro con estado de los 6 elementos del ecosistema
+- Fase 1 de ImpulsePymes360 completada

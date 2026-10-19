@@ -22,6 +22,9 @@ import { SocialModule } from '@/components/dimar/modules/social'
 import { SocialStudioModule } from '@/components/dimar/modules/social-studio'
 import { SocialBioModule } from '@/components/dimar/modules/social-bio'
 import { SocialAutomationModule } from '@/components/dimar/modules/social-automation'
+import { ImpulseModule } from '@/components/dimar/modules/impulse'
+import { ImpulseWizardModule } from '@/components/dimar/modules/impulse-wizard'
+import { WebExpressModule } from '@/components/dimar/modules/web-express'
 import { Footer } from '@/components/dimar/footer'
 
 export default function Home() {
@@ -69,6 +72,9 @@ function HomeContent() {
       case 'social-studio': return <SocialStudioModule />
       case 'social-bio': return <SocialBioModule />
       case 'social-automation': return <SocialAutomationModule />
+      case 'impulse': return <ImpulseModule />
+      case 'impulse-wizard': return <ImpulseWizardModule />
+      case 'web-express': return <WebExpressModule />
       default: return <MarketplaceModule />
     }
   }

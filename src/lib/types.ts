@@ -16,6 +16,9 @@ export type ModuleId =
   | 'social-studio'
   | 'social-bio'
   | 'social-automation'
+  | 'impulse'
+  | 'impulse-wizard'
+  | 'web-express'
 
 export type UserRole = 'CLIENT' | 'AFFILIATE' | 'SUPPLIER' | 'COURIER' | 'PARTNER' | 'ADMIN'
 
@@ -418,4 +421,110 @@ export const POST_STATUS_COLORS: Record<string, string> = {
   SCHEDULED: 'bg-amber-100 text-amber-700',
   PUBLISHED: 'bg-emerald-100 text-emerald-700',
   FAILED: 'bg-red-100 text-red-700',
+}
+
+// ---------- Tipos ImpulsePymes360 ----------
+
+export interface Plan {
+  id: string
+  name: string
+  displayName: string
+  price: number
+  description: string
+  maxProducts: number
+  maxAdSpaces: number
+  maxShipments: number
+  maxAffiliateRate: number
+  hasWebExpress: boolean
+  hasDirectorio: boolean
+  hasLogistica: boolean
+  hasSocial: boolean
+  featured: boolean
+}
+
+export interface Provider {
+  id: string
+  userId: string
+  companyName: string
+  taxId?: string | null
+  phone?: string | null
+  mobile?: string | null
+  address?: string | null
+  city?: string | null
+  category?: string | null
+  description?: string | null
+  logoUrl?: string | null
+  coverUrl?: string | null
+  websiteSlug: string
+  affiliateRate: number
+  status: string
+  verified: boolean
+  subscription?: { plan: Plan; status: string; amount: number; nextBillingDate?: string | null } | null
+  website?: WebsiteExpress | null
+  qrCodes?: QRCodeInfo[]
+  adSpaces?: AdSpaceInfo[]
+}
+
+export interface WebsiteExpress {
+  id: string
+  providerId: string
+  slug: string
+  template: string
+  primaryColor: string
+  accentColor: string
+  heroTitle?: string | null
+  heroSubtitle?: string | null
+  heroImageUrl?: string | null
+  aboutText?: string | null
+  contactEmail?: string | null
+  contactPhone?: string | null
+  contactWhatsapp?: string | null
+  contactAddress?: string | null
+  businessHours?: string | null
+  socialLinks?: string | null
+  published: boolean
+  views: number
+}
+
+export interface QRCodeInfo {
+  id: string
+  code: string
+  targetUrl: string
+  type: string
+  scans: number
+  uniqueScans: number
+  lastScanAt?: string | null
+}
+
+export interface AdEdition {
+  id: string
+  name: string
+  slug: string
+  city: string
+  totalSpaces: number
+  bagSize: string
+  printQuantity: number
+  startDate: string
+  endDate: string
+  status: string
+  availableSpaces: number
+  adSpaces?: AdSpaceInfo[]
+}
+
+export interface AdSpaceInfo {
+  id: string
+  position: number
+  type: string
+  status: string
+  price: number
+  providerId?: string | null
+  provider?: { companyName: string; logoUrl?: string | null } | null
+  imageUrl?: string | null
+}
+
+export const PLAN_LABELS: Record<string, string> = {
+  STARTER: 'Starter',
+  CRECIMIENTO: 'Crecimiento',
+  PREMIUM: 'Premium',
+  ENTERPRISE: 'Enterprise',
 }

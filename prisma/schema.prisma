@@ -41,6 +41,7 @@ model User {
   mediaFolders MediaFolder[]
   bioPages BioPage[]
   automationRules AutomationRule[]
+  provider Provider?
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -424,4 +425,156 @@ model AutomationRule {
   lastRunAt    DateTime?
   postsCreated Int      @default(0)
   createdAt    DateTime @default(now())
+}
+
+// ---------- ImpulsePymes360 — Orquestador + Web Express ----------
+
+model Plan {
+  id            String   @id @default(cuid())
+  name          String   // STARTER, CRECIMIENTO, PREMIUM, ENTERPRISE
+  displayName   String
+  price         Float    // precio mensual USD
+  description   String
+  // Límites del plan
+  maxProducts   Int      @default(10)
+  maxAdSpaces   Int      @default(1)  // espacios PubliBags
+  maxShipments  Int      @default(5)  // envíos Fuerza Delta por mes
+  maxAffiliateRate Float @default(1)  // % máximo que el proveedor puede ofrecer a afiliados
+  hasWebExpress Boolean  @default(true)
+  hasDirectorio Boolean  @default(true)
+  hasLogistica  Boolean  @default(true)
+  hasSocial     Boolean  @default(false)
+  featured      Boolean  @default(false)
+  subscriptions Subscription[]
+  createdAt     DateTime @default(now())
+}
+
+model Provider {
+  id            String   @id @default(cuid())
+  userId        String   @unique  // → User (quien administra el proveedor)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName   String
+  taxId         String?
+  phone         String?
+  mobile        String?
+  address       String?
+  city          String?
+  category      String?
+  description   String?
+  logoUrl       String?
+  coverUrl      String?
+  websiteSlug   String   @unique  // para Web Express: /[slug]
+  // Configuración del plan de afiliados
+  affiliateRate Float    @default(2) // % que este proveedor ofrece a la red de afiliados
+  // Estado
+  status        String   @default("ACTIVE") // ACTIVE, SUSPENDED, CANCELLED
+  verified      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  subscription  Subscription?
+  website       WebsiteExpress?
+  qrCodes       QRCode[]
+  adSpaces      AdSpace[]
+}
+
+model Subscription {
+  id            String   @id @default(cuid())
+  providerId    String   @unique
+  provider      Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  planId        String
+  plan          Plan     @relation(fields: [planId], references: [id])
+  status        String   @default("ACTIVE") // ACTIVE, PAST_DUE, CANCELLED
+  startDate     DateTime @default(now())
+  endDate       DateTime? // null = activa indefinidamente
+  amount        Float    // monto mensual
+  paymentMethod String?
+  // Renovación
+  nextBillingDate DateTime?
+  createdAt     DateTime @default(now())
+}
+
+model WebsiteExpress {
+  id            String   @id @default(cuid())
+  providerId    String   @unique
+  provider      Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  slug          String   @unique
+  // Configuración visual
+  template      String   @default("classic") // classic, modern, minimal, vibrant
+  primaryColor  String   @default("#0d9488")
+  accentColor   String   @default("#d97706")
+  // Contenido editable
+  heroTitle     String?
+  heroSubtitle  String?
+  heroImageUrl  String?
+  aboutText     String?
+  contactEmail  String?
+  contactPhone  String?
+  contactWhatsapp String?
+  contactAddress String?
+  // Horarios (JSON: {mon: "9-18", ...})
+  businessHours String?
+  // Redes sociales
+  socialLinks   String?  // JSON {instagram, facebook, tiktok, ...}
+  // Productos destacados en el sitio (JSON array de productIds)
+  featuredProducts String?
+  // SEO
+  metaTitle     String?
+  metaDescription String?
+  // Estado
+  published     Boolean  @default(true)
+  views         Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model QRCode {
+  id            String   @id @default(cuid())
+  providerId    String
+  provider      Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  code          String   @unique  // código corto ej: ABC123
+  targetUrl     String   // URL a la que apunta el QR
+  type          String   @default("WEBSITE") // WEBSITE, PRODUCT, PROMO, DIRECTORY
+  // Métricas
+  scans         Int      @default(0)
+  uniqueScans   Int      @default(0)
+  lastScanAt    DateTime?
+  // Asignación a espacio PubliBags (inversa, sin references)
+  adSpaceId     String?
+  adSpace       AdSpace?
+  // Metadata de escaneos (JSON array: [{date, ip, location, device}])
+  scanLogs      String?
+  createdAt     DateTime @default(now())
+}
+
+model AdEdition {
+  id            String   @id @default(cuid())
+  name          String   // Ej: "Edición Octubre 2025 - Guayaquil"
+  slug          String   @unique
+  city          String
+  totalSpaces   Int      @default(80)  // espacios 5x5cm por bolsa
+  bagSize       String   @default("48x48") // tamaño de la bolsa
+  printQuantity Int      @default(500) // cantidad de bolsas a imprimir
+  startDate     DateTime
+  endDate       DateTime
+  status        String   @default("DRAFT") // DRAFT, OPEN, CLOSED, PRINTED
+  adSpaces      AdSpace[]
+  createdAt     DateTime @default(now())
+}
+
+model AdSpace {
+  id            String   @id @default(cuid())
+  editionId     String
+  edition       AdEdition @relation(fields: [editionId], references: [id], onDelete: Cascade)
+  providerId    String?
+  provider      Provider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
+  position      Int      // número de espacio (1-80)
+  type          String   @default("QR") // QR, IMAGE, LOGO
+  imageUrl      String?  // si es IMAGE o LOGO
+  qrCodeId      String?  @unique
+  qrCode        QRCode?  @relation(fields: [qrCodeId], references: [id], onDelete: SetNull)
+  status        String   @default("AVAILABLE") // AVAILABLE, RESERVED, SOLD
+  price         Float    @default(20)
+  reservedAt    DateTime?
+  soldAt        DateTime?
+  createdAt     DateTime @default(now())
 }
