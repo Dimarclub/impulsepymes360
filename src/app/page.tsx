@@ -17,6 +17,10 @@ import { EmailModule } from '@/components/dimar/modules/email'
 import { AdsModule } from '@/components/dimar/modules/ads'
 import { ApplicationsModule } from '@/components/dimar/modules/applications'
 import { BenefitsModule } from '@/components/dimar/modules/benefits'
+import { SocialModule } from '@/components/dimar/modules/social'
+import { SocialStudioModule } from '@/components/dimar/modules/social-studio'
+import { SocialBioModule } from '@/components/dimar/modules/social-bio'
+import { SocialAutomationModule } from '@/components/dimar/modules/social-automation'
 import { Footer } from '@/components/dimar/footer'
 
 export default function Home() {
@@ -58,6 +62,10 @@ function HomeContent() {
       case 'ads': return <AdsModule />
       case 'applications': return <ApplicationsModule />
       case 'benefits': return <BenefitsModule />
+      case 'social': return <SocialModule />
+      case 'social-studio': return <SocialStudioModule />
+      case 'social-bio': return <SocialBioModule />
+      case 'social-automation': return <SocialAutomationModule />
       default: return <MarketplaceModule />
     }
   }

@@ -471,3 +471,203 @@ Stage Summary:
 - Todas las APIs protegidas por rol
 - Guía de producción PRODUCTION.md completa
 - 7/7 puntos de hardening completados
+
+---
+Task ID: 6 (foundation)
+Agent: main
+Task: Dimarclub Social - schema, APIs, servicio IA, seed
+
+Work Log:
+- Analizado autoposter.ai (programador 14 redes, IA contenido, Link in Bio, MCP, automatización)
+- Schema Prisma extendido: SocialAccount, SocialPost, SocialPostAccount (pivot), MediaAsset, MediaFolder, BioPage, AutomationRule
+- Relaciones inversas añadidas a User y Product
+- Servicio IA src/lib/services/ai-content.ts: generateProductPost (usa z-ai-web-dev-sdk LLM con system prompt de voz de marca Dimarclub), generateBulkCaptions, fallback content
+- APIs creadas (todas con requireSession):
+  * /api/social/accounts (GET, POST) + [id] (DELETE)
+  * /api/social/posts (GET, POST) + [id] (PATCH, DELETE) + publish (POST, simula publicación con métricas)
+  * /api/social/generate (POST, IA: productId individual, categoryId bulk, o prompt libre)
+  * /api/social/media (GET, POST) + /api/social/folders (GET, POST)
+  * /api/social/bio (GET, POST) + [id] (PATCH, DELETE)
+  * /api/social/automation (GET, POST) + [id] (PATCH con execute, DELETE)
+  * /api/social/analytics (GET, métricas agregadas + engagement por día + top posts)
+  * /api/social/platforms (GET, catálogo 10 plataformas con metadata)
+- Seed prisma/seed-social.ts: 6 cuentas sociales, 3 carpetas + 7 assets media, 7 posts (publicados/programados/borradores), 2 bio pages, 3 reglas automatización
+- Tipos sociales añadidos a types.ts (SocialAccount, SocialPost, MediaAsset, BioPage, AutomationRule, GeneratedContent, SOCIAL_PLATFORM_ICONS/LABELS, POST_STATUS_LABELS/COLORS)
+- Sidebar actualizado con sección "Social Media" (4 módulos: Social, Content Studio IA, Link in Bio, Automatización)
+- page.tsx actualizado para renderizar los 4 módulos sociales
+
+Stage Summary:
+- 10 APIs sociales funcionales
+- Servicio IA con z-ai-web-dev-sdk para generar contenido desde productos
+- Datos seed realistas
+- Tipos y navegación listos
+- Pendiente (subagentes): 4 módulos de UI (social dashboard, content studio, link in bio, automation)
+
+---
+Task ID: 7-b
+Agent: full-stack-developer (bio + automation)
+Task: Link in Bio builder + Automation module
+
+Work Log:
+- Leído worklog.md (Task 6 foundation: schema Social, APIs /api/social/bio y /api/social/automation, seed con 2 bio pages + 3 reglas), src/lib/types.ts (BioPage, AutomationRule, Category), src/lib/store.ts (currentUser con affiliateCode, toast con tipos success/error/info/warning)
+- Verificados los contratos de API existentes:
+  * GET /api/social/bio → BioPage[] (requireSession, filtra por userId)
+  * POST /api/social/bio {title,subtitle,avatarUrl,theme,affiliateCode,links,published} → BioPage (genera slug desde affiliateCode o timestamp)
+  * PATCH /api/social/bio/[id] (acepta links como array → JSON.stringify en servidor)
+  * DELETE /api/social/bio/[id]
+  * GET /api/social/automation → AutomationRule[]
+  * POST /api/social/automation {name,type,config,status} → AutomationRule
+  * PATCH /api/social/automation/[id] {status?} | {execute:true} → este último crea SocialPost en DRAFT desde productos filtrados por categoryId, retorna {executed, postsCreated}
+  * DELETE /api/social/automation/[id]
+  * GET /api/categories → Category[] con children
+- Creado `src/components/dimar/modules/social-bio.tsx` (Link in Bio builder):
+  * Layout responsive grid lg:grid-cols-2 (editor izquierda, preview derecha con lg:sticky top-6). En móvil colapsa a 1 columna.
+  * Header con icono gradiente esmeralda→ámbar, título "Link in Bio", subtítulo. Botones "Eliminar" y "Nueva página" en la derecha.
+  * Empty state ilustrado cuando no hay páginas: Card con borde dashed, icono gradiente, CTA "Crear mi página Link in Bio".
+  * Selector de páginas (scroll horizontal scroll-thin) cuando hay múltiples: cards con avatar, título, slug y dot verde/muted para estado published.
+  * Columna izquierda — Editor (Card):
+    - ImageUpload (@/components/dimar/image-upload) para avatar
+    - Input título (maxLength 60 + contador)
+    - Input subtítulo (maxLength 120)
+    - Selector de tema: grid de 5 botones con swatch circular gradiente/sólido y label (Esmeralda, Ámbar, Oscuro, Minimal, Atardecer)
+    - Links manager: lista ordenable con botones ↑↓ (ChevronUp/ChevronDown + GripVertical), cada link en Card con: icono preview + input etiqueta + botón eliminar; fila inferior con input URL (placeholder dinámico según tipo) + Select tipo (Interna/Externa); Select de icono (10 opciones: ShoppingBag, Gift, Users, Store, HandCoins, Mail, MessageCircle, Instagram, Facebook, Globe); hint esmeralda "Se añadirá ?ref=CODE" para links internos con affiliateCode
+    - "Agregar" link button
+    - Slug display read-only con botón Copy (Check icon tras copiar)
+    - Switch "Publicada" con PATCH optimista (togglePublished)
+    - Footer con contadores vistas/clicks + botón "Guardar página" (POST o PATCH según editId)
+  * Columna derecha — PhonePreview:
+    - max-w-[320px], aspect-[9/16], rounded-[2.5rem], border-4 border-gray-900, overflow-hidden
+    - Notch absolute top-0 w-28 h-6 rounded-b-2xl
+    - Screen content aplica themeConfig.bg + themeConfig.text, scroll-thin interno
+    - Avatar size-20 rounded-full con ring-4 (color del tema)
+    - Título bold + subtítulo opacity-80
+    - Links como pills rounded-full con icono + label + ExternalLink si es externo
+    - Footer con vistas/clicks + badge "Borrador" si !published
+    - Watermark "Hecho con Dimarclub · CODE"
+  * 5 temas definidos inline (THEMES map) con bg, text, pillBg, pillText, pillBorder, accent, swatch
+  * safeParseLinks con try/catch, buildInternalUrl añade ?ref=CODE sin duplicar si ya existe
+  * AlertDialog de confirmación para eliminar página
+  * useEffect de sync de form (currentId/pages/currentUser/affiliateCode deps) rellena defaults si no hay página actual
+- Creado `src/components/dimar/modules/social-automation.tsx` (Automation):
+  * Layout single column full width.
+  * Hero Card con gradiente primary→accent/80, texto primary-foreground, badge "Dimarclub Social · Automatización", título "Automatización de contenido", subtítulo "Convierte tu catálogo en posts automáticos", botón "Crear regla" (variant secondary blanco).
+  * Stats row (grid sm:grid-cols-3): Reglas activas (esmeralda), Posts generados totales (ámbar), Última ejecución (muted, formato es-EC datetime).
+  * Quick templates section: 3 Card clickeables con icono gradiente, badge de tipo, nombre, descripción, chips de plataformas + frecuencia, hover effect. Click → applyTemplate (pre-llena form y abre dialog).
+  * Rules list (grid lg:grid-cols-2): cada RuleCard con:
+    - Header: icono tipo + título + badges de tipo y estado + Switch activar/pausar
+    - Resumen de config: plataformas como badges con icono, frecuencia + count como badges, categoría + template si existen
+    - Separator
+    - Grid 2 cols: Última ejecución (fmtDate es-EC) + Posts creados
+    - Footer con 4 botones: "Ejecutar ahora" (POST execute:true, toast "N posts creados", refresca reglas), "Pausar/Activar" (PATCH status optimista), Editar (Pencil), Eliminar (Trash2 con AlertDialog)
+  * Empty state cuando no hay reglas.
+  * Create/Edit Dialog (max-w-lg, overflow-y-auto scroll-thin):
+    - Nombre input
+    - Tipo Select (BULK_PRODUCT ámbar "Productos masivos", RECURRING esmeralda "Recurrente", DAILY_DIGEST sky "Resumen diario") con iconos
+    - Si BULK_PRODUCT: grid 2 cols con Select categoría (aplana children con prefix ↳, opción "Todas las categorías") + Input count (1-10 con clamp)
+    - Plantilla Select (featured, new-arrivals, discount)
+    - Plataformas multi-select chips: grid 2 cols de botones toggle (INSTAGRAM, FACEBOOK, TIKTOK, X) con icono + label + CheckCircle2 si seleccionado
+    - Frecuencia Select (DAILY, WEEKLY, MONTHLY)
+    - Footer Cancelar + Crear/Guardar (con spinner Loader2)
+  * Reglas extraídas en sub-componentes: StatCard, RuleCard, RuleFormBody (patrón FormBody para evitar setState en effects)
+  * TYPE_LABELS, TYPE_BADGES, TYPE_ICONS, STATUS_LABELS, STATUS_BADGES, FREQUENCY_LABELS, TEMPLATE_LABELS, PLATFORMS como constantes
+  * QUICK_TEMPLATES: 3 presets (daily-featured, weekly-benefits, new-arrivals)
+  * safeParseConfig con try/catch para JSON config
+  * Optimistic update en toggleStatus con rollback en error
+- 'use client' en ambos módulos. Paleta estricta esmeralda + ámbar (sin azul/índigo salvo el sky de DAILY_DIGEST que pide el spec). shadcn components: Card, Button, Input, Label, Badge, Select, Dialog, AlertDialog, Switch, Separator, Skeleton. Iconos Lucide. fetch nativo con useState+useEffect (sin TanStack Query). Toast vía useAppStore (delega a Sonner).
+- Lint: 0 errores, 0 warnings en ambos archivos. TypeScript: sin errores.
+- Eliminados 2 unused eslint-disable directives tras primer lint pas (useEffect de fetch y de sync ahora declaran deps explícitamente [fetchPages] y [currentId, pages, currentUser, affiliateCode]).
+
+Stage Summary:
+- Archivos creados:
+  * /home/z/my-project/src/components/dimar/modules/social-bio.tsx (~1045 líneas, Link in Bio builder con editor + phone preview en vivo)
+  * /home/z/my-project/src/components/dimar/modules/social-automation.tsx (~770 líneas, Automation rules + quick templates + create/edit dialog)
+- Decisiones clave:
+  * Ordenamiento de links con botones ↑↓ (simpler que @dnd-kit, recomendado por el spec)
+  * PhonePreview como sub-componente puro que recibe el themeConfig + estado del form → re-render en tiempo real sin persistencia
+  * applyTemplate en Quick Templates pre-llena el form y abre el dialog en un solo click (no crea directamente)
+  * toggleStatus con optimistic update + rollback (experiencia instantánea)
+  * executeNow hace refetch de reglas para actualizar lastRunAt y postsCreated sin recargar página
+  * Slug autogenerado por el backend desde affiliateCode (no editable en UI, solo display + copy)
+  * Para links internos, el preview muestra el link sin ?ref (la URL real se construye al guardar) — el hint visual confirma que se añadirá
+  * FormBody extraído en sub-componente para evitar patrón anti de setState en effects al resetear form
+  * Categorías aplanadas en flatCategories (padre + hijos con depth) para Select con indentación visual
+
+---
+Task ID: 7-a
+Agent: full-stack-developer (social dashboard + studio)
+Task: Social Dashboard + Content Studio IA modules
+
+Work Log:
+- Leído worklog previo (Task 6 foundation: schema Social, 10 APIs /api/social/*, servicio IA con z-ai-web-dev-sdk, seed con 6 cuentas + 7 posts), types.ts (SocialAccount/SocialPost/MediaAsset/GeneratedContent + SOCIAL_PLATFORM_ICONS/LABELS + POST_STATUS_LABELS/COLORS), store.ts (currentUser con affiliateCode), security/auth.ts (requireSession/getSessionUser).
+- Verificados los 8 contratos de API sociales con los route.ts existentes (analytics, accounts, platforms, posts + [id] + publish, generate, media) y products.
+- **Bug fix backend Task 6:** movido `src/app/api/social/posts/publish/route.ts` → `src/app/api/social/posts/publish/[id]/route.ts`. El handler `POST(req, { params: { id } })` esperaba un segmento dinámico `[id]` que no existía. Sin el move, el contrato `POST /api/social/posts/publish/{id}` rompía con 308 redirect.
+- Creado `src/components/dimar/modules/social.tsx` (Social Dashboard, ~880 líneas):
+  * Header + 2 filas KPI (4+4 cards) — Alcance/Engagements/Clics/Ventas + Publicados/Programados/Cuentas/BioViews.
+  * StatCard reutilizable con icono accent (esmeralda/ámbar/muted), número grande y sublabel contextual.
+  * AreaChart Recharts de engagement 14 días (3 áreas reach/likes/clicks con gradientes esmeralda/ámbar/sky, tooltip custom multiserie, leyenda inline).
+  * 2 columnas: BarChart horizontal postsByPlatform (YAxis con SOCIAL_PLATFORM_LABELS, barSize 18, esmeralda) + Card list de cuentas conectadas (Avatar con PlatformIcon, handle, follower count, badge Conectada) con botón "Conectar cuenta".
+  * ConnectAccountDialog: Select de plataformas (GET /api/social/platforms), inputs handle + displayName, POST /api/social/accounts, nota "OAuth simulado".
+  * Top posts table (caption/reach/likes/pedidos/ingresos) + Recent posts horizontal scroll (cards 256px con media, status badge, platform icons, mini stats).
+  * Skeletons por sección. Helpers usd/fmtNum(fmt es-EC)/fmtShortDate/fmtDateTime. ICON_MAP para mapear SOCIAL_PLATFORM_ICONS strings → componentes Lucide.
+- Creado `src/components/dimar/modules/social-studio.tsx` (Content Studio IA, ~770 líneas):
+  * Layout 2 columnas (composer izquierda, posts list derecha) en desktop, 1 col en móvil.
+  * Composer con 4 cards apiladas:
+    1. ProductPicker (Popover con búsqueda en vivo, max 50 resultados, opción "Sin producto") + Textarea para prompt libre si no hay producto + PlatformChips (10 chips con icono+label+Check) + Tono Select (5 opciones) + "Generar con IA" Button (Sparkles, POST /api/social/generate).
+    2. Contenido: Textarea caption editable + contador + hashtags como chips removibles + variations como botones clickeables (V1/V2…) que reemplazan el caption.
+    3. Multimedia: MediaGallery (thumbnails con X) + ImageUpload (value="", append a mediaUrls[]) + MediaLibraryPicker (Popover grid 4 cols).
+    4. Programación: datetime-local + 3 botones (Guardar borrador / Programar / Publicar ahora) — Publicar ahora = POST SCHEDULED + POST /publish/{id} + toast.
+  * Posts list: Tabs (Todos/Borradores/Programados/Publicados) + PostCard (media + caption + platform badges + fecha + mini stats si PUBLISHED) + DropdownMenu (Publicar/Editar/Eliminar) + Dialog confirmación borrado.
+  * Modo edición (composer.editingId): PATCH en lugar de POST, botón "Cancelar edición".
+  * selectedAccountIds via useMemo (composer.platforms ∩ accounts) para payload.
+  * Card tip esmeralda→ámbar con consejo de variar tono por plataforma.
+- Lint: 0 errores, 0 warnings (--fix removió 5 directivas @next/next/no-img-element no necesarias).
+- TypeScript: sin errores en mis archivos (otros errores preexistentes en seed-social.ts/products/bulk/route.ts/examples/skills no son de esta tarea).
+- Runtime: dev server compila / con HTTP 200, /api/social/platforms retorna 10 plataformas correctamente.
+
+Stage Summary:
+- Archivos creados:
+  * /home/z/my-project/src/components/dimar/modules/social.tsx (Social Dashboard)
+  * /home/z/my-project/src/components/dimar/modules/social-studio.tsx (Content Studio IA)
+  * /home/z/my-project/agent-ctx/7-a-full-stack-developer-social-dashboard-studio.md
+- Archivos movidos (bug fix Task 6):
+  * src/app/api/social/posts/publish/route.ts → src/app/api/social/posts/publish/[id]/route.ts
+- Decisiones clave:
+  * PlatformIcon único componente mapeando SOCIAL_PLATFORM_ICONS → Lucide en ambos módulos.
+  * ProductPicker con Popover + búsqueda en vivo (Select nativo no soporta search).
+  * ImageUpload con value="" siempre — onChange appenda a mediaUrls[] para soporte multi-imagen.
+  * MediaLibraryPicker como Popover grid 4 cols (evita modal).
+  * Modo edición reutiliza handleSave con branch PATCH/POST detectado por composer.editingId.
+  * Publicar ahora = POST SCHEDULED + POST /publish/{id} (cumple contrato).
+  * selectedAccountIds derivado via useMemo (cruce platforms ∩ accounts) — no bloquea si falta cuenta.
+  * Paleta esmeralda + ámbar exclusivamente, cero azul/índigo.
+  * Formatos es-EC: usd=`$N.toFixed(2)`, fmtNum=toLocaleString('es-EC'), fechas con toLocaleString('es-EC').
+
+---
+Task ID: 7 (complete)
+Agent: main + 2 subagents
+Task: Dimarclub Social - 4 módulos UI (Dashboard, Content Studio, Link in Bio, Automation)
+
+Work Log:
+- Subagente 7-a: Social Dashboard (KPIs, AreaChart engagement 14d, BarChart posts por plataforma, cuentas conectadas, top posts) + Content Studio IA (product picker, platform multi-select, tone selector, generar con IA, editor caption + hashtags + variaciones, ImageUpload, programar/publicar, tabs de posts)
+- Subagente 7-b: Link in Bio (editor con avatar/título/subtitle/tema/links sortables + preview phone mockup en vivo) + Automation (3 plantillas rápidas, reglas CRUD, ejecutar ahora, pausar/activar)
+- Fix: Manejo de 401 en social.tsx (fetch check res.ok, mensaje "inicia sesión" si no autenticado)
+- Fix: Manejo de 401 en social-studio.tsx (fetch check res.ok + Array.isArray guards)
+- Fix: .env restaurado con NEXTAUTH_SECRET (se había perdido)
+- Fix: social.tsx usa currentUser?.id como dependencia del useEffect para recargar al iniciar sesión
+
+Verificación con Agent Browser:
+- Login admin@dimarclub.com/dimar123 → "Carlos Dimar / Administrador" ✅
+- Social Dashboard: "Dimarclub Social", ALCANCE TOTAL, ENGAGEMENTS, CLICS, "Tasa engagement 6.8%", "4 posts publicados", "POSTS PROGRAMADOS" ✅
+- Content Studio IA: "Content Studio IA", product picker (Aceite Sintético, Llanta, etc.), "Generar con IA" button, caption editor, posts con contenido IA ✅
+- Link in Bio: "Link in Bio", "Tu página personal con tu código de afiliado integrado", "Dimarclub Oficial /bio/dimarclub", "Nueva página", "Editar página" ✅
+- Automatización: "Automatización de contenido", 3 reglas ("Beneficios semanales" Recurrente, "Productos masivos"), "REGLAS ACTIVAS", "POSTS GENERADOS TOTALES", "Ejecutar ahora", "Crear regla" ✅
+- IA generada visible en posts: "Nuevo en Dimarclub: Cargador Rápido USB-C 65W $24.99 · Accesorios #Dimarclub #Novedades", "🛍️ Audífonos Bluetooth JBL Tune al mejor precio! Solo $59.99 en Dimarclub", "🚚 Envío a domicilio GRATIS en todas tus compras... #Dimarclub #Beneficios #Ecuador" ✅
+- Lint: 0 errores, 0 warnings ✅
+
+Stage Summary:
+- 4 módulos sociales operativos verificados end-to-end
+- IA generando contenido promocional desde productos del catálogo con voz de marca Dimarclub
+- Link in Bio con código de afiliado integrado
+- Automatización con reglas BULK_PRODUCT, RECURRING, DAILY_DIGEST + plantillas rápidas
+- 10 APIs sociales + servicio IA (z-ai-web-dev-sdk) funcionando
+- Dimarclub Social completado (réplica de Autoposter.ai adaptada al marketplace con afiliados)

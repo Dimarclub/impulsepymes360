@@ -35,6 +35,12 @@ model User {
   orders     Order[]
   commissions Commission[]
   cart       Cart?
+  socialAccounts SocialAccount[]
+  socialPosts SocialPost[]
+  mediaAssets MediaAsset[]
+  mediaFolders MediaFolder[]
+  bioPages BioPage[]
+  automationRules AutomationRule[]
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -95,6 +101,7 @@ model Product {
   status        String   @default("ACTIVE") // ACTIVE, DRAFT, ARCHIVED
   orderItems    OrderItem[]
   cartItems     CartItem[]
+  socialPosts   SocialPost[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
@@ -307,4 +314,114 @@ model Application {
   details   String?  // JSON con datos específicos
   status    String   @default("PENDING") // PENDING, APPROVED, REJECTED
   createdAt DateTime @default(now())
+}
+
+// ---------- Dimarclub Social (automatización redes sociales) ----------
+
+model SocialAccount {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform     String   // INSTAGRAM, FACEBOOK, TIKTOK, X, WHATSAPP, LINKEDIN, YOUTUBE, TELEGRAM, PINTEREST, THREADS
+  handle       String   // @usuario
+  displayName  String?
+  avatarUrl    String?
+  followerCount Int     @default(0)
+  connected    Boolean  @default(true)
+  token        String?  // mock OAuth token
+  createdAt    DateTime @default(now())
+  postAccounts SocialPostAccount[]
+}
+
+model SocialPost {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caption      String
+  mediaUrls    String?  // JSON array de URLs
+  mediaType    String   @default("IMAGE") // IMAGE, VIDEO, CAROUSEL, TEXT
+  productId    String?  // si el post promociona un producto
+  product      Product? @relation(fields: [productId], references: [id])
+  affiliateCode String? // código de afiliado para atribución
+  platforms    String   @default("[]") // JSON array de SocialAccount ids seleccionadas
+  status       String   @default("DRAFT") // DRAFT, SCHEDULED, PUBLISHED, FAILED
+  scheduledAt  DateTime?
+  publishedAt  DateTime?
+  // Métricas (simuladas al publicar, reales en producción)
+  likes        Int      @default(0)
+  comments     Int      @default(0)
+  shares       Int      @default(0)
+  reach        Int      @default(0)
+  clicks       Int      @default(0)
+  // Atribución de ventas
+  attributedOrders Int  @default(0)
+  attributedRevenue Float @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  accounts     SocialPostAccount[]
+}
+
+model SocialPostAccount {
+  id        String       @id @default(cuid())
+  postId    String
+  post      SocialPost   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  accountId String
+  account   SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  permalink String?      // URL de la publicación publicada
+  status    String       @default("PENDING") // PENDING, PUBLISHED, FAILED
+}
+
+model MediaAsset {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  url       String
+  type      String   @default("IMAGE") // IMAGE, VIDEO
+  size      Int      @default(0)
+  folderId  String?
+  folder    MediaFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  tags      String?  // JSON array
+  createdAt DateTime @default(now())
+}
+
+model MediaFolder {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  color     String       @default("#0d9488")
+  assets    MediaAsset[]
+  createdAt DateTime     @default(now())
+}
+
+model BioPage {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slug        String   @unique
+  title       String
+  subtitle    String?
+  avatarUrl   String?
+  theme       String   @default("emerald") // emerald, amber, dark, minimal
+  affiliateCode String?
+  links       String?  // JSON array {label, url, icon, type}
+  views       Int      @default(0)
+  clicks      Int      @default(0)
+  published   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AutomationRule {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  type         String   // BULK_PRODUCT, RECURRING, DAILY_DIGEST
+  config       String   // JSON: {categoryId, frequency, platforms, template}
+  status       String   @default("ACTIVE") // ACTIVE, PAUSED
+  lastRunAt    DateTime?
+  postsCreated Int      @default(0)
+  createdAt    DateTime @default(now())
 }

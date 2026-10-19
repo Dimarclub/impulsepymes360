@@ -12,6 +12,10 @@ export type ModuleId =
   | 'ads'
   | 'applications'
   | 'benefits'
+  | 'social'
+  | 'social-studio'
+  | 'social-bio'
+  | 'social-automation'
 
 export type UserRole = 'CLIENT' | 'AFFILIATE' | 'SUPPLIER' | 'COURIER' | 'PARTNER' | 'ADMIN'
 
@@ -281,4 +285,137 @@ export const PLACEMENT_LABELS: Record<string, string> = {
   IN_GRID: 'Dentro del grid',
   FOOTER: 'Pie de página',
   HERO: 'Hero principal',
+}
+
+// ---------- Tipos Social ----------
+
+export interface SocialAccount {
+  id: string
+  userId: string
+  platform: string
+  handle: string
+  displayName?: string | null
+  avatarUrl?: string | null
+  followerCount: number
+  connected: boolean
+  createdAt: string
+}
+
+export interface SocialPost {
+  id: string
+  userId: string
+  caption: string
+  mediaUrls?: string | null
+  mediaType: string
+  productId?: string | null
+  affiliateCode?: string | null
+  status: string
+  scheduledAt?: string | null
+  publishedAt?: string | null
+  likes: number
+  comments: number
+  shares: number
+  reach: number
+  clicks: number
+  attributedOrders: number
+  attributedRevenue: number
+  createdAt: string
+  product?: { name: string; price: number; imageUrl?: string | null } | null
+  accounts?: { id: string; status: string; permalink?: string | null; account: SocialAccount }[] | null
+}
+
+export interface MediaAsset {
+  id: string
+  userId: string
+  name: string
+  url: string
+  type: string
+  size: number
+  folderId?: string | null
+  folder?: { id: string; name: string; color: string } | null
+  tags?: string | null
+  createdAt: string
+}
+
+export interface MediaFolder {
+  id: string
+  userId: string
+  name: string
+  color: string
+  _count?: { assets: number }
+  createdAt: string
+}
+
+export interface BioPage {
+  id: string
+  userId: string
+  slug: string
+  title: string
+  subtitle?: string | null
+  avatarUrl?: string | null
+  theme: string
+  affiliateCode?: string | null
+  links?: string | null
+  views: number
+  clicks: number
+  published: boolean
+  createdAt: string
+}
+
+export interface AutomationRule {
+  id: string
+  userId: string
+  name: string
+  type: string
+  config: string
+  status: string
+  lastRunAt?: string | null
+  postsCreated: number
+  createdAt: string
+}
+
+export interface GeneratedContent {
+  caption: string
+  hashtags: string[]
+  variations: string[]
+}
+
+export const SOCIAL_PLATFORM_ICONS: Record<string, string> = {
+  INSTAGRAM: 'Instagram',
+  FACEBOOK: 'Facebook',
+  TIKTOK: 'Music2',
+  X: 'Twitter',
+  WHATSAPP: 'MessageCircle',
+  LINKEDIN: 'Linkedin',
+  YOUTUBE: 'Youtube',
+  TELEGRAM: 'Send',
+  PINTEREST: 'Image',
+  THREADS: 'AtSign',
+}
+
+export const SOCIAL_PLATFORM_LABELS: Record<string, string> = {
+  INSTAGRAM: 'Instagram',
+  FACEBOOK: 'Facebook',
+  TIKTOK: 'TikTok',
+  X: 'X (Twitter)',
+  WHATSAPP: 'WhatsApp',
+  LINKEDIN: 'LinkedIn',
+  YOUTUBE: 'YouTube Shorts',
+  TELEGRAM: 'Telegram',
+  PINTEREST: 'Pinterest',
+  THREADS: 'Threads',
+}
+
+export const POST_STATUS_LABELS: Record<string, string> = {
+  DRAFT: 'Borrador',
+  SCHEDULED: 'Programado',
+  PUBLISHED: 'Publicado',
+  FAILED: 'Fallido',
+}
+
+export const POST_STATUS_COLORS: Record<string, string> = {
+  DRAFT: 'bg-muted text-muted-foreground',
+  SCHEDULED: 'bg-amber-100 text-amber-700',
+  PUBLISHED: 'bg-emerald-100 text-emerald-700',
+  FAILED: 'bg-red-100 text-red-700',
 }

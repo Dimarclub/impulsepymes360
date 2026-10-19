@@ -12,6 +12,10 @@ import {
   Megaphone,
   ClipboardList,
   Gift,
+  Share2,
+  Sparkles,
+  Link2,
+  Zap,
   type LucideIcon,
 } from 'lucide-react'
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/components/ui/sheet'
@@ -53,6 +57,15 @@ const SECTIONS: NavSection[] = [
       { id: 'affiliates', label: 'Afiliados', icon: Network },
       { id: 'partners', label: 'Socios', icon: HandCoins },
       { id: 'benefits', label: 'Beneficios', icon: Gift },
+    ],
+  },
+  {
+    title: 'Social Media',
+    items: [
+      { id: 'social', label: 'Social Dashboard', icon: Share2 },
+      { id: 'social-studio', label: 'Content Studio IA', icon: Sparkles },
+      { id: 'social-bio', label: 'Link in Bio', icon: Link2 },
+      { id: 'social-automation', label: 'Automatización', icon: Zap },
     ],
   },
 ]
