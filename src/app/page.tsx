@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAppStore } from '@/lib/store'
 import { AppSessionProvider } from '@/components/dimar/auth/auth-provider'
+import { GlobalErrorBoundary } from '@/components/dimar/error-boundary'
 import { Sidebar } from '@/components/dimar/sidebar'
 import { TopBar } from '@/components/dimar/topbar'
 import { MarketplaceModule } from '@/components/dimar/modules/marketplace'
@@ -25,9 +26,11 @@ import { Footer } from '@/components/dimar/footer'
 
 export default function Home() {
   return (
-    <AppSessionProvider>
-      <HomeContent />
-    </AppSessionProvider>
+    <GlobalErrorBoundary>
+      <AppSessionProvider>
+        <HomeContent />
+      </AppSessionProvider>
+    </GlobalErrorBoundary>
   )
 }
 

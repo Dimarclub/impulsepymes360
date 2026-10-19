@@ -9,6 +9,8 @@ export const authOptions: NextAuthOptions = {
     // No usamos página de login dedicada; el login se hace via dialog en /
     signIn: '/',
   },
+  //信任多個來源 host，避免從外部域名開啟時 NextAuth 拒絕
+  useSecureCookies: false,
   providers: [
     CredentialsProvider({
       name: 'Dimarclub',
