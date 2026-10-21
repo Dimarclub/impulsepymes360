@@ -8,6 +8,7 @@ import {
   ArrowRight,
   Gift,
   Megaphone,
+  Store,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -69,6 +70,9 @@ export function MarketplaceModule() {
   const [headerAd, setHeaderAd] = useState<Advertisement | null>(null)
   const [footerAd, setFooterAd] = useState<Advertisement | null>(null)
   const [sideAds, setSideAds] = useState<Advertisement[]>([])
+  const [mainBanners, setMainBanners] = useState<Array<{ id: string; title: string; imageUrl?: string | null; videoUrl?: string | null; gifUrl?: string | null; linkUrl?: string | null }>>([])
+  const [brandLogos, setBrandLogos] = useState<Array<{ id: string; name: string; logoUrl: string; linkUrl?: string | null }>>([])
+  const [featuredSuppliers, setFeaturedSuppliers] = useState<Array<{ id: string; companyName: string; logoUrl?: string | null; city?: string | null; category?: string | null; rating: number }>>([])
 
   const catalogRef = useRef<HTMLDivElement>(null)
 
@@ -106,6 +110,13 @@ export function MarketplaceModule() {
         ])
       )
       .catch(() => {})
+
+    // Banners principales + logos de marcas + proveedores destacados
+    fetch('/api/banners').then((r) => r.json()).then(setMainBanners).catch(() => {})
+    fetch('/api/brand-logos').then((r) => r.json()).then(setBrandLogos).catch(() => {})
+    fetch('/api/suppliers').then((r) => r.json()).then((data: Array<{ id: string; companyName: string; logoUrl?: string | null; city?: string | null; category?: string | null; rating: number; verified?: boolean }>) => {
+      setFeaturedSuppliers(data.filter((s) => s.verified).slice(0, 6))
+    }).catch(() => {})
   }, [])
 
   // Catalog: refetch when filters change
@@ -132,36 +143,48 @@ export function MarketplaceModule() {
 
   return (
     <div className="space-y-6">
-      {/* ===== Hero ===== */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary to-accent p-8 md:p-12 text-primary-foreground">
-        <div className="absolute inset-0 bg-pattern opacity-20 pointer-events-none" />
-        <div className="relative max-w-2xl">
-          <Badge className="mb-3 bg-primary-foreground/20 text-primary-foreground border-0 hover:bg-primary-foreground/20">
-            <Sparkles className="size-3 mr-1" /> Red de afiliados · 3 niveles
-          </Badge>
-          <h1 className="text-3xl md:text-4xl font-bold leading-tight">
-            Compra, recomienda y gana con Dimarclub
-          </h1>
-          <p className="mt-3 text-primary-foreground/85 text-sm md:text-base leading-relaxed">
-            Gana un 3% de cada compra y 2% adicional por cada nivel de tu red de
-            afiliados. Productos de proveedores verificados, envíos a todo Ecuador.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button
-              onClick={scrollToCatalog}
-              className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-            >
-              Explorar productos <ArrowRight className="size-4 ml-1" />
-            </Button>
-            <Button
-              onClick={() => setModule('benefits')}
-              variant="outline"
-              className="bg-transparent border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
-            >
-              <Gift className="size-4 mr-1" /> Conocer beneficios
-            </Button>
+      {/* ===== Banner publicitario 1320×330 + slider de logos ===== */}
+      <section className="space-y-3">
+        {mainBanners.length > 0 ? (
+          <div className="relative w-full rounded-2xl overflow-hidden bg-muted" style={{ maxWidth: '1320px', margin: '0 auto' }}>
+            <div className="relative" style={{ aspectRatio: '1320/330' }}>
+              {mainBanners.map((banner, idx) => (
+                <div key={banner.id} className={cn('absolute inset-0 transition-opacity duration-500', idx === 0 ? 'opacity-100' : 'opacity-0 pointer-events-none')}>
+                  <a href={banner.linkUrl || '#'} target={banner.linkUrl && banner.linkUrl.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer" className="block w-full h-full">
+                    {banner.videoUrl ? (
+                      <video src={banner.videoUrl} autoPlay muted loop className="w-full h-full object-cover" />
+                    ) : banner.gifUrl ? (
+                      <img src={banner.gifUrl} alt={banner.title} className="w-full h-full object-cover" />
+                    ) : banner.imageUrl ? (
+                      <img src={banner.imageUrl} alt={banner.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary to-accent text-primary-foreground p-6">
+                        <p className="text-lg md:text-2xl font-bold text-center">{banner.title}</p>
+                      </div>
+                    )}
+                  </a>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="w-full rounded-2xl bg-gradient-to-br from-muted to-muted/50 border-2 border-dashed border-muted-foreground/30 flex items-center justify-center text-muted-foreground text-sm" style={{ maxWidth: '1320px', aspectRatio: '1320/330', margin: '0 auto' }}>
+            Espacio publicitario disponible — 1320×330 · Configura banners desde el admin
+          </div>
+        )}
+
+        {/* Slider de logos de marcas/proveedores */}
+        {brandLogos.length > 0 && (
+          <div className="rounded-xl border bg-card p-3 overflow-hidden">
+            <div className="flex items-center gap-6 overflow-x-auto scroll-thin py-1">
+              {brandLogos.map((logo) => (
+                <a key={logo.id} href={logo.linkUrl || '#'} target={logo.linkUrl && logo.linkUrl.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer" className="shrink-0 hover:opacity-70 transition-opacity" title={logo.name}>
+                  <img src={logo.logoUrl} alt={logo.name} className="h-10 w-auto object-contain" style={{ maxHeight: '40px' }} />
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ===== Category pills ===== */}
@@ -200,9 +223,6 @@ export function MarketplaceModule() {
           )
         })}
       </div>
-
-      {/* ===== Header ad ===== */}
-      {headerAd && <AdBanner ad={headerAd} />}
 
       {/* ===== Featured products ===== */}
       {featured.length > 0 && (
@@ -296,39 +316,55 @@ export function MarketplaceModule() {
           )}
         </div>
 
-        {/* Sidebar ads (lg+) */}
-        {sideAds.length > 0 && (
-          <aside className="hidden lg:flex flex-col gap-4 w-56 shrink-0">
-            {sideAds.map((ad) => (
-              <a
-                key={ad.id}
-                href={ad.targetUrl || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block group relative overflow-hidden rounded-xl"
-              >
-                <img
-                  src={ad.imageUrl}
-                  alt={ad.title}
-                  className="w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                <div className="absolute bottom-2 left-2 right-2">
-                  <Badge className="bg-white/20 text-white border-0 mb-1 text-[9px]">
-                    <Megaphone className="size-2.5 mr-0.5" /> Ad
-                  </Badge>
-                  <p className="text-white text-xs font-medium drop-shadow line-clamp-2">
-                    {ad.title}
-                  </p>
+        {/* Sidebar: Proveedores destacados + espacios publicitarios (lg+) */}
+        {(featuredSuppliers.length > 0 || sideAds.length > 0) && (
+          <aside className="hidden lg:flex flex-col gap-4 w-60 shrink-0">
+            {/* Título general de la columna */}
+            <div className="flex items-center gap-2 px-1 pb-1 border-b-2 border-primary/30">
+              <Store className="size-5 text-primary" />
+              <h3 className="text-sm font-bold text-primary">Proveedores Destacados</h3>
+            </div>
+
+            {/* Lista de proveedores destacados */}
+            {featuredSuppliers.length > 0 && (
+              <div className="rounded-xl border bg-card p-3">
+                <div className="space-y-2">
+                  {featuredSuppliers.map((s) => (
+                    <div key={s.id} className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 overflow-hidden">
+                        {s.logoUrl ? <img src={s.logoUrl} alt={s.companyName} className="w-full h-full object-cover" /> : <Store className="size-4 text-primary" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{s.companyName}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{s.category || s.city || 'Proveedor'}</p>
+                      </div>
+                      {s.rating > 0 && <span className="text-[10px] text-amber-600 flex items-center gap-0.5 shrink-0">★ {s.rating.toFixed(1)}</span>}
+                    </div>
+                  ))}
                 </div>
-              </a>
-            ))}
+              </div>
+            )}
+
+            {/* Espacios publicitarios */}
+            {sideAds.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Espacios Publicitarios</h3>
+                {sideAds.map((ad) => (
+                  <a key={ad.id} href={ad.targetUrl || '#'} target="_blank" rel="noopener noreferrer" className="block group relative overflow-hidden rounded-xl">
+                    <img src={ad.imageUrl} alt={ad.title} className="w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    <div className="absolute bottom-2 left-2 right-2">
+                      <Badge className="bg-white/20 text-white border-0 mb-1 text-[9px]"><Megaphone className="size-2.5 mr-0.5" /> Ad</Badge>
+                      <p className="text-white text-xs font-medium drop-shadow line-clamp-2">{ad.title}</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            )}
           </aside>
         )}
       </div>
 
-      {/* ===== Footer ad ===== */}
-      {footerAd && <AdBanner ad={footerAd} />}
     </div>
   )
 }
