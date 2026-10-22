@@ -110,20 +110,32 @@ export function AlertasCenterModule() {
                   const ic = ICON_MAP[n.type] || { icon: Bell, color: 'text-muted-foreground bg-muted' }
                   const Icon = ic.icon
                   return (
-                    <button key={n.id} onClick={() => { if (!n.read) markAsRead(n.id); if (n.link) setModule(n.link.replace('/?module=', '') as any) }}
-                      className={cn('w-full flex items-start gap-3 p-4 text-left hover:bg-muted/50 transition-colors', !n.read && 'bg-primary/5')}>
-                      <div className={cn('size-9 rounded-full flex items-center justify-center shrink-0', ic.color)}>
-                        <Icon className="size-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium">{n.title}</p>
-                          {!n.read && <span className="size-2 rounded-full bg-primary shrink-0" />}
+                    <div key={n.id} className={cn('w-full flex items-start gap-3 p-4 hover:bg-muted/50 transition-colors', !n.read && 'bg-primary/5')}>
+                      <button onClick={() => { if (!n.read) markAsRead(n.id); if (n.link) setModule(n.link.replace('/?module=', '').replace('&', '') as any) }}
+                        className="flex items-start gap-3 flex-1 text-left min-w-0">
+                        <div className={cn('size-9 rounded-full flex items-center justify-center shrink-0', ic.color)}>
+                          <Icon className="size-4" />
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1">{fmtRelative(n.createdAt)}</p>
-                      </div>
-                    </button>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium">{n.title}</p>
+                            {!n.read && <span className="size-2 rounded-full bg-primary shrink-0" />}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
+                          <p className="text-[10px] text-muted-foreground mt-1">{fmtRelative(n.createdAt)}</p>
+                        </div>
+                      </button>
+                      {(n.type === 'ORDER_RECEIVED' || n.type === 'ORDER_STATUS') && (
+                        <Button size="sm" variant="outline" className="shrink-0" onClick={() => { if (!n.read) markAsRead(n.id); setModule('logistics') }}>
+                          <Truck className="size-3.5 mr-1" /> Gestionar
+                        </Button>
+                      )}
+                      {n.type === 'COMMISSION_EARNED' && (
+                        <Button size="sm" variant="outline" className="shrink-0" onClick={() => { if (!n.read) markAsRead(n.id); setModule('finanzas') }}>
+                          <DollarSign className="size-3.5 mr-1" /> Ver
+                        </Button>
+                      )}
+                    </div>
                   )
                 })}
               </div>

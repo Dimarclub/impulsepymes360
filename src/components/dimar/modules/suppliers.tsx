@@ -167,7 +167,7 @@ export function SuppliersModule() {
       imageUrl: p.imageUrl || '',
     })
     setEditingProductId(p.id)
-    setProductOpen(true)
+    setNewProductOpen(true)
   }
 
   const [editingProductId, setEditingProductId] = useState<string | null>(null)
@@ -454,7 +454,7 @@ export function SuppliersModule() {
                     <div className="mt-2"><Stars value={selected.rating || 0} /></div>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <Button onClick={() => setNewProductOpen(true)} size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                    <Button onClick={() => { setEditingProductId(null); setProductForm({ name: '', price: '', costPrice: '', compareAtPrice: '', stock: '', sku: '', categoryId: '', description: '', imageUrl: '' }); setNewProductOpen(true) }} size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white">
                       <Plus className="size-4" /> Agregar producto
                     </Button>
                     <Button onClick={() => setBulkOpen(true)} size="sm" variant="outline" className="border-amber-400 text-amber-700 hover:bg-amber-50">
@@ -484,7 +484,7 @@ export function SuppliersModule() {
                   <div className="text-center py-10 border border-dashed rounded-lg">
                     <ImageIcon className="size-8 mx-auto mb-2 text-muted-foreground/40" />
                     <p className="text-sm text-muted-foreground">Este proveedor aún no tiene productos.</p>
-                    <Button onClick={() => setNewProductOpen(true)} size="sm" variant="outline" className="mt-3">
+                    <Button onClick={() => { setEditingProductId(null); setProductForm({ name: '', price: '', costPrice: '', compareAtPrice: '', stock: '', sku: '', categoryId: '', description: '', imageUrl: '' }); setNewProductOpen(true) }} size="sm" variant="outline" className="mt-3">
                       <Plus className="size-4" /> Agregar el primero
                     </Button>
                   </div>
