@@ -245,6 +245,9 @@ export function TopNav() {
             </DropdownMenu>
             <button onClick={() => toast('Próximamente: Alquiler de departamentos', 'info')} className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md text-foreground hover:text-primary hover:bg-muted/60 transition-colors"><Building2 className="size-4" />Alquiler</button>
             <button onClick={() => setModule('grid')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'grid' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><Grid3x3 className="size-4" />Grid 360</button>
+            {displayUser?.role === 'SUPPLIER' && (
+              <button onClick={() => setModule('suppliers')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors', activeModule === 'suppliers' ? 'text-primary bg-primary/10' : 'text-primary hover:bg-primary/5')}><Store className="size-4" />Mi Tienda</button>
+            )}
             <button onClick={() => setModule('cooperativa')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'cooperativa' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><PiggyBank className="size-4" />Cooperativa</button>
             {displayUser?.role === 'ADMIN' && (
               <>

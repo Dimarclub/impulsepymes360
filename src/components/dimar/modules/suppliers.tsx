@@ -64,6 +64,7 @@ const PLACEHOLDER_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent(
 
 export function SuppliersModule() {
   const toast = useAppStore((s) => s.toast)
+  const currentUser = useAppStore((s) => s.currentUser)
   const [suppliers, setSuppliers] = useState<SupplierWithRelations[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
@@ -95,7 +96,15 @@ export function SuppliersModule() {
       const res = await fetch('/api/suppliers')
       const data = await res.json()
       setSuppliers(data)
-      if (data.length && !selectedId) setSelectedId(data[0].id)
+      // Si es SUPPLIER, seleccionar automáticamente su proveedor
+      if (data.length && !selectedId) {
+        if (currentUser?.role === 'SUPPLIER') {
+          const mySupplier = data.find((s: SupplierWithRelations) => s.userId === currentUser.id)
+          setSelectedId(mySupplier?.id || data[0].id)
+        } else {
+          setSelectedId(data[0].id)
+        }
+      }
     } catch {
       toast('Error al cargar proveedores', 'error')
     } finally {
@@ -280,12 +289,14 @@ export function SuppliersModule() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gradient">Proveedores</h1>
-          <p className="text-sm text-muted-foreground">Gestiona tu red de proveedores y su catálogo de productos.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-gradient">{currentUser?.role === 'SUPPLIER' ? 'Mi Tienda — Backoffice' : 'Proveedores'}</h1>
+          <p className="text-sm text-muted-foreground">{currentUser?.role === 'SUPPLIER' ? 'Gestiona tu catálogo de productos, precios y stock.' : 'Gestiona tu red de proveedores y su catálogo de productos.'}</p>
         </div>
-        <Button onClick={() => setNewSupplierOpen(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white">
-          <Plus className="size-4" /> Nuevo proveedor
-        </Button>
+        {currentUser?.role !== 'SUPPLIER' && (
+          <Button onClick={() => setNewSupplierOpen(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Plus className="size-4" /> Nuevo proveedor
+          </Button>
+        )}
       </div>
 
       {/* Stats */}

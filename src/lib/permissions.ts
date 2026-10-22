@@ -22,7 +22,7 @@ export function canAccessModule(role: UserRole | undefined, moduleId: ModuleId):
 export function defaultModuleForRole(role: UserRole): ModuleId {
   switch (role) {
     case 'ADMIN': return 'dashboard'
-    case 'SUPPLIER': return 'impulse'
+    case 'SUPPLIER': return 'suppliers'
     case 'COURIER': return 'courier-app'
     case 'PARTNER': return 'partners'
     case 'AFFILIATE': return 'affiliates'
