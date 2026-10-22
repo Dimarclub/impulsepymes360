@@ -5,7 +5,7 @@ export const ROLE_MODULES: Record<UserRole, ModuleId[] | '*'> = {
   ADMIN: '*',
   CLIENT: ['marketplace', 'affiliates', 'benefits', 'grid', 'cooperativa'],
   AFFILIATE: ['marketplace', 'affiliates', 'benefits', 'social-bio', 'grid', 'cooperativa'],
-  SUPPLIER: ['marketplace', 'suppliers', 'logistics', 'web-express', 'publibags', 'directorio', 'social', 'social-studio', 'social-bio', 'social-automation', 'impulse', 'impulse-wizard', 'grid'],
+  SUPPLIER: ['marketplace', 'suppliers', 'logistics', 'web-express', 'publibags', 'directorio', 'social', 'social-studio', 'social-bio', 'social-automation', 'impulse', 'impulse-wizard', 'grid', 'supplier-backoffice', 'cooperativa'],
   COURIER: ['marketplace', 'courier-app', 'fuerza'],
   PARTNER: ['marketplace', 'partners', 'benefits'],
 }
@@ -22,7 +22,7 @@ export function canAccessModule(role: UserRole | undefined, moduleId: ModuleId):
 export function defaultModuleForRole(role: UserRole): ModuleId {
   switch (role) {
     case 'ADMIN': return 'dashboard'
-    case 'SUPPLIER': return 'suppliers'
+    case 'SUPPLIER': return 'supplier-backoffice'
     case 'COURIER': return 'courier-app'
     case 'PARTNER': return 'partners'
     case 'AFFILIATE': return 'affiliates'

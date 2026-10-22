@@ -28,6 +28,7 @@ import { SiteAdminModule } from '@/components/dimar/modules/site-admin'
 import { ZonesModule } from '@/components/dimar/modules/zones'
 import { GridModule } from '@/components/dimar/modules/grid'
 import { CooperativaModule } from '@/components/dimar/modules/cooperativa'
+import { SupplierBackofficeModule } from '@/components/dimar/modules/supplier-backoffice'
 import { Footer } from '@/components/dimar/footer'
 import { canAccessModule, defaultModuleForRole } from '@/lib/permissions'
 
@@ -93,6 +94,7 @@ function HomeContent() {
       case 'zones': return <ZonesModule />
       case 'grid': return <GridModule />
       case 'cooperativa': return <CooperativaModule />
+      case 'supplier-backoffice': return <SupplierBackofficeModule />
       default: return <MarketplaceModule />
     }
   }
