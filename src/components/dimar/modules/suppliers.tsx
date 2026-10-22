@@ -84,7 +84,7 @@ export function SuppliersModule() {
     companyName: '', email: '', phone: '', taxId: '', address: '', city: '', category: '',
   })
   const [productForm, setProductForm] = useState({
-    name: '', price: '', compareAtPrice: '', stock: '', sku: '', categoryId: '', description: '', imageUrl: '',
+    name: '', price: '', costPrice: '', compareAtPrice: '', stock: '', sku: '', categoryId: '', description: '', imageUrl: '',
   })
   const [csvText, setCsvText] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
@@ -196,6 +196,7 @@ export function SuppliersModule() {
       const payload = {
         name: productForm.name,
         price: parseFloat(productForm.price),
+        costPrice: productForm.costPrice ? parseFloat(productForm.costPrice) : 0,
         compareAtPrice: productForm.compareAtPrice ? parseFloat(productForm.compareAtPrice) : null,
         stock: parseInt(productForm.stock || '0'),
         sku: productForm.sku || null,
@@ -566,6 +567,15 @@ export function SuppliersModule() {
               <div className="grid gap-1.5">
                 <Label>Precio USD *</Label>
                 <Input type="number" step="0.01" value={productForm.price} onChange={(e) => setProductForm({ ...productForm, price: e.target.value })} placeholder="14.99" />
+              </div>
+              <div>
+                <Label>Costo USD</Label>
+                <Input type="number" step="0.01" value={productForm.costPrice} onChange={(e) => setProductForm({ ...productForm, costPrice: e.target.value })} placeholder="3.00" />
+                {productForm.costPrice && productForm.price && (
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Margen: ${((parseFloat(productForm.price) || 0) - (parseFloat(productForm.costPrice) || 0)).toFixed(2)} ({((((parseFloat(productForm.price) || 0) - (parseFloat(productForm.costPrice) || 0)) / (parseFloat(productForm.price) || 1)) * 100).toFixed(0)}%)
+                  </p>
+                )}
               </div>
               <div className="grid gap-1.5">
                 <Label>Antes</Label>
