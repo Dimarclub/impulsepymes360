@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useRef } from 'react'
 import {
   Building2, CheckCircle2, Star, Package, Plus, Upload, FileDown, Search,
   Phone, MapPin, FileText, Boxes, ShieldCheck, Loader2, ImageIcon,
+  Eye, EyeOff, Trash2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -133,6 +134,29 @@ export function SuppliersModule() {
     } finally {
       setLoadingProducts(false)
     }
+  }
+
+  const toggleProductStatus = async (productId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'ACTIVE' ? 'ARCHIVED' : 'ACTIVE'
+    try {
+      const res = await fetch(`/api/products/${productId}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (!res.ok) { toast('Error al actualizar', 'error'); return }
+      toast(`Producto ${newStatus === 'ACTIVE' ? 'activado' : 'archivado'}`, 'success')
+      if (selectedId) fetchProducts(selectedId)
+    } catch { toast('Error', 'error') }
+  }
+
+  const deleteProduct = async (productId: string) => {
+    if (!confirm('¿Eliminar este producto?')) return
+    try {
+      const res = await fetch(`/api/products/${productId}`, { method: 'DELETE' })
+      if (!res.ok) { toast('Error al eliminar', 'error'); return }
+      toast('Producto eliminado', 'success')
+      if (selectedId) fetchProducts(selectedId)
+    } catch { toast('Error', 'error') }
   }
 
   useEffect(() => { fetchSuppliers(); fetchCategories() }, [])
@@ -485,6 +509,16 @@ export function SuppliersModule() {
                               <Badge variant="outline" className="text-xs">
                                 {p.status === 'ACTIVE' ? 'Activo' : p.status === 'DRAFT' ? 'Borrador' : 'Archivado'}
                               </Badge>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <div className="flex justify-center gap-1">
+                                <Button size="sm" variant="ghost" onClick={() => toggleProductStatus(p.id, p.status)} title={p.status === 'ACTIVE' ? 'Archivar' : 'Activar'}>
+                                  {p.status === 'ACTIVE' ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => deleteProduct(p.id)} title="Eliminar">
+                                  <Trash2 className="size-3.5 text-red-500" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}

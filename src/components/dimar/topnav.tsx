@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react'
 import {
   Search, ShoppingCart, ChevronDown, User, LogIn, UserPlus, LogOut, Menu, X,
   Home, Users, Store, Building2, Phone, Sparkles, Loader2, Settings,
-  LayoutDashboard, Truck, Mail, Megaphone, ClipboardList, Rocket, Zap, Globe, MapPin, Grid3x3, PiggyBank, Network, HandCoins,
+  LayoutDashboard, Truck, Mail, Megaphone, ClipboardList, Rocket, Zap, Globe, MapPin, Grid3x3, PiggyBank, Network, HandCoins, Bell,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -195,6 +195,11 @@ export function TopNav() {
               </DropdownMenu>
             )}
             {isAuthenticated && <NotificationBell />}
+            {isAuthenticated && (
+              <button onClick={() => setModule('alertas')} className={cn('flex items-center gap-1 px-2 py-1.5 text-xs font-medium rounded-md transition-colors', activeModule === 'alertas' ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-primary hover:bg-muted/60')}>
+                <Bell className="size-4" /><span className="hidden sm:inline">Alertas</span>
+              </button>
+            )}
             <Button variant="ghost" size="icon" className="relative" onClick={() => window.dispatchEvent(new CustomEvent('dimar-open-cart'))} aria-label={`Carrito (${itemCount})`}>
               <ShoppingCart className="size-5" />
               {itemCount > 0 && <span className="absolute -top-0.5 -right-0.5 min-w-5 h-5 px-1 rounded-full bg-accent text-accent-foreground text-[10px] font-bold flex items-center justify-center">{itemCount > 9 ? '9+' : itemCount}</span>}

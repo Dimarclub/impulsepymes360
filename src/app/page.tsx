@@ -31,6 +31,7 @@ import { CooperativaModule } from '@/components/dimar/modules/cooperativa'
 import { SupplierBackofficeModule } from '@/components/dimar/modules/supplier-backoffice'
 import { AffiliateBackofficeModule } from '@/components/dimar/modules/affiliate-backoffice'
 import { PartnerBackofficeModule } from '@/components/dimar/modules/partner-backoffice'
+import { AlertasCenterModule } from '@/components/dimar/modules/alertas-center'
 import { Footer } from '@/components/dimar/footer'
 import { canAccessModule, defaultModuleForRole } from '@/lib/permissions'
 
@@ -99,6 +100,7 @@ function HomeContent() {
       case 'supplier-backoffice': return <SupplierBackofficeModule />
       case 'affiliate-backoffice': return <AffiliateBackofficeModule />
       case 'partner-backoffice': return <PartnerBackofficeModule />
+      case 'alertas': return <AlertasCenterModule />
       default: return <MarketplaceModule />
     }
   }
