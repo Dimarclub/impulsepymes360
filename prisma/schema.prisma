@@ -44,6 +44,9 @@ model User {
   provider Provider?
   notifications Notification[]
   cooperativeAccount CooperativeAccount?
+  gridSpacesOwned GridSpace[]
+  gridCommissions GridCommission[]
+  taskProgress TaskProgress?
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -703,4 +706,88 @@ model Notification {
   read          Boolean  @default(false)
   readAt        DateTime?
   createdAt     DateTime @default(now())
+}
+
+// ---------- Grid Publicitario (PubliBags Digital) ----------
+
+model GridCampaign {
+  id          String   @id @default(cuid())
+  name        String
+  year        Int
+  status      String   @default("ACTIVE")
+  pages       GridPage[]
+  createdAt   DateTime @default(now())
+}
+
+model GridPage {
+  id          String   @id @default(cuid())
+  campaignId  String
+  campaign    GridCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  month       Int
+  monthName   String
+  totalSpaces Int      @default(300)
+  spaces      GridSpace[]
+  createdAt   DateTime @default(now())
+}
+
+model GridSpace {
+  id            String   @id @default(cuid())
+  pageId        String
+  page          GridPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  position      Int
+  ownerId       String?
+  owner         User?    @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  buyerName     String?
+  buyerEmail    String?
+  buyerPhone    String?
+  qrCode        String?
+  qrUrl         String?
+  purchasePrice Float    @default(20)
+  salePrice     Float?
+  status        String   @default("AVAILABLE")
+  ownedAt       DateTime?
+  soldAt        DateTime?
+  soldBy        String?
+  reimbursedToOwner Boolean @default(false)
+  imageUrl      String?
+  websiteSlug   String?
+  commissions   GridCommission[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model GridCommission {
+  id            String   @id @default(cuid())
+  spaceId       String
+  space         GridSpace @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level         Int
+  amount        Float    @default(1)
+  rate          Float    @default(5)
+  status        String   @default("PENDING")
+  sourceUserId  String?
+  createdAt     DateTime @default(now())
+}
+
+model TaskProgress {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scanDone      Boolean  @default(false)
+  identifyDone  Boolean  @default(false)
+  visitWebDone  Boolean  @default(false)
+  shareDone     Boolean  @default(false)
+  commentDone   Boolean  @default(false)
+  photoDone     Boolean  @default(false)
+  photoUrl      String?
+  completed     Boolean  @default(false)
+  completedAt   DateTime?
+  rewardClaimed Boolean  @default(false)
+  rewardClaimedAt DateTime?
+  identifiedCompany String?
+  shareUrl      String?
+  commentText   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
