@@ -3,8 +3,8 @@ import type { ModuleId, UserRole } from './types'
 
 export const ROLE_MODULES: Record<UserRole, ModuleId[] | '*'> = {
   ADMIN: '*',
-  CLIENT: ['marketplace', 'affiliates', 'benefits', 'grid'],
-  AFFILIATE: ['marketplace', 'affiliates', 'benefits', 'social-bio', 'grid'],
+  CLIENT: ['marketplace', 'affiliates', 'benefits', 'grid', 'cooperativa'],
+  AFFILIATE: ['marketplace', 'affiliates', 'benefits', 'social-bio', 'grid', 'cooperativa'],
   SUPPLIER: ['marketplace', 'suppliers', 'logistics', 'web-express', 'publibags', 'directorio', 'social', 'social-studio', 'social-bio', 'social-automation', 'impulse', 'impulse-wizard', 'grid'],
   COURIER: ['marketplace', 'courier-app', 'fuerza'],
   PARTNER: ['marketplace', 'partners', 'benefits'],

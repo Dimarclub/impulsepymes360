@@ -19,6 +19,15 @@ export type ModuleId =
   | 'impulse'
   | 'impulse-wizard'
   | 'web-express'
+  | 'publibags'
+  | 'directorio'
+  | 'fuerza'
+  | 'automatizacion'
+  | 'courier-app'
+  | 'site-admin'
+  | 'zones'
+  | 'grid'
+  | 'cooperativa'
 
 export type UserRole = 'CLIENT' | 'AFFILIATE' | 'SUPPLIER' | 'COURIER' | 'PARTNER' | 'ADMIN'
 

@@ -42,6 +42,8 @@ model User {
   bioPages BioPage[]
   automationRules AutomationRule[]
   provider Provider?
+  notifications Notification[]
+  cooperativeAccount CooperativeAccount?
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -86,6 +88,7 @@ model Product {
   description   String?
   longDescription String?
   price         Float
+  costPrice     Float    @default(0)
   compareAtPrice Float?
   stock         Int      @default(0)
   sku           String?
@@ -614,5 +617,90 @@ model BrandLogo {
   linkUrl       String?
   active        Boolean  @default(true)
   order         Int      @default(0)
+  createdAt     DateTime @default(now())
+}
+
+// ---------- Cooperativa de Ahorro y Crédito ----------
+
+model CooperativeAccount {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance         Float    @default(0)
+  totalContributed Float   @default(0)
+  totalEarned     Float    @default(0)
+  totalWithdrawn  Float    @default(0)
+  interestRate    Float    @default(5)
+  status          String   @default("ACTIVE")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  transactions    CooperativeTransaction[]
+}
+
+model CooperativeTransaction {
+  id              String   @id @default(cuid())
+  accountId       String
+  account         CooperativeAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  type            String   // DEPOSIT, INTEREST, COMMISSION_MARKETPLACE, COMMISSION_GRID, WITHDRAWAL, MATERIAL
+  amount          Float
+  description     String?
+  // Para materiales reciclados
+  materialType    String?  // ALUMINUM, COPPER, BOTTLE_SMALL, BOTTLE_LARGE
+  materialQuantity Float?  // libras o unidades
+  materialUnitPrice Float? // precio por unidad
+  // Para vincular con grid/orden
+  referenceId     String?  // gridSpaceId, orderId, etc.
+  status          String   @default("COMPLETED") // COMPLETED, PENDING
+  createdAt       DateTime @default(now())
+}
+
+model MaterialPrice {
+  id              String   @id @default(cuid())
+  materialType    String   @unique // ALUMINUM, COPPER, BOTTLE_SMALL, BOTTLE_LARGE
+  name            String
+  unitPrice       Float
+  unit            String   @default("libra") // libra, unidad
+  active          Boolean  @default(true)
+  updatedAt       DateTime @updatedAt
+}
+
+model MaterialInventory {
+  id              String   @id @default(cuid())
+  materialType    String
+  quantity        Float    @default(0)
+  unit            String   @default("libra")
+  // Para vidrio: se guarda para Reciclarte
+  // Para aluminio/cobre: se vende
+  location        String?  // bodega
+  notes           String?
+  updatedAt       DateTime @updatedAt
+}
+
+model FinancialReport {
+  id              String   @id @default(cuid())
+  period          String   // "2025-01" mensual o "2025" anual
+  type            String   @default("MONTHLY") // MONTHLY, ANNUAL
+  totalIncome     Float    @default(0)
+  totalExpenses   Float    @default(0)
+  totalCommissionsPaid Float @default(0)
+  totalInterestPaid Float  @default(0)
+  totalMaterialSales Float @default(0)
+  totalArtisanSales Float  @default(0)
+  netProfit       Float    @default(0)
+  notes           String?
+  createdAt       DateTime @default(now())
+}
+
+model Notification {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          String
+  title         String
+  message       String
+  link          String?
+  metadata      String?
+  read          Boolean  @default(false)
+  readAt        DateTime?
   createdAt     DateTime @default(now())
 }
