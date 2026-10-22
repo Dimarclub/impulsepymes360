@@ -578,3 +578,41 @@ model AdSpace {
   soldAt        DateTime?
   createdAt     DateTime @default(now())
 }
+
+// ---------- Site Settings + Banners ----------
+
+model SiteSettings {
+  id            String   @id @default(cuid())
+  key           String   @unique
+  value         String
+  updatedAt     DateTime @updatedAt
+}
+
+model Banner {
+  id            String   @id @default(cuid())
+  title         String
+  imageUrl      String?
+  videoUrl      String?
+  gifUrl        String?
+  linkUrl       String?
+  placement     String   @default("HOME_MAIN")
+  width         Int      @default(1320)
+  height        Int      @default(330)
+  active        Boolean  @default(true)
+  order         Int      @default(0)
+  startDate     DateTime @default(now())
+  endDate       DateTime?
+  clicks        Int      @default(0)
+  impressions   Int      @default(0)
+  createdAt     DateTime @default(now())
+}
+
+model BrandLogo {
+  id            String   @id @default(cuid())
+  name          String
+  logoUrl       String
+  linkUrl       String?
+  active        Boolean  @default(true)
+  order         Int      @default(0)
+  createdAt     DateTime @default(now())
+}
