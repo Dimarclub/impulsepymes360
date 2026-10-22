@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, useRef } from 'react'
 import {
   Building2, CheckCircle2, Star, Package, Plus, Upload, FileDown, Search,
   Phone, MapPin, FileText, Boxes, ShieldCheck, Loader2, ImageIcon,
-  Eye, EyeOff, Trash2,
+  Eye, EyeOff, Trash2, Pencil,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -159,6 +159,19 @@ export function SuppliersModule() {
     } catch { toast('Error', 'error') }
   }
 
+  const editProduct = (p: any) => {
+    setProductForm({
+      name: p.name || '', price: String(p.price || ''), costPrice: String(p.costPrice || ''),
+      compareAtPrice: p.compareAtPrice ? String(p.compareAtPrice) : '', stock: String(p.stock || 0),
+      sku: p.sku || '', categoryId: p.categoryId || '', description: p.description || '',
+      imageUrl: p.imageUrl || '',
+    })
+    setEditingProductId(p.id)
+    setProductOpen(true)
+  }
+
+  const [editingProductId, setEditingProductId] = useState<string | null>(null)
+
   useEffect(() => { fetchSuppliers(); fetchCategories() }, [])
   useEffect(() => {
     if (selectedId) fetchProducts(selectedId)
@@ -238,19 +251,32 @@ export function SuppliersModule() {
         description: productForm.description,
         imageUrl: productForm.imageUrl || null,
       }
-      const res = await fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      if (!res.ok) throw new Error()
+      if (editingProductId) {
+        // Editar producto existente
+        const res = await fetch(`/api/products/${editingProductId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        if (!res.ok) throw new Error()
+        toast('Producto actualizado correctamente')
+      } else {
+        // Crear producto nuevo
+        const res = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        if (!res.ok) throw new Error()
+        toast('Producto agregado correctamente')
+      }
       await fetchProducts(selectedId)
       await fetchSuppliers()
       setNewProductOpen(false)
-      setProductForm({ name: '', price: '', compareAtPrice: '', stock: '', sku: '', categoryId: '', description: '', imageUrl: '' })
-      toast('Producto agregado correctamente')
+      setEditingProductId(null)
+      setProductForm({ name: '', price: '', costPrice: '', compareAtPrice: '', stock: '', sku: '', categoryId: '', description: '', imageUrl: '' })
     } catch {
-      toast('Error al agregar producto', 'error')
+      toast('Error al guardar producto', 'error')
     } finally {
       setSubmitting(false)
     }
@@ -473,6 +499,7 @@ export function SuppliersModule() {
                           <TableHead className="text-right">Precio</TableHead>
                           <TableHead className="text-center">Stock</TableHead>
                           <TableHead className="text-center">Estado</TableHead>
+                          <TableHead className="text-center">Acciones</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -512,6 +539,9 @@ export function SuppliersModule() {
                             </TableCell>
                             <TableCell className="text-center">
                               <div className="flex justify-center gap-1">
+                                <Button size="sm" variant="ghost" onClick={() => editProduct(p)} title="Editar">
+                                  <Pencil className="size-3.5" />
+                                </Button>
                                 <Button size="sm" variant="ghost" onClick={() => toggleProductStatus(p.id, p.status)} title={p.status === 'ACTIVE' ? 'Archivar' : 'Activar'}>
                                   {p.status === 'ACTIVE' ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
                                 </Button>
@@ -598,7 +628,7 @@ export function SuppliersModule() {
       <Dialog open={newProductOpen} onOpenChange={setNewProductOpen}>
         <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto scroll-thin">
           <DialogHeader>
-            <DialogTitle>Agregar producto</DialogTitle>
+            <DialogTitle>{editingProductId ? 'Editar producto' : 'Agregar producto'}</DialogTitle>
             <DialogDescription>
               Para: <span className="font-medium text-emerald-700">{selected?.companyName}</span>
             </DialogDescription>
@@ -663,7 +693,7 @@ export function SuppliersModule() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setNewProductOpen(false)}>Cancelar</Button>
             <Button onClick={handleCreateProduct} disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white">
-              {submitting ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />} Agregar
+              {submitting ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />} {editingProductId ? 'Guardar cambios' : 'Agregar'}
             </Button>
           </DialogFooter>
         </DialogContent>
