@@ -4,10 +4,10 @@ import type { ModuleId, UserRole } from './types'
 export const ROLE_MODULES: Record<UserRole, ModuleId[] | '*'> = {
   ADMIN: '*',
   CLIENT: ['marketplace', 'affiliates', 'benefits', 'grid', 'cooperativa'],
-  AFFILIATE: ['marketplace', 'affiliates', 'benefits', 'social-bio', 'grid', 'cooperativa'],
+  AFFILIATE: ['marketplace', 'affiliates', 'benefits', 'social-bio', 'grid', 'cooperativa', 'affiliate-backoffice'],
   SUPPLIER: ['marketplace', 'suppliers', 'logistics', 'web-express', 'publibags', 'directorio', 'social', 'social-studio', 'social-bio', 'social-automation', 'impulse', 'impulse-wizard', 'grid', 'supplier-backoffice', 'cooperativa'],
   COURIER: ['marketplace', 'courier-app', 'fuerza'],
-  PARTNER: ['marketplace', 'partners', 'benefits'],
+  PARTNER: ['marketplace', 'partners', 'benefits', 'cooperativa', 'partner-backoffice'],
 }
 
 export const PUBLIC_MODULES: ModuleId[] = ['marketplace']
@@ -24,8 +24,8 @@ export function defaultModuleForRole(role: UserRole): ModuleId {
     case 'ADMIN': return 'dashboard'
     case 'SUPPLIER': return 'supplier-backoffice'
     case 'COURIER': return 'courier-app'
-    case 'PARTNER': return 'partners'
-    case 'AFFILIATE': return 'affiliates'
+    case 'PARTNER': return 'partner-backoffice'
+    case 'AFFILIATE': return 'affiliate-backoffice'
     case 'CLIENT': return 'marketplace'
     default: return 'marketplace'
   }

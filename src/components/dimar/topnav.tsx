@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react'
 import {
   Search, ShoppingCart, ChevronDown, User, LogIn, UserPlus, LogOut, Menu, X,
   Home, Users, Store, Building2, Phone, Sparkles, Loader2, Settings,
-  LayoutDashboard, Truck, Mail, Megaphone, ClipboardList, Rocket, Zap, Globe, MapPin, Grid3x3, PiggyBank,
+  LayoutDashboard, Truck, Mail, Megaphone, ClipboardList, Rocket, Zap, Globe, MapPin, Grid3x3, PiggyBank, Network, HandCoins,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -248,7 +248,13 @@ export function TopNav() {
             {displayUser?.role === 'SUPPLIER' && (
               <button onClick={() => setModule('supplier-backoffice')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors', activeModule === 'supplier-backoffice' ? 'text-primary bg-primary/10' : 'text-primary hover:bg-primary/5')}><Store className="size-4" />Mi Backoffice</button>
             )}
-            {(displayUser?.role === 'CLIENT' || displayUser?.role === 'AFFILIATE' || displayUser?.role === 'ADMIN') && (
+            {displayUser?.role === 'AFFILIATE' && (
+              <button onClick={() => setModule('affiliate-backoffice')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors', activeModule === 'affiliate-backoffice' ? 'text-primary bg-primary/10' : 'text-primary hover:bg-primary/5')}><Network className="size-4" />Mi Backoffice</button>
+            )}
+            {displayUser?.role === 'PARTNER' && (
+              <button onClick={() => setModule('partner-backoffice')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors', activeModule === 'partner-backoffice' ? 'text-primary bg-primary/10' : 'text-primary hover:bg-primary/5')}><HandCoins className="size-4" />Mi Backoffice</button>
+            )}
+            {(displayUser?.role === 'CLIENT' || displayUser?.role === 'AFFILIATE' || displayUser?.role === 'PARTNER' || displayUser?.role === 'ADMIN') && (
               <button onClick={() => setModule('cooperativa')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'cooperativa' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><PiggyBank className="size-4" />Cooperativa</button>
             )}
             {displayUser?.role === 'ADMIN' && (

@@ -29,6 +29,8 @@ export type ModuleId =
   | 'grid'
   | 'cooperativa'
   | 'supplier-backoffice'
+  | 'affiliate-backoffice'
+  | 'partner-backoffice'
 
 export type UserRole = 'CLIENT' | 'AFFILIATE' | 'SUPPLIER' | 'COURIER' | 'PARTNER' | 'ADMIN'
 
