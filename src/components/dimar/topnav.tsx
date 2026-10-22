@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react'
 import {
   Search, ShoppingCart, ChevronDown, User, LogIn, UserPlus, LogOut, Menu, X,
   Home, Users, Store, Building2, Phone, Sparkles, Loader2, Settings,
-  LayoutDashboard, Truck, Mail, Megaphone, ClipboardList, Rocket, Zap, Globe, MapPin, Grid3x3, PiggyBank, Network, HandCoins, Bell,
+  LayoutDashboard, Truck, Mail, Megaphone, ClipboardList, Rocket, Zap, Globe, MapPin, Grid3x3, PiggyBank, Network, HandCoins, Bell, DollarSign,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -286,6 +286,7 @@ export function TopNav() {
                     <DropdownMenuItem onClick={() => setModule('impulse-wizard')}><Zap className="size-4 mr-2" /> Onboarding</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setModule('web-express')}><Globe className="size-4 mr-2" /> Web Express</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setModule('site-admin')}><Settings className="size-4 mr-2" /> Config del sitio</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('finanzas')}><DollarSign className="size-4 mr-2" /> Finanzas</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>
