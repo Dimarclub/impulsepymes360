@@ -1199,3 +1199,45 @@ Stage Summary:
 - The "Dimarclub" button in topnav (Users icon) navigates to this module.
 - Content strategy honored: DimarClub is the rightful home of the 13 beneficios + Red Universal sections (which were excluded from PubliBags and Fuerza Delta to avoid duplication).
 - Satellite ecosystem now has 4 sites: PubliBags, Fuerza Delta, DimarClub, + Planes (central).
+
+---
+Task ID: 15-admin-menu-and-order-alerts (main agent)
+Agent: main (Z.ai Code)
+Task: Fix admin menu (missing Autoposter/Social/Alertas items) + fix order notifications (admin wasn't alerted when new orders arrived)
+
+Work Log:
+- User reported: (1) "autoposter" not in admin menu, (2) order management alerts don't arrive anywhere.
+- Investigation:
+  * Admin dropdown in topnav.tsx only had 13 items — missing: Social Studio, Social Automation (autoposter), Social Bio, Alertas, and all the new satellites (PubliBags, Planes, Fuerza Delta, Dimarclub), plus Cooperativa, Directorio, Afiliados, Grid, Plano Bolso.
+  * POST /api/orders (order creation) did NOT create any Notification — only PATCH /api/orders/[id] (status change) did. So when a customer placed an order, the admin/supplier had NO way to know. The notification-bell and alertas-center module existed but had nothing to show for new orders.
+- Fix 1 — Admin menu reorganized (topnav.tsx lines 280-318):
+  * Added max-h-[80vh] overflow-y-auto to the dropdown (it's long now).
+  * Grouped into 5 sections: top (Dashboard, Alertas y Pedidos, Finanzas), Operación (Proveedores, Logística, Zonas, CRM, Solicitudes), Marketing (Social Studio, Autoposter/Automatización, Biografías, Email, Publicidad), ImpulsePymes360-Ecosistema (Impulse360, Onboarding, Web Express, Planes, Grid 360, Plano Bolso, Directorio360, Cooperativa, Afiliados), Sitios satélite (PubliBags, Fuerza Delta, Dimarclub), + Config del sitio.
+  * Total: 26 menuitems (was 13).
+- Fix 2 — Order notifications (src/app/api/orders/route.ts POST):
+  * After creating order + commissions, now creates 3 batches of ORDER_RECEIVED notifications in a try/catch (won't fail the order if notif errors):
+    1. To buyer: "Pedido {orderNumber} confirmado" → link marketplace
+    2. To ALL admins (createMany): "Nuevo pedido {orderNumber} — de {buyer} por ${total} ({items} items). Requiere gestión." → link alertas module
+    3. To suppliers of the order's items (createMany): "Nuevo pedido para despachar — {orderNumber}" → link supplier-backoffice
+  * Notification type ORDER_RECEIVED is already mapped in notification-bell.tsx and alertas-center.tsx (Package icon, emerald color).
+- .env restored (NEXTAUTH_SECRET was missing again — recurring issue causing silent login failures).
+
+Verification with Agent Browser (logged in as admin@dimarclub.com):
+- Login flow works: "Carlos Dimar" appears, "Admin" button present ✅
+- Admin dropdown opens with 26 menuitems including:
+  * "Alertas y Pedidos" (Bell icon) ✅
+  * "Autoposter (Automatización)" (Zap icon) — the autoposter ✅
+  * "Social Studio", "Biografías (Bio Pages)" ✅
+  * "Planes (marketplace)", "Grid 360", "Plano Bolso (PubliBags)" ✅
+  * "Cooperativa", "Afiliados (Red Universal)" ✅
+  * "PubliBags (sitio)", "Fuerza Delta (sitio)", "Dimarclub (sitio)" ✅
+  * "Directorio360", "Config del sitio" ✅
+- Notification bell shows "0 sin leer" (correct — no orders placed since the fix yet; new orders going forward will generate ORDER_RECEIVED notifications to admin + suppliers + buyer).
+- Lint: 0 errors, 0 warnings ✅
+
+Stage Summary:
+- Admin menu now complete: 26 items in 5 grouped sections (top + Operación + Marketing + Ecosistema + Satélites + Config).
+- "Autoposter (Automatización)" = the social-automation module, now visible in admin menu under Marketing.
+- "Alertas y Pedidos" = the alertas-center module, now the first item in admin menu for quick access to order management.
+- New orders (POST /api/orders) now generate ORDER_RECEIVED notifications to: buyer (confirmación), all admins (gestión), and item suppliers (despachar). These appear in both the notification bell (top-right) and the Alertas y Pedidos module.
+- .env NEXTAUTH_SECRET restored.

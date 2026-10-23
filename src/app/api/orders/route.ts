@@ -74,5 +74,59 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // ===== Generar notificaciones ORDER_RECEIVED =====
+  try {
+    // 1. Notificar al comprador (confirmación)
+    await db.notification.create({
+      data: {
+        userId,
+        type: 'ORDER_RECEIVED',
+        title: `Pedido ${orderNumber} confirmado`,
+        message: `Tu pedido por $${total.toFixed(2)} fue confirmado. Estamos preparando tu envío.`,
+        link: '/?module=marketplace',
+      },
+    })
+
+    // 2. Notificar a todos los ADMIN (gestión de pedidos)
+    const admins = await db.user.findMany({ where: { role: 'ADMIN' }, select: { id: true } })
+    if (admins.length > 0) {
+      await db.notification.createMany({
+        data: admins.map((a) => ({
+          userId: a.id,
+          type: 'ORDER_RECEIVED',
+          title: `Nuevo pedido ${orderNumber}`,
+          message: `Pedido de ${buyer?.name || 'cliente'} por $${total.toFixed(2)} (${items.length} items). Requiere gestión.`,
+          link: '/?module=alertas',
+        })),
+      })
+    }
+
+    // 3. Notificar a los proveedores de los items (tienen que despachar)
+    const products = await db.product.findMany({
+      where: { id: { in: items.map((it) => it.productId) } },
+      select: { supplierId: true },
+    })
+    const supplierIds = [...new Set(products.map((p) => p.supplierId).filter(Boolean))] as string[]
+    if (supplierIds.length > 0) {
+      const suppliers = await db.supplier.findMany({
+        where: { id: { in: supplierIds } },
+        select: { userId: true, companyName: true },
+      })
+      if (suppliers.length > 0) {
+        await db.notification.createMany({
+          data: suppliers.map((s) => ({
+            userId: s.userId,
+            type: 'ORDER_RECEIVED',
+            title: `Nuevo pedido para despachar — ${orderNumber}`,
+            message: `Tienes un pedido de ${buyer?.name || 'cliente'} por $${total.toFixed(2)}. Revisa tu backoffice para prepararlo.`,
+            link: '/?module=supplier-backoffice',
+          })),
+        })
+      }
+    }
+  } catch (notifErr) {
+    console.error('[orders POST] notif error:', notifErr)
+  }
+
   return NextResponse.json(order, { status: 201 })
 }

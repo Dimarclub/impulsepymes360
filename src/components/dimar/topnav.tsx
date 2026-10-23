@@ -277,24 +277,44 @@ export function TopNav() {
                   <DropdownMenuTrigger asChild>
                     <button className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"><Settings className="size-4" />Admin<ChevronDown className="size-3" /></button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuContent align="start" className="w-60 max-h-[80vh] overflow-y-auto">
                     <DropdownMenuLabel className="text-primary font-bold">Panel de administración</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => setModule('dashboard')}><LayoutDashboard className="size-4 mr-2" /> Dashboard</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('alertas')}><Bell className="size-4 mr-2" /> Alertas y Pedidos</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('finanzas')}><DollarSign className="size-4 mr-2" /> Finanzas</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Operación</DropdownMenuLabel>
                     <DropdownMenuItem onClick={() => setModule('suppliers')}><Store className="size-4 mr-2" /> Proveedores</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setModule('logistics')}><Truck className="size-4 mr-2" /> Logística</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setModule('zones')}><MapPin className="size-4 mr-2" /> Zonas de cobertura</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setModule('crm')}><Users className="size-4 mr-2" /> CRM</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setModule('email')}><Mail className="size-4 mr-2" /> Email Marketing</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setModule('ads')}><Megaphone className="size-4 mr-2" /> Publicidad</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setModule('applications')}><ClipboardList className="size-4 mr-2" /> Solicitudes</DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">ImpulsePymes360</DropdownMenuLabel>
+                    <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Marketing</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => setModule('social-studio')}><Sparkles className="size-4 mr-2" /> Social Studio</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('social-automation')}><Zap className="size-4 mr-2" /> Autoposter (Automatización)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('social-bio')}><Users className="size-4 mr-2" /> Biografías (Bio Pages)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('email')}><Mail className="size-4 mr-2" /> Email Marketing</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('ads')}><Megaphone className="size-4 mr-2" /> Publicidad</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">ImpulsePymes360 — Ecosistema</DropdownMenuLabel>
                     <DropdownMenuItem onClick={() => setModule('impulse')}><Rocket className="size-4 mr-2" /> Panel Impulse360</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setModule('impulse-wizard')}><Zap className="size-4 mr-2" /> Onboarding</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('impulse-wizard')}><Zap className="size-4 mr-2" /> Onboarding proveedores</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setModule('web-express')}><Globe className="size-4 mr-2" /> Web Express</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('planes')}><CreditCard className="size-4 mr-2" /> Planes (marketplace)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('grid')}><Grid3x3 className="size-4 mr-2" /> Grid 360</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('bag-plan')}><Package className="size-4 mr-2" /> Plano Bolso (PubliBags)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('directorio')}><MapPin className="size-4 mr-2" /> Directorio360</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('cooperativa')}><PiggyBank className="size-4 mr-2" /> Cooperativa</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('affiliates')}><Network className="size-4 mr-2" /> Afiliados (Red Universal)</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Sitios satélite</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => setModule('publibags')}><ShoppingBag className="size-4 mr-2" /> PubliBags (sitio)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('fuerza-delta')}><Truck className="size-4 mr-2" /> Fuerza Delta (sitio)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('dimarclub')}><Users className="size-4 mr-2" /> Dimarclub (sitio)</DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => setModule('site-admin')}><Settings className="size-4 mr-2" /> Config del sitio</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setModule('finanzas')}><DollarSign className="size-4 mr-2" /> Finanzas</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>
