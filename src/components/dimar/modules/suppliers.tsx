@@ -28,7 +28,7 @@ import { cn } from '@/lib/utils'
 
 interface SupplierWithRelations extends Supplier {
   user?: { name: string; email: string; phone?: string | null; city?: string | null }
-  products?: Pick<Product, 'id' | 'name' | 'price' | 'stock' | 'status'>[]
+  products?: Pick<Product, 'id' | 'name' | 'price' | 'costPrice' | 'compareAtPrice' | 'stock' | 'status' | 'sku' | 'categoryId' | 'description' | 'imageUrl'>[]
 }
 
 const usd = (n: number) =>
@@ -159,6 +159,8 @@ export function SuppliersModule() {
     } catch { toast('Error', 'error') }
   }
 
+  const [editingProductId, setEditingProductId] = useState<string | null>(null)
+
   const editProduct = (p: any) => {
     setProductForm({
       name: p.name || '', price: String(p.price || ''), costPrice: String(p.costPrice || ''),
@@ -169,8 +171,6 @@ export function SuppliersModule() {
     setEditingProductId(p.id)
     setNewProductOpen(true)
   }
-
-  const [editingProductId, setEditingProductId] = useState<string | null>(null)
 
   useEffect(() => { fetchSuppliers(); fetchCategories() }, [])
   useEffect(() => {
