@@ -46,6 +46,7 @@ model User {
   cooperativeAccount CooperativeAccount?
   gridSpacesOwned GridSpace[]
   gridCommissions GridCommission[]
+  adSpacesBought AdSpace[] @relation("AdSpaceBuyer")
   taskProgress TaskProgress?
   albumProgress AlbumProgress[]
   raffleEntries RaffleEntry[]
@@ -576,7 +577,10 @@ model AdSpace {
   edition       AdEdition @relation(fields: [editionId], references: [id], onDelete: Cascade)
   providerId    String?
   provider      Provider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
-  position      Int      // número de espacio (1-80)
+  buyerId       String?  // usuario que compró el espacio (socio) — links to User
+  buyer         User?    @relation("AdSpaceBuyer", fields: [buyerId], references: [id], onDelete: SetNull)
+  buyerName     String?  // nombre del comprador (denormalizado para la edición impresa)
+  position      Int      // número de espacio (1-297 para bolso)
   type          String   @default("QR") // QR, IMAGE, LOGO
   imageUrl      String?  // si es IMAGE o LOGO
   qrCodeId      String?  @unique

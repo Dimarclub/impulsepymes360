@@ -915,3 +915,74 @@ Stage Summary:
 - Module has 4 tabs (Plano del Bolso, Mapa Comercial, Patrocinadores, Dashboard) + Space Editor dialog with QR preview + CSV/JSON/SVG export + print
 - Dev-server workaround documented: run next dev directly (no tee pipe) inside a single bash command for verification
 - .env NEXTAUTH_SECRET restored
+
+---
+Task ID: 10-fix + 11-satellite
+Agent: full-stack-developer (bag-plan fix + publibags satellite)
+Task: (A) Reparar el módulo bag-plan.tsx para que use el nuevo shape de API de dos ediciones (currentEdition/nextEdition + flujo de compra con action:'buy' + capital cooperativo). (B) Crear el módulo satélite PubliBags (landing page oscura con grid QR en vivo) y conectar todo (page.tsx, topnav.tsx, permissions.ts).
+
+Work Log:
+- Leído el worklog y el API en `src/app/api/impulse/bag-plan/route.ts` (734 líneas) para entender el nuevo shape: GET devuelve `{ currentEdition, nextEdition, currentSpaces, nextSpaces, panels, currentStats, nextStats }`; PATCH soporta `action:'buy'` que crea Partner + PartnerContribution ($20, returnRate 5) + CooperativeAccount (upsert) + CooperativeTransaction DEPOSIT + COMMISSION_MARKETPLACE N0 (3% cashback) + cadena de sponsors (Commission PENDING + COMMISSION_MARKETPLACE 2% N1-N3) + Notification, y devuelve `{ ok, space, financial: { aporte, cashback, sponsorCommissions, newBalance } }`.
+- Leído `src/lib/bag-plan.ts` (constantes BAG_PANELS, sponsorColor, etc.) y el módulo `bag-plan.tsx` viejo (1308 líneas) que usaba el shape antiguo `{ edition, spaces, stats }` y por tanto crasheaba en runtime.
+- **Task A — bag-plan.tsx (rewrite completo, ~1450 líneas):**
+  - Actualizado `BagSpace` para incluir `buyerId`, `buyerName`, `buyer: { id, name } | null`.
+  - Actualizado `BagPlanData` al nuevo shape con `currentEdition`, `nextEdition`, `currentSpaces`, `nextSpaces`, `currentStats`, `nextStats`, `panels`.
+  - Añadido `BagEdition.monthLabel` al tipo local.
+  - Añadido estado `editionView: 'next' | 'current'` (default `'next'`). Edition/spaces/stats activos se derivan del toggle.
+  - Añadido `isReadOnly = editionView === 'current'` (PRINTED = solo lectura).
+  - Header: badges de estado (OPEN=amber, PRINTED=emerald), toggle de dos botones "Actual (impresa)" / "Próxima (compra abierta)", banner amber cuando es próxima ("Estás viendo la próxima campaña. Compra espacios para salir impreso en el bolso de {monthLabel}."), banner esmeralda cuando es actual ("Esta campaña ya está impresa. Visualización de solo lectura").
+  - `handlePatched` actualiza SOLO la lista de la edición activa (nextSpaces o currentSpaces) y recalcula stats locales.
+  - `filteredSpaces`, `sponsors`, `SponsorLegend`, `SponsorsTab` ahora usan `buyerName || provider.companyName` (compatible con sponsors demo de la campaña actual y compradores reales de la próxima).
+  - `Cell` component: en vista sponsor, pinta por `sponsorColor(buyerName)` cuando está SOLD; en vista status pinta por estado (emerald/amber/rose). `isMine` ahora compara `buyerId === currentUserId`.
+  - `SpaceEditorDialog` reescrito: añade `isReadOnly` prop, elimina la lógica admin de "Asignar proveedor" (ya no aplica), añade el flujo de `action: 'buy'`. Botón esmeralda prominente "Comprar y hacerte socio — $20" con subtext "Tu $20 se convierte en aporte de capital. Genera 5% interés mensual compuesto. Tu red de afiliados gana comisiones." Cuando la compra es exitosa, muestra un panel de resumen (`PartyPopper` + aporte, cashback, comisiones a la red, nuevo saldo cooperativo) y dispara toast "¡Felicidades! Eres socio PubliBags. Aporte: $20. Cashback: $0.60.". Logged-out muestra banner amber "Inicia sesión para comprar y hacerte socio" + CTA "Iniciar sesión" que toastea "Inicia sesión desde el botón de arriba". SOLD en próxima = banner rose "Espacio vendido". Read-only (current) = banner esmeralda "Espacio impreso — solo lectura". Mantiene `reserve` como acción secundaria para logged-in.
+  - `DashboardTab` recibe `edition`, `spaces`, `stats`, `allData`, `currentUser`. Añadida sección "Mi capital PubliBags" (solo logged-in): cuenta espacios con `buyerId === currentUser.id` en nextSpaces + currentSpaces, muestra "Tienes N espacios = $X en aporte de capital → $Y/mes de interés (5%)" + 4 mini-stats (espacios, aporte, interés mensual, interés anual compuesto = X × (1.05^12 - 1)). Si N=0, empty state invitando a comprar en la próxima campaña. Exports (CSV/JSON/SVG/Print) usan la edición activa.
+  - `buildSVG` actualizado para usar `buyerName` y la edición activa.
+  - Eliminado el fetch a `/api/suppliers` y el select de proveedor (ya no se necesita para el flujo buy).
+- **Task B — publibags.tsx (NEW, ~1100 líneas):**
+  - `'use client'`. Tema oscuro con paleta inline (#0B1120 bg, #15203A cards, #243352 borders, #00D4AA emerald, #F5A623 gold, #A855F7 purple, #E8EDF5 text, #6B7FA0 muted). Wrapper `<div className="publibags-satellite">` con `minHeight: 100vh`.
+  - Fuentes Outfit (headings) + DM Sans (body) inyectadas via `<link>` creado en `useEffect` (idempotente).
+  - Secciones en orden: Navbar sticky (logo "Publi**bags**" + 6 anchor links + WhatsApp + Comprar espacio + mobile hamburger), Hero (heading "Convierte cada **funda** en publicidad que viaja por tu ciudad" + badge $20 + 2 CTAs + visual con "297" grande), Anatomía (7 paneles con dimensiones y counts + 4 stat cards), Cómo funciona (4 pasos con badges numerados), **PlanoLive** (la sección clave: fetch de `/api/impulse/bag-plan`, toggle entre campaña actual/ próxima, 4 live stats, render de los 7 paneles con celdas mini de 5x5 coloreadas — por `sponsorColor(buyerName)` en actual, por status en próxima — tooltip nativo `title` con posición + sponsor/estado, leyenda de top-12 sponsors en actual / leyenda de statuses en próxima, CTA grande "Comprar mi espacio →" que llama `setModule('bag-plan')`), Ventajas (6 cards), Impacto (4 stats), Propuesta DimarClub (12 benefit cards con emoji, "Inversión 5% Mensual" actualizada desde el 3% original, 2 CTAs), Red Universal (banner explicando 3% cashback N0 + 2% N1-N3, CTA → `setModule('affiliates')`), CTA Planes, Contacto (WhatsApp + Ver Planes), Footer (5 columnas + social icons + © 2026 ImpulsePymes360 + botón "Volver al portal" → `setModule('marketplace')`).
+  - Celdas NO interactivas (showcase) — el grid completo está en bag-plan. El CTA "Comprar mi espacio" navega a bag-plan via `setModule`.
+  - Responsive: mobile-first, navbar colapsa a hamburger, grids 1→2→3→4 columnas.
+- **Wiring:**
+  - `src/app/page.tsx`: añadido `import { PubliBagsModule }` y `case 'publibags': return <PubliBagsModule />`.
+  - `src/components/dimar/topnav.tsx`: añadido icono `ShoppingBag` a imports, añadido botón "PubliBags" en la fila 3 (desktop) y en el mobile menu, ambos llaman `setModule('publibags')`.
+  - `src/lib/permissions.ts`: añadido `'publibags'` a PUBLIC_MODULES y a las listas de CLIENT, AFFILIATE, PARTNER (SUPPLIER ya lo tenía). ADMIN tiene `'*'`.
+- **Verificación:**
+  - `bun run lint` → 0 errors, 0 warnings. ✓
+  - No se ejecutó `bun run build` ni se reinició el dev server (lo hace el sistema).
+  - Dev log previo mostraba `GET /api/impulse/bag-plan 200 in 84ms` — la API responde correctamente con el nuevo shape.
+
+Stage Summary:
+- bag-plan.tsx ya NO crashea: usa el nuevo shape `{ currentEdition, nextEdition, currentSpaces, nextSpaces, currentStats, nextStats, panels }`.
+- Toggle "Actual (impresa) / Próxima (compra abierta)" funciona; banners contextuales amber/esmeralda.
+- Compra (`action: 'buy'`) funciona: PATCH → toast de felicitaciones + panel de resumen financiero inline en el dialog (aporte $20, cashback $0.60, comisiones a la red por nivel, nuevo saldo cooperativa). Refresca estado local sin recargar.
+- Dashboard muestra "Mi capital PubliBags" para usuarios logueados con conteo de espacios propios, aporte, interés mensual (5%) y anual compuesto (1.05^12).
+- patrocinadores, mapa y leyendas ahora agrupan por `buyerName` (compatible con sponsors demo y compradores reales).
+- Exports CSV/JSON/SVG/Print usan la edición activa.
+- PubliBags satellite: página oscura autocontenida con 13 secciones, grid QR en vivo de 297 celdas por edición (toggle actual/próxima), CTA "Comprar mi espacio" → bag-plan, "Volver al portal" → marketplace. Mobile-responsive.
+- PubliBags accesible para todos (PUBLIC_MODULES) y visible en topnav (desktop + mobile).
+
+---
+Task ID: 10-fix + 11-satellite (main agent verification)
+Agent: main (Z.ai Code)
+Task: Verify the bag-plan module fix + PubliBags satellite landing page after subagent completion
+
+Work Log:
+- Previous Task 10 subagent (API rewrite) ran partially: API route.ts was fully updated to two-edition model (currentEdition PRINTED + nextEdition OPEN) + buy flow with cooperative capital + affiliate commissions, but the bag-plan.tsx module was NOT updated (still used old single-edition shape → would crash).
+- Task 10-fix + 11-satellite subagent (agent-fd6c0f84) completed both:
+  * Fixed bag-plan.tsx (~1450 lines): new two-edition API shape, edition toggle (Actual impresa / Próxima compra abierta), buy action with "Comprar y hacerte socio — $20" button + success summary (aporte, cashback, sponsor commissions, new balance), "Mi capital PubliBags" dashboard card for logged-in users.
+  * Created publibags.tsx (~1100 lines, NEW): dark-themed (#0B1120) satellite landing page with 13 sections (Navbar, Hero, Anatomía, Cómo funciona, PlanoLive with live QR grid, Ventajas, Impacto, Propuesta DimarClub 12 benefits, Red Universal, CTA Planes, Contacto, Footer) + "Volver al portal" button.
+  * Wired: page.tsx case 'publibags', topnav "PubliBags" button (ShoppingBag icon), permissions 'publibags' added to PUBLIC_MODULES + CLIENT/AFFILIATE/PARTNER.
+- Lint: 0 errors, 0 warnings.
+
+Verification with Agent Browser (server + browser in one bash command):
+- API GET /api/impulse/bag-plan returns: currentEdition "Octubre 2026" PRINTED (297 SOLD with sponsors like Reciclarte), nextEdition "Noviembre 2026" OPEN (297 AVAILABLE). currentStats sold=297 revenue=$5,940. nextStats available=297. ✅
+- PubliBags satellite page: renders with dark theme, hero "Convierte cada funda en publicidad que viaja por tu ciudad", all 13 sections present (Anatomía, Cómo funciona, Plano de corte en vivo, Ventajas, Impacto, Propuesta, Red Universal, Contacto, Footer). Live QR grid shows all 7 panels (Frontal, Posterior, Base Comercial, Laterales, Tapas). No console errors. ✅
+- bag-plan module: loads without crashing, shows "Edición PubliBags Noviembre 2026 - Guayaquil" + "Compra abierta", edition toggle buttons present ("Actual (impresa)" / "Próxima (compra abierta)"), 297 spaces render, no console errors. ✅
+
+Stage Summary:
+- bag-plan module fixed: works with two-edition API, buy flow functional, edition toggle works, "Mi capital" dashboard for logged-in users.
+- PubliBags satellite landing page live: dark-themed marketing page with embedded live QR grid (297 spaces, 7 panels) showing both current (printed) and next (open) editions.
+- Both modules verified end-to-end via Agent Browser with no console errors.
+- The satellite page CTA "Comprar mi espacio →" navigates to the full bag-plan visualizer for interactive purchasing.

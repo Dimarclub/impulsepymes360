@@ -1,0 +1,1309 @@
+     1→'use client'
+     2→
+     3→import { useEffect, useState, useCallback, useMemo } from 'react'
+     4→import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+     5→import { Button } from '@/components/ui/button'
+     6→import { Input } from '@/components/ui/input'
+     7→import { Label } from '@/components/ui/label'
+     8→import { Badge } from '@/components/ui/badge'
+     9→import { Skeleton } from '@/components/ui/skeleton'
+    10→import { Progress } from '@/components/ui/progress'
+    11→import { Separator } from '@/components/ui/separator'
+    12→import {
+    13→  Dialog,
+    14→  DialogContent,
+    15→  DialogDescription,
+    16→  DialogFooter,
+    17→  DialogHeader,
+    18→  DialogTitle,
+    19→} from '@/components/ui/dialog'
+    20→import {
+    21→  Tabs,
+    22→  TabsContent,
+    23→  TabsList,
+    24→  TabsTrigger,
+    25→} from '@/components/ui/tabs'
+    26→import {
+    27→  Table,
+    28→  TableBody,
+    29→  TableCell,
+    30→  TableHead,
+    31→  TableHeader,
+    32→  TableRow,
+    33→} from '@/components/ui/table'
+    34→import {
+    35→  Select,
+    36→  SelectContent,
+    37→  SelectItem,
+    38→  SelectTrigger,
+    39→  SelectValue,
+    40→} from '@/components/ui/select'
+    41→import {
+    42→  Tooltip,
+    43→  TooltipContent,
+    44→  TooltipTrigger,
+    45→} from '@/components/ui/tooltip'
+    46→import {
+    47→  Package,
+    48→  RefreshCw,
+    49→  MapPin,
+    50→  Calendar,
+    51→  Printer,
+    52→  Search,
+    53→  Store,
+    54→  CircleDollarSign,
+    55→  Layers,
+    56→  Wallet,
+    57→  TrendingUp,
+    58→  CheckCircle2,
+    59→  Clock,
+    60→  XCircle,
+    61→  ShoppingBag,
+    62→  FileJson,
+    63→  FileSpreadsheet,
+    64→  FileCode,
+    65→  Image as ImageIcon,
+    66→  QrCode,
+    67→  Lock,
+    68→  LogIn,
+    69→  AlertTriangle,
+    70→} from 'lucide-react'
+    71→import { useAppStore } from '@/lib/store'
+    72→import { cn } from '@/lib/utils'
+    73→import {
+    74→  BAG_PANELS,
+    75→  BAG_TOTAL_SPACES,
+    76→  panelForPosition,
+    77→  rowColForPosition,
+    78→  sponsorColor,
+    79→  sponsorColorLight,
+    80→  type BagPanel,
+    81→} from '@/lib/bag-plan'
+    82→
+    83→// ---------- Tipos locales ----------
+    84→
+    85→interface BagSpace {
+    86→  id: string
+    87→  position: number
+    88→  type: string
+    89→  status: string
+    90→  price: number
+    91→  providerId?: string | null
+    92→  provider?: { companyName: string; logoUrl?: string | null; websiteSlug?: string } | null
+    93→  imageUrl?: string | null
+    94→  reservedAt?: string | null
+    95→  soldAt?: string | null
+    96→}
+    97→
+    98→interface BagEdition {
+    99→  id: string
+   100→  name: string
+   101→  slug: string
+   102→  city: string
+   103→  totalSpaces: number
+   104→  bagSize: string
+   105→  printQuantity: number
+   106→  startDate: string
+   107→  endDate: string
+   108→  status: string
+   109→}
+   110→
+   111→interface BagStats {
+   112→  total: number
+   113→  available: number
+   114→  reserved: number
+   115→  sold: number
+   116→  revenue: number
+   117→  potential: number
+   118→}
+   119→
+   120→interface BagPlanData {
+   121→  edition: BagEdition
+   122→  spaces: BagSpace[]
+   123→  panels: BagPanel[]
+   124→  stats: BagStats
+   125→}
+   126→
+   127→interface SupplierOption {
+   128→  id: string
+   129→  companyName: string
+   130→  logoUrl?: string | null
+   131→}
+   132→
+   133→// ---------- Helpers ----------
+   134→
+   135→const fmtUsd = (n: number) => `$${(n || 0).toFixed(2)}`
+   136→const fmtDate = (iso?: string | null) => {
+   137→  if (!iso) return '—'
+   138→  try {
+   139→    return new Date(iso).toLocaleDateString('es-EC', { day: '2-digit', month: 'short', year: 'numeric' })
+   140→  } catch {
+   141→    return '—'
+   142→  }
+   143→}
+   144→const fmtDateTime = (iso?: string | null) => {
+   145→  if (!iso) return '—'
+   146→  try {
+   147→    return new Date(iso).toLocaleString('es-EC', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+   148→  } catch {
+   149→    return '—'
+   150→  }
+   151→}
+   152→
+   153→const STATUS_LABELS: Record<string, string> = {
+   154→  AVAILABLE: 'Disponible',
+   155→  RESERVED: 'Reservado',
+   156→  SOLD: 'Vendido',
+   157→}
+   158→
+   159→const TYPE_LABELS: Record<string, string> = {
+   160→  QR: 'QR',
+   161→  IMAGE: 'Imagen',
+   162→  LOGO: 'Logo',
+   163→}
+   164→
+   165→// ---------- Componente principal ----------
+   166→
+   167→export function BagPlanModule() {
+   168→  const [tab, setTab] = useState('plano')
+   169→  const [data, setData] = useState<BagPlanData | null>(null)
+   170→  const [loading, setLoading] = useState(true)
+   171→  const [error, setError] = useState<string | null>(null)
+   172→  const [filterPanel, setFilterPanel] = useState<string>('all')
+   173→  const [filterType, setFilterType] = useState<string>('all')
+   174→  const [search, setSearch] = useState('')
+   175→  const [selectedSpace, setSelectedSpace] = useState<BagSpace | null>(null)
+   176→  const toast = useAppStore((s) => s.toast)
+   177→  const currentUser = useAppStore((s) => s.currentUser)
+   178→
+   179→  const fetchData = useCallback(async () => {
+   180→    setLoading(true)
+   181→    setError(null)
+   182→    try {
+   183→      const res = await fetch('/api/impulse/bag-plan')
+   184→      if (!res.ok) throw new Error('Error al cargar')
+   185→      const json = (await res.json()) as BagPlanData
+   186→      setData(json)
+   187→    } catch (e) {
+   188→      setError(e instanceof Error ? e.message : 'Error desconocido')
+   189→    } finally {
+   190→      setLoading(false)
+   191→    }
+   192→  }, [])
+   193→
+   194→  useEffect(() => {
+   195→    fetchData()
+   196→  }, [fetchData])
+   197→
+   198→  // Filtrado de espacios
+   199→  const filteredSpaces = useMemo(() => {
+   200→    if (!data) return []
+   201→    return data.spaces.filter((s) => {
+   202→      if (filterPanel !== 'all') {
+   203→        const p = panelForPosition(s.position)
+   204→        if (p.key !== filterPanel) return false
+   205→      }
+   206→      if (filterType !== 'all' && s.type !== filterType) return false
+   207→      if (search.trim()) {
+   208→        const q = search.toLowerCase().trim()
+   209→        const name = s.provider?.companyName?.toLowerCase() || ''
+   210→        if (!name.includes(q)) return false
+   211→      }
+   212→      return true
+   213→    })
+   214→  }, [data, filterPanel, filterType, search])
+   215→
+   216→  // Sponsor lookup map
+   217→  const sponsors = useMemo(() => {
+   218→    if (!data) return []
+   219→    const map = new Map<string, { id: string; name: string; logoUrl?: string | null; count: number; invested: number; status: string }>()
+   220→    for (const s of data.spaces) {
+   221→      if (s.status === 'SOLD' && s.provider) {
+   222→        const key = s.provider.companyName
+   223→        const existing = map.get(key) || { id: s.providerId || key, name: key, logoUrl: s.provider.logoUrl, count: 0, invested: 0, status: 'Activo' }
+   224→        existing.count++
+   225→        existing.invested += s.price || 0
+   226→        map.set(key, existing)
+   227→      }
+   228→    }
+   229→    return Array.from(map.values()).sort((a, b) => b.invested - a.invested)
+   230→  }, [data])
+   231→
+   232→  const handlePatched = (updated: BagSpace) => {
+   233→    if (!data) return
+   234→    // Reemplazar el espacio actualizado y recalcular stats
+   235→    const next = data.spaces.map((s) => (s.id === updated.id ? { ...s, ...updated } : s))
+   236→    let available = 0, reserved = 0, sold = 0, revenue = 0
+   237→    for (const s of next) {
+   238→      if (s.status === 'AVAILABLE') available++
+   239→      else if (s.status === 'RESERVED') reserved++
+   240→      else if (s.status === 'SOLD') { sold++; revenue += s.price || 0 }
+   241→    }
+   242→    setData({
+   243→      ...data,
+   244→      spaces: next,
+   245→      stats: { total: data.stats.total, available, reserved, sold, revenue, potential: data.stats.potential },
+   246→    })
+   247→    setSelectedSpace(null)
+   248→  }
+   249→
+   250→  if (loading) {
+   251→    return (
+   252→      <div className="space-y-6 p-4 md:p-6 lg:p-8 max-w-[1320px] mx-auto">
+   253→        <Skeleton className="h-20 w-full" />
+   254→        <Skeleton className="h-10 w-full max-w-2xl" />
+   255→        <Skeleton className="h-64 w-full" />
+   256→        <Skeleton className="h-64 w-full" />
+   257→      </div>
+   258→    )
+   259→  }
+   260→
+   261→  if (error || !data) {
+   262→    return (
+   263→      <div className="space-y-6 p-4 md:p-6 lg:p-8 max-w-[1320px] mx-auto">
+   264→        <Card>
+   265→          <CardContent className="py-12 text-center">
+   266→            <AlertTriangle className="size-10 mx-auto text-amber-500 mb-3" />
+   267→            <p className="font-medium">No se pudo cargar el plano del bolso</p>
+   268→            <p className="text-sm text-muted-foreground mt-1">{error || 'Intenta nuevamente'}</p>
+   269→            <Button className="mt-4" onClick={fetchData}>
+   270→              <RefreshCw className="size-4 mr-2" /> Reintentar
+   271→            </Button>
+   272→          </CardContent>
+   273→        </Card>
+   274→      </div>
+   275→    )
+   276→  }
+   277→
+   278→  return (
+   279→    <div className="space-y-6 p-4 md:p-6 lg:p-8 max-w-[1320px] mx-auto">
+   280→      {/* Header */}
+   281→      <Card className="overflow-hidden border-emerald-200">
+   282→        <CardContent className="p-5 md:p-6">
+   283→          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+   284→            <div className="space-y-1">
+   285→              <div className="flex items-center gap-2 flex-wrap">
+   286→                <Package className="size-5 text-emerald-600" />
+   287→                <h1 className="text-xl md:text-2xl font-bold tracking-tight">{data.edition.name}</h1>
+   288→                <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">
+   289→                  {data.edition.status === 'OPEN' ? 'Abierta' : data.edition.status}
+   290→                </Badge>
+   291→              </div>
+   292→              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+   293→                <span className="inline-flex items-center gap-1"><MapPin className="size-3.5" /> {data.edition.city}</span>
+   294→                <span className="inline-flex items-center gap-1"><Calendar className="size-3.5" /> {fmtDate(data.edition.startDate)} – {fmtDate(data.edition.endDate)}</span>
+   295→                <span className="inline-flex items-center gap-1"><Layers className="size-3.5" /> {data.edition.printQuantity} bolsas</span>
+   296→                <span className="inline-flex items-center gap-1"><Package className="size-3.5" /> Bolso {data.edition.bagSize} cm</span>
+   297→              </div>
+   298→            </div>
+   299→            <Button variant="outline" size="sm" onClick={fetchData}>
+   300→              <RefreshCw className="size-4 mr-1.5" /> Actualizar
+   301→            </Button>
+   302→          </div>
+   303→
+   304→          {/* Stat pills */}
+   305→          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
+   306→            <StatPill label="Total espacios" value={data.stats.total} tone="muted" icon={<Package className="size-4" />} />
+   307→            <StatPill label="Disponibles" value={data.stats.available} tone="emerald" icon={<CheckCircle2 className="size-4" />} />
+   308→            <StatPill label="Reservados" value={data.stats.reserved} tone="amber" icon={<Clock className="size-4" />} />
+   309→            <StatPill label="Vendidos" value={data.stats.sold} tone="rose" icon={<ShoppingBag className="size-4" />} />
+   310→          </div>
+   311→        </CardContent>
+   312→      </Card>
+   313→
+   314→      {/* Tabs */}
+   315→      <Tabs value={tab} onValueChange={setTab}>
+   316→        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 max-w-2xl">
+   317→          <TabsTrigger value="plano"><Package className="size-4 md:mr-1.5" /><span className="hidden sm:inline">Plano</span></TabsTrigger>
+   318→          <TabsTrigger value="mapa"><MapPin className="size-4 md:mr-1.5" /><span className="hidden sm:inline">Mapa</span></TabsTrigger>
+   319→          <TabsTrigger value="sponsors"><Store className="size-4 md:mr-1.5" /><span className="hidden sm:inline">Patrocinadores</span></TabsTrigger>
+   320→          <TabsTrigger value="dashboard"><TrendingUp className="size-4 md:mr-1.5" /><span className="hidden sm:inline">Dashboard</span></TabsTrigger>
+   321→        </TabsList>
+   322→
+   323→        <TabsContent value="plano" className="mt-4 space-y-4">
+   324→          <Toolbar
+   325→            filterPanel={filterPanel}
+   326→            setFilterPanel={setFilterPanel}
+   327→            filterType={filterType}
+   328→            setFilterType={setFilterType}
+   329→            search={search}
+   330→            setSearch={setSearch}
+   331→          />
+   332→          <BagView
+   333→            spaces={filteredSpaces}
+   334→            onCellClick={setSelectedSpace}
+   335→            currentUserId={currentUser?.id}
+   336→            view="status"
+   337→          />
+   338→          <Legend />
+   339→        </TabsContent>
+   340→
+   341→        <TabsContent value="mapa" className="mt-4 space-y-4">
+   342→          <Toolbar
+   343→            filterPanel={filterPanel}
+   344→            setFilterPanel={setFilterPanel}
+   345→            filterType={filterType}
+   346→            setFilterType={setFilterType}
+   347→            search={search}
+   348→            setSearch={setSearch}
+   349→          />
+   350→          <BagView
+   351→            spaces={filteredSpaces}
+   352→            onCellClick={setSelectedSpace}
+   353→            currentUserId={currentUser?.id}
+   354→            view="sponsor"
+   355→          />
+   356→          <SponsorLegend spaces={data.spaces} />
+   357→        </TabsContent>
+   358→
+   359→        <TabsContent value="sponsors" className="mt-4">
+   360→          <SponsorsTab sponsors={sponsors} onPick={(name) => { setSearch(name); setTab('plano'); toast(`Mostrando espacios de ${name}`, 'info') }} />
+   361→        </TabsContent>
+   362→
+   363→        <TabsContent value="dashboard" className="mt-4">
+   364→          <DashboardTab data={data} />
+   365→        </TabsContent>
+   366→      </Tabs>
+   367→
+   368→      {/* Space Editor */}
+   369→      <SpaceEditorDialog
+   370→        space={selectedSpace}
+   371→        onClose={() => setSelectedSpace(null)}
+   372→        onPatched={handlePatched}
+   373→        currentUser={currentUser}
+   374→        toast={toast}
+   375→      />
+   376→    </div>
+   377→  )
+   378→}
+   379→
+   380→// ---------- Sub-componentes ----------
+   381→
+   382→function StatPill({
+   383→  label,
+   384→  value,
+   385→  tone,
+   386→  icon,
+   387→}: {
+   388→  label: string
+   389→  value: number
+   390→  tone: 'muted' | 'emerald' | 'amber' | 'rose'
+   391→  icon: React.ReactNode
+   392→}) {
+   393→  const toneClasses = {
+   394→    muted: 'bg-muted/50 text-muted-foreground',
+   395→    emerald: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+   396→    amber: 'bg-amber-50 text-amber-700 border-amber-200',
+   397→    rose: 'bg-rose-50 text-rose-700 border-rose-200',
+   398→  }[tone]
+   399→  return (
+   400→    <div className={cn('rounded-lg border p-3 flex items-center gap-3', toneClasses)}>
+   401→      <div className="size-8 rounded-md bg-white/60 flex items-center justify-center shrink-0">{icon}</div>
+   402→      <div className="min-w-0">
+   403→        <p className="text-xl font-bold leading-tight">{value}</p>
+   404→        <p className="text-xs opacity-80 truncate">{label}</p>
+   405→      </div>
+   406→    </div>
+   407→  )
+   408→}
+   409→
+   410→function Toolbar({
+   411→  filterPanel,
+   412→  setFilterPanel,
+   413→  filterType,
+   414→  setFilterType,
+   415→  search,
+   416→  setSearch,
+   417→}: {
+   418→  filterPanel: string
+   419→  setFilterPanel: (v: string) => void
+   420→  filterType: string
+   421→  setFilterType: (v: string) => void
+   422→  search: string
+   423→  setSearch: (v: string) => void
+   424→}) {
+   425→  return (
+   426→    <Card>
+   427→      <CardContent className="p-3 md:p-4">
+   428→        <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+   429→          <div className="flex items-center gap-2 flex-1 min-w-0">
+   430→            <Label className="text-xs text-muted-foreground whitespace-nowrap">Panel</Label>
+   431→            <Select value={filterPanel} onValueChange={setFilterPanel}>
+   432→              <SelectTrigger size="sm" className="w-full sm:w-48">
+   433→                <SelectValue />
+   434→              </SelectTrigger>
+   435→              <SelectContent>
+   436→                <SelectItem value="all">Todos los paneles</SelectItem>
+   437→                {BAG_PANELS.map((p) => (
+   438→                  <SelectItem key={p.key} value={p.key}>{p.label}</SelectItem>
+   439→                ))}
+   440→              </SelectContent>
+   441→            </Select>
+   442→          </div>
+   443→          <div className="flex items-center gap-2">
+   444→            <Label className="text-xs text-muted-foreground whitespace-nowrap">Tipo</Label>
+   445→            <Select value={filterType} onValueChange={setFilterType}>
+   446→              <SelectTrigger size="sm" className="w-32">
+   447→                <SelectValue />
+   448→              </SelectTrigger>
+   449→              <SelectContent>
+   450→                <SelectItem value="all">Todos</SelectItem>
+   451→                <SelectItem value="QR">QR</SelectItem>
+   452→                <SelectItem value="IMAGE">Imagen</SelectItem>
+   453→                <SelectItem value="LOGO">Logo</SelectItem>
+   454→              </SelectContent>
+   455→            </Select>
+   456→          </div>
+   457→          <div className="relative flex-1 min-w-0">
+   458→            <Search className="size-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+   459→            <Input
+   460→              value={search}
+   461→              onChange={(e) => setSearch(e.target.value)}
+   462→              placeholder="Buscar patrocinador..."
+   463→              className="pl-8 h-8 text-sm"
+   464→            />
+   465→          </div>
+   466→        </div>
+   467→      </CardContent>
+   468→    </Card>
+   469→  )
+   470→}
+   471→
+   472→function BagView({
+   473→  spaces,
+   474→  onCellClick,
+   475→  currentUserId,
+   476→  view,
+   477→}: {
+   478→  spaces: BagSpace[]
+   479→  onCellClick: (s: BagSpace) => void
+   480→  currentUserId?: string
+   481→  view: 'status' | 'sponsor'
+   482→}) {
+   483→  // Indexar espacios por posición para acceso rápido
+   484→  const byPosition = useMemo(() => {
+   485→    const m = new Map<number, BagSpace>()
+   486→    for (const s of spaces) m.set(s.position, s)
+   487→    return m
+   488→  }, [spaces])
+   489→
+   490→  return (
+   491→    <div className="space-y-4">
+   492→      {BAG_PANELS.map((panel) => {
+   493→        const positions: number[] = []
+   494→        for (let i = panel.start; i <= panel.end; i++) positions.push(i)
+   495→        const panelSpaces = positions.map((p) => byPosition.get(p)).filter(Boolean) as BagSpace[]
+   496→        const sold = panelSpaces.filter((s) => s.status === 'SOLD').length
+   497→        const available = panelSpaces.filter((s) => s.status === 'AVAILABLE').length
+   498→        const total = panel.end - panel.start + 1
+   499→
+   500→        return (
+   501→          <Card key={panel.key}>
+   502→            <CardHeader className="pb-3">
+   503→              <div className="flex flex-wrap items-center justify-between gap-2">
+   504→                <div>
+   505→                  <CardTitle className="text-base flex items-center gap-2">
+   506→                    {panel.label}
+   507→                    <span className="text-xs font-normal text-muted-foreground">
+   508→                      · {panel.widthCm}×{panel.heightCm} cm · {panel.cols}×{panel.rows}
+   509→                    </span>
+   510→                  </CardTitle>
+   511→                  <CardDescription className="text-xs">
+   512→                    Espacios {panel.start}–{panel.end} · {total} celdas de 5×5 cm
+   513→                  </CardDescription>
+   514→                </div>
+   515→                <div className="flex items-center gap-1.5">
+   516→                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">{available} libres</Badge>
+   517→                  <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-200">{sold} vendidas</Badge>
+   518→                </div>
+   519→              </div>
+   520→            </CardHeader>
+   521→            <CardContent>
+   522→              <div
+   523→                className="grid gap-[2px] sm:gap-1"
+   524→                style={{ gridTemplateColumns: `repeat(${panel.cols}, minmax(0, 1fr))` }}
+   525→              >
+   526→                {positions.map((pos) => {
+   527→                  const s = byPosition.get(pos)
+   528→                  return (
+   529→                    <Cell
+   530→                      key={pos}
+   531→                      position={pos}
+   532→                      space={s}
+   533→                      onCellClick={onCellClick}
+   534→                      currentUserId={currentUserId}
+   535→                      view={view}
+   536→                    />
+   537→                  )
+   538→                })}
+   539→              </div>
+   540→            </CardContent>
+   541→          </Card>
+   542→        )
+   543→      })}
+   544→    </div>
+   545→  )
+   546→}
+   547→
+   548→function Cell({
+   549→  position,
+   550→  space,
+   551→  onCellClick,
+   552→  currentUserId,
+   553→  view,
+   554→}: {
+   555→  position: number
+   556→  space?: BagSpace
+   557→  onCellClick: (s: BagSpace) => void
+   558→  currentUserId?: string
+   559→  view: 'status' | 'sponsor'
+   560→}) {
+   561→  const { row, col } = rowColForPosition(position)
+   562→  const status = space?.status || 'AVAILABLE'
+   563→  const isMine = !!space?.providerId && space.providerId === currentUserId
+   564→
+   565→  // Estilos por vista
+   566→  let bg = 'bg-muted/40 border-border hover:bg-muted/70'
+   567→  let textColor = 'text-muted-foreground'
+   568→
+   569→  if (view === 'sponsor') {
+   570→    if (status === 'SOLD' && space?.provider?.companyName) {
+   571→      const c = sponsorColor(space.provider.companyName)
+   572→      return (
+   573→        <Tooltip>
+   574→          <TooltipTrigger asChild>
+   575→            <button
+   576→              onClick={() => space && onCellClick(space)}
+   577→              className="aspect-square rounded-sm border border-black/10 text-[8px] sm:text-[9px] font-medium flex items-center justify-center transition-all hover:scale-110 hover:z-10 hover:shadow-md"
+   578→              style={{ backgroundColor: c, color: '#fff' }}
+   579→            >
+   580→              {position}
+   581→            </button>
+   582→          </TooltipTrigger>
+   583→          <TooltipContent side="top" className="text-xs">
+   584→            <div className="space-y-0.5">
+   585→              <p className="font-semibold">#{position} · {space?.provider?.companyName}</p>
+   586→              <p>Vendido · {fmtUsd(space?.price || 20)}</p>
+   587→              <p className="text-muted-foreground">Fila {row + 1}, Col {col + 1}</p>
+   588→            </div>
+   589→          </TooltipContent>
+   590→        </Tooltip>
+   591→      )
+   592→    }
+   593→    if (status === 'RESERVED') {
+   594→      bg = 'bg-amber-100 border-amber-300 hover:bg-amber-200'
+   595→      textColor = 'text-amber-800'
+   596→    } else {
+   597→      bg = 'bg-muted/40 border-border hover:bg-muted/70'
+   598→    }
+   599→  } else {
+   600→    // view status
+   601→    if (status === 'AVAILABLE') {
+   602→      bg = 'bg-emerald-50 border-emerald-200 hover:bg-emerald-100'
+   603→      textColor = 'text-emerald-700'
+   604→    } else if (status === 'RESERVED') {
+   605→      bg = 'bg-amber-100 border-amber-300 hover:bg-amber-200'
+   606→      textColor = 'text-amber-800'
+   607→    } else if (status === 'SOLD') {
+   608→      bg = 'bg-rose-100 border-rose-300 hover:bg-rose-200'
+   609→      textColor = 'text-rose-800'
+   610→    }
+   611→  }
+   612→
+   613→  if (isMine) {
+   614→    bg += ' ring-2 ring-emerald-500 ring-offset-1'
+   615→  }
+   616→
+   617→  const sponsorName = space?.provider?.companyName
+   618→
+   619→  return (
+   620→    <Tooltip>
+   621→      <TooltipTrigger asChild>
+   622→        <button
+   623→          onClick={() => space && onCellClick(space)}
+   624→          className={cn(
+   625→            'aspect-square rounded-sm border text-[8px] sm:text-[9px] font-medium flex items-center justify-center transition-all hover:scale-110 hover:z-10 hover:shadow-md',
+   626→            bg,
+   627→            textColor
+   628→          )}
+   629→        >
+   630→          {position}
+   631→        </button>
+   632→      </TooltipTrigger>
+   633→      <TooltipContent side="top" className="text-xs">
+   634→        <div className="space-y-0.5">
+   635→          <p className="font-semibold">#{position} · {space ? STATUS_LABELS[status] : 'Disponible'}</p>
+   636→          {sponsorName && <p>{sponsorName}</p>}
+   637→          <p className="text-muted-foreground">{fmtUsd(space?.price || 20)} · Fila {row + 1}, Col {col + 1}</p>
+   638→        </div>
+   639→      </TooltipContent>
+   640→    </Tooltip>
+   641→  )
+   642→}
+   643→
+   644→function Legend() {
+   645→  const items = [
+   646→    { label: 'Disponible', className: 'bg-emerald-50 border-emerald-300' },
+   647→    { label: 'Reservado', className: 'bg-amber-100 border-amber-300' },
+   648→    { label: 'Vendido', className: 'bg-rose-100 border-rose-300' },
+   649→    { label: 'Mío', className: 'bg-emerald-50 border-emerald-300 ring-2 ring-emerald-500' },
+   650→  ]
+   651→  return (
+   652→    <Card>
+   653→      <CardContent className="p-3 flex flex-wrap items-center gap-4">
+   654→        <span className="text-xs text-muted-foreground font-medium">Leyenda:</span>
+   655→        {items.map((it) => (
+   656→          <div key={it.label} className="flex items-center gap-1.5">
+   657→            <div className={cn('size-4 rounded-sm border', it.className)} />
+   658→            <span className="text-xs">{it.label}</span>
+   659→          </div>
+   660→        ))}
+   661→      </CardContent>
+   662→    </Card>
+   663→  )
+   664→}
+   665→
+   666→function SponsorLegend({ spaces }: { spaces: BagSpace[] }) {
+   667→  const sponsors = useMemo(() => {
+   668→    const map = new Map<string, number>()
+   669→    for (const s of spaces) {
+   670→      if (s.status === 'SOLD' && s.provider?.companyName) {
+   671→        map.set(s.provider.companyName, (map.get(s.provider.companyName) || 0) + 1)
+   672→      }
+   673→    }
+   674→    return Array.from(map.entries()).sort((a, b) => b[1] - a[1])
+   675→  }, [spaces])
+   676→
+   677→  if (sponsors.length === 0) {
+   678→    return (
+   679→      <Card>
+   680→        <CardContent className="p-3 text-sm text-muted-foreground">
+   681→          Aún no hay patrocinadores con espacios vendidos. Asigna espacios para verlos aquí.
+   682→        </CardContent>
+   683→      </Card>
+   684→    )
+   685→  }
+   686→
+   687→  return (
+   688→    <Card>
+   689→      <CardContent className="p-3">
+   690→        <div className="flex flex-wrap items-center gap-3">
+   691→          <span className="text-xs text-muted-foreground font-medium">Patrocinadores:</span>
+   692→          {sponsors.map(([name, count]) => (
+   693→            <div key={name} className="flex items-center gap-1.5">
+   694→              <div
+   695→                className="size-4 rounded-sm border border-black/10"
+   696→                style={{ backgroundColor: sponsorColor(name) }}
+   697→              />
+   698→              <span className="text-xs">{name} ({count})</span>
+   699→            </div>
+   700→          ))}
+   701→        </div>
+   702→      </CardContent>
+   703→    </Card>
+   704→  )
+   705→}
+   706→
+   707→function SponsorsTab({
+   708→  sponsors,
+   709→  onPick,
+   710→}: {
+   711→  sponsors: Array<{ id: string; name: string; logoUrl?: string | null; count: number; invested: number; status: string }>
+   712→  onPick: (name: string) => void
+   713→}) {
+   714→  if (sponsors.length === 0) {
+   715→    return (
+   716→      <Card>
+   717→        <CardContent className="py-12 text-center">
+   718→          <Store className="size-10 mx-auto text-muted-foreground mb-3" />
+   719→          <p className="font-medium">Sin patrocinadores aún</p>
+   720→          <p className="text-sm text-muted-foreground mt-1">
+   721→            Ve al Plano del Bolso y asigna espacios a proveedores para verlos aquí.
+   722→          </p>
+   723→        </CardContent>
+   724→      </Card>
+   725→    )
+   726→  }
+   727→
+   728→  return (
+   729→    <Card>
+   730→      <CardHeader>
+   731→        <CardTitle className="text-base">Patrocinadores del bolso</CardTitle>
+   732→        <CardDescription>{sponsors.length} empresa(s) compraron espacios</CardDescription>
+   733→      </CardHeader>
+   734→      <CardContent>
+   735→        <Table>
+   736→          <TableHeader>
+   737→            <TableRow>
+   738→              <TableHead>Logo</TableHead>
+   739→              <TableHead>Empresa</TableHead>
+   740→              <TableHead className="text-center">Espacios</TableHead>
+   741→              <TableHead className="text-right">Inversión</TableHead>
+   742→              <TableHead className="text-center">Estado</TableHead>
+   743→              <TableHead className="text-right">Acción</TableHead>
+   744→            </TableRow>
+   745→          </TableHeader>
+   746→          <TableBody>
+   747→            {sponsors.map((sp) => (
+   748→              <TableRow key={sp.id}>
+   749→                <TableCell>
+   750→                  {sp.logoUrl ? (
+   751→                    <img src={sp.logoUrl} alt={sp.name} className="size-8 rounded object-cover" />
+   752→                  ) : (
+   753→                    <div className="size-8 rounded bg-muted flex items-center justify-center">
+   754→                      <Store className="size-4 text-muted-foreground" />
+   755→                    </div>
+   756→                  )}
+   757→                </TableCell>
+   758→                <TableCell className="font-medium">
+   759→                  <div className="flex items-center gap-2">
+   760→                    <div className="size-3 rounded-sm border border-black/10" style={{ backgroundColor: sponsorColor(sp.name) }} />
+   761→                    {sp.name}
+   762→                  </div>
+   763→                </TableCell>
+   764→                <TableCell className="text-center">{sp.count}</TableCell>
+   765→                <TableCell className="text-right font-bold">{fmtUsd(sp.invested)}</TableCell>
+   766→                <TableCell className="text-center">
+   767→                  <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100">Activo</Badge>
+   768→                </TableCell>
+   769→                <TableCell className="text-right">
+   770→                  <Button size="sm" variant="outline" onClick={() => onPick(sp.name)}>Ver</Button>
+   771→                </TableCell>
+   772→              </TableRow>
+   773→            ))}
+   774→          </TableBody>
+   775→        </Table>
+   776→      </CardContent>
+   777→    </Card>
+   778→  )
+   779→}
+   780→
+   781→function DashboardTab({ data }: { data: BagPlanData }) {
+   782→  const occupancy = data.stats.total > 0 ? (data.stats.sold / data.stats.total) * 100 : 0
+   783→
+   784→  // Breakdown por panel
+   785→  const panelStats = useMemo(() => {
+   786→    return BAG_PANELS.map((p) => {
+   787→      let sold = 0, reserved = 0, available = 0, revenue = 0
+   788→      for (const s of data.spaces) {
+   789→        if (s.position < p.start || s.position > p.end) continue
+   790→        if (s.status === 'SOLD') { sold++; revenue += s.price || 0 }
+   791→        else if (s.status === 'RESERVED') reserved++
+   792→        else available++
+   793→      }
+   794→      const total = p.end - p.start + 1
+   795→      return { panel: p, sold, reserved, available, revenue, total, pct: (sold / total) * 100 }
+   796→    })
+   797→  }, [data])
+   798→
+   799→  const exportCSV = () => {
+   800→    const rows = [['position', 'panel', 'row', 'col', 'status', 'type', 'price', 'sponsor']]
+   801→    for (const s of data.spaces) {
+   802→      const { panel, row, col } = rowColForPosition(s.position)
+   803→      rows.push([
+   804→        String(s.position),
+   805→        panel.label,
+   806→        String(row + 1),
+   807→        String(col + 1),
+   808→        s.status,
+   809→        s.type,
+   810→        String(s.price),
+   811→        s.provider?.companyName || '',
+   812→      ])
+   813→    }
+   814→    const csv = rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n')
+   815→    downloadBlob(csv, `plano-bolso-${data.edition.slug}.csv`, 'text/csv;charset=utf-8')
+   816→  }
+   817→
+   818→  const exportJSON = () => {
+   819→    const json = JSON.stringify(data, null, 2)
+   820→    downloadBlob(json, `plano-bolso-${data.edition.slug}.json`, 'application/json')
+   821→  }
+   822→
+   823→  const exportSVG = () => {
+   824→    const svg = buildSVG(data)
+   825→    downloadBlob(svg, `plano-bolso-${data.edition.slug}.svg`, 'image/svg+xml')
+   826→  }
+   827→
+   828→  return (
+   829→    <div className="space-y-4">
+   830→      {/* Stat cards */}
+   831→      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+   832→        <Card className="border-emerald-200">
+   833→          <CardContent className="p-4">
+   834→            <div className="flex items-center gap-2 text-emerald-700">
+   835→              <Wallet className="size-4" />
+   836→              <span className="text-xs font-medium">Ingresos</span>
+   837→            </div>
+   838→            <p className="text-2xl font-bold mt-1">{fmtUsd(data.stats.revenue)}</p>
+   839→            <p className="text-xs text-muted-foreground">Espacios vendidos</p>
+   840→          </CardContent>
+   841→        </Card>
+   842→        <Card>
+   843→          <CardContent className="p-4">
+   844→            <div className="flex items-center gap-2 text-muted-foreground">
+   845→              <CircleDollarSign className="size-4" />
+   846→              <span className="text-xs font-medium">Potencial</span>
+   847→            </div>
+   848→            <p className="text-2xl font-bold mt-1">{fmtUsd(data.stats.potential)}</p>
+   849→            <p className="text-xs text-muted-foreground">270 × $20</p>
+   850→          </CardContent>
+   851→        </Card>
+   852→        <Card>
+   853→          <CardContent className="p-4">
+   854→            <div className="flex items-center gap-2 text-amber-700">
+   855→              <TrendingUp className="size-4" />
+   856→              <span className="text-xs font-medium">Ocupación</span>
+   857→            </div>
+   858→            <p className="text-2xl font-bold mt-1">{occupancy.toFixed(1)}%</p>
+   859→            <p className="text-xs text-muted-foreground">{data.stats.sold} de {data.stats.total}</p>
+   860→          </CardContent>
+   861→        </Card>
+   862→        <Card>
+   863→          <CardContent className="p-4">
+   864→            <div className="flex items-center gap-2 text-emerald-700">
+   865→              <CheckCircle2 className="size-4" />
+   866→              <span className="text-xs font-medium">Disponibles</span>
+   867→            </div>
+   868→            <p className="text-2xl font-bold mt-1">{data.stats.available}</p>
+   869→            <p className="text-xs text-muted-foreground">{data.stats.reserved} reservados</p>
+   870→          </CardContent>
+   871→        </Card>
+   872→      </div>
+   873→
+   874→      {/* Occupancy bar */}
+   875→      <Card>
+   876→        <CardHeader className="pb-3">
+   877→          <CardTitle className="text-base">Ocupación general</CardTitle>
+   878→        </CardHeader>
+   879→        <CardContent className="space-y-2">
+   880→          <Progress value={occupancy} className="h-3" />
+   881→          <div className="flex justify-between text-xs text-muted-foreground">
+   882→            <span>{data.stats.sold} vendidos</span>
+   883→            <span>{data.stats.reserved} reservados</span>
+   884→            <span>{data.stats.available} disponibles</span>
+   885→          </div>
+   886→        </CardContent>
+   887→      </Card>
+   888→
+   889→      {/* Breakdown por panel */}
+   890→      <Card>
+   891→        <CardHeader className="pb-3">
+   892→          <CardTitle className="text-base">Ocupación por panel</CardTitle>
+   893→          <CardDescription>Vendidos vs. total por cada panel del bolso</CardDescription>
+   894→        </CardHeader>
+   895→        <CardContent className="space-y-2">
+   896→          {panelStats.map((ps) => (
+   897→            <div key={ps.panel.key} className="space-y-1">
+   898→              <div className="flex justify-between text-xs">
+   899→                <span className="font-medium">{ps.panel.label}</span>
+   900→                <span className="text-muted-foreground">
+   901→                  {ps.sold}/{ps.total} · {fmtUsd(ps.revenue)}
+   902→                </span>
+   903→              </div>
+   904→              <Progress value={ps.pct} className="h-2" />
+   905→            </div>
+   906→          ))}
+   907→        </CardContent>
+   908→      </Card>
+   909→
+   910→      {/* Export buttons */}
+   911→      <Card>
+   912→        <CardHeader className="pb-3">
+   913→          <CardTitle className="text-base">Exportar e imprimir</CardTitle>
+   914→          <CardDescription>Descarga el plano en distintos formatos</CardDescription>
+   915→        </CardHeader>
+   916→        <CardContent>
+   917→          <div className="flex flex-wrap gap-2">
+   918→            <Button variant="outline" size="sm" onClick={exportCSV}>
+   919→              <FileSpreadsheet className="size-4 mr-1.5" /> CSV
+   920→            </Button>
+   921→            <Button variant="outline" size="sm" onClick={exportJSON}>
+   922→              <FileJson className="size-4 mr-1.5" /> JSON
+   923→            </Button>
+   924→            <Button variant="outline" size="sm" onClick={exportSVG}>
+   925→              <FileCode className="size-4 mr-1.5" /> SVG
+   926→            </Button>
+   927→            <Button variant="outline" size="sm" onClick={() => window.print()}>
+   928→              <Printer className="size-4 mr-1.5" /> Imprimir
+   929→            </Button>
+   930→          </div>
+   931→        </CardContent>
+   932→      </Card>
+   933→    </div>
+   934→  )
+   935→}
+   936→
+   937→// ---------- Space Editor Dialog ----------
+   938→
+   939→function SpaceEditorDialog({
+   940→  space,
+   941→  onClose,
+   942→  onPatched,
+   943→  currentUser,
+   944→  toast,
+   945→}: {
+   946→  space: BagSpace | null
+   947→  onClose: () => void
+   948→  onPatched: (s: BagSpace) => void
+   949→  currentUser: { id: string; role: string; name: string } | null
+   950→  toast: (msg: string, type?: 'success' | 'error' | 'info' | 'warning') => void
+   951→}) {
+   952→  const [providers, setProviders] = useState<SupplierOption[]>([])
+   953→  const [providerId, setProviderId] = useState<string>('')
+   954→  const [type, setType] = useState<string>('QR')
+   955→  const [imageUrl, setImageUrl] = useState<string>('')
+   956→  const [price, setPrice] = useState<string>('20')
+   957→  const [saving, setSaving] = useState(false)
+   958→  const [providersError, setProvidersError] = useState(false)
+   959→
+   960→  // Cargar proveedores para el select
+   961→  useEffect(() => {
+   962→    if (!space) return
+   963→    let cancelled = false
+   964→    fetch('/api/suppliers')
+   965→      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('no-ok'))))
+   966→      .then((rows: any[]) => {
+   967→        if (cancelled) return
+   968→        const opts = rows.map((r) => ({ id: r.id, companyName: r.companyName, logoUrl: r.logoUrl }))
+   969→        setProviders(opts)
+   970→        setProvidersError(false)
+   971→      })
+   972→      .catch(() => {
+   973→        setProviders([])
+   974→        setProvidersError(true)
+   975→      })
+   976→    return () => { cancelled = true }
+   977→  }, [space])
+   978→
+   979→  // Reset form cuando cambia el space
+   980→  useEffect(() => {
+   981→    if (space) {
+   982→      setProviderId(space.providerId || '')
+   983→      setType(space.type || 'QR')
+   984→      setImageUrl(space.imageUrl || '')
+   985→      setPrice(String(space.price ?? 20))
+   986→    }
+   987→  }, [space])
+   988→
+   989→  const { panel, row, col } = space ? rowColForPosition(space.position) : { panel: null, row: 0, col: 0 }
+   990→  const isAdmin = currentUser?.role === 'ADMIN'
+   991→  const isSupplier = currentUser?.role === 'SUPPLIER'
+   992→  const canAssign = isAdmin || isSupplier
+   993→  const isReserved = space?.status === 'RESERVED'
+   994→  const isSold = space?.status === 'SOLD'
+   995→  const isAvailable = space?.status === 'AVAILABLE'
+   996→
+   997→  const patch = async (action: 'reserve' | 'release' | 'assign') => {
+   998→    if (!space) return
+   999→    if (!currentUser) {
+  1000→      toast('Inicia sesión para gestionar espacios', 'warning')
+  1001→      return
+  1002→    }
+  1003→    setSaving(true)
+  1004→    try {
+  1005→      const body: any = { spaceId: space.id, action }
+  1006→      if (action === 'assign') {
+  1007→        if (!providerId) {
+  1008→          toast('Selecciona un proveedor', 'warning')
+  1009→          setSaving(false)
+  1010→          return
+  1011→        }
+  1012→        body.providerId = providerId
+  1013→        body.type = type
+  1014→        body.imageUrl = imageUrl || undefined
+  1015→        const pNum = parseFloat(price)
+  1016→        if (!isNaN(pNum) && pNum >= 0) body.price = pNum
+  1017→      }
+  1018→      const res = await fetch('/api/impulse/bag-plan', {
+  1019→        method: 'PATCH',
+  1020→        headers: { 'Content-Type': 'application/json' },
+  1021→        body: JSON.stringify(body),
+  1022→      })
+  1023→      const d = await res.json()
+  1024→      if (!res.ok) {
+  1025→        toast(d.error || 'Error al actualizar', 'error')
+  1026→        return
+  1027→      }
+  1028→      toast(`Espacio #${space.position} ${action === 'reserve' ? 'reservado' : action === 'release' ? 'liberado' : 'vendido'}`, 'success')
+  1029→      onPatched(d.space)
+  1030→    } catch {
+  1031→      toast('Error de red', 'error')
+  1032→    } finally {
+  1033→      setSaving(false)
+  1034→    }
+  1035→  }
+  1036→
+  1037→  const qrTarget = useMemo(() => {
+  1038→    if (!space?.provider?.websiteSlug) return null
+  1039→    if (typeof window !== 'undefined') {
+  1040→      return `${window.location.origin}/w/${space.provider.websiteSlug}`
+  1041→    }
+  1042→    return `/w/${space.provider.websiteSlug}`
+  1043→  }, [space])
+  1044→
+  1045→  if (!space) return null
+  1046→
+  1047→  return (
+  1048→    <Dialog open={!!space} onOpenChange={(o) => !o && onClose()}>
+  1049→      <DialogContent className="max-w-md">
+  1050→        <DialogHeader>
+  1051→          <DialogTitle className="flex items-center gap-2">
+  1052→            Espacio #{space.position}
+  1053→            <Badge className={
+  1054→              isAvailable ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100'
+  1055→              : isReserved ? 'bg-amber-100 text-amber-700 hover:bg-amber-100'
+  1056→              : 'bg-rose-100 text-rose-700 hover:bg-rose-100'
+  1057→            }>
+  1058→              {STATUS_LABELS[space.status] || space.status}
+  1059→            </Badge>
+  1060→          </DialogTitle>
+  1061→          <DialogDescription>
+  1062→            {panel?.label} · Fila {row + 1}, Col {col + 1} · 5×5 cm · {fmtUsd(space.price || 20)}
+  1063→          </DialogDescription>
+  1064→        </DialogHeader>
+  1065→
+  1066→        <div className="space-y-3">
+  1067→          {/* Provider info si ya tiene */}
+  1068→          {(isSold || isReserved) && space.provider && (
+  1069→            <div className="rounded-lg bg-muted/50 p-3 flex items-center gap-3">
+  1070→              {space.provider.logoUrl ? (
+  1071→                <img src={space.provider.logoUrl} alt="" className="size-10 rounded object-cover" />
+  1072→              ) : (
+  1073→                <div className="size-10 rounded bg-muted flex items-center justify-center">
+  1074→                  <Store className="size-5 text-muted-foreground" />
+  1075→                </div>
+  1076→              )}
+  1077→              <div className="min-w-0">
+  1078→                <p className="font-medium truncate">{space.provider.companyName}</p>
+  1079→                <p className="text-xs text-muted-foreground">
+  1080→                  {isSold && space.soldAt ? `Vendido el ${fmtDate(space.soldAt)}` : ''}
+  1081→                  {isReserved && space.reservedAt ? `Reservado el ${fmtDateTime(space.reservedAt)}` : ''}
+  1082→                </p>
+  1083→              </div>
+  1084→            </div>
+  1085→          )}
+  1086→
+  1087→          {/* QR preview si está vendido y es QR */}
+  1088→          {isSold && space.type === 'QR' && qrTarget && (
+  1089→            <div className="rounded-lg border p-3 flex items-center gap-3">
+  1090→              <img
+  1091→                src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(qrTarget)}`}
+  1092→                alt="QR del espacio"
+  1093→                className="size-20 rounded border"
+  1094→              />
+  1095→              <div className="min-w-0 text-xs">
+  1096→                <p className="font-medium flex items-center gap-1"><QrCode className="size-3" /> Código QR</p>
+  1097→                <p className="text-muted-foreground break-all">{qrTarget}</p>
+  1098→              </div>
+  1099→            </div>
+  1100→          )}
+  1101→
+  1102→          {/* Imagen si es IMAGE/LOGO */}
+  1103→          {isSold && (space.type === 'IMAGE' || space.type === 'LOGO') && space.imageUrl && (
+  1104→            <div className="rounded-lg border p-2 flex items-center justify-center">
+  1105→              <img src={space.imageUrl} alt="Contenido del espacio" className="max-h-32 rounded" />
+  1106→            </div>
+  1107→          )}
+  1108→
+  1109→          {/* Form de edición */}
+  1110→          {canAssign && !isSold && (
+  1111→            <>
+  1112→              <div>
+  1113→                <Label className="text-xs">Proveedor</Label>
+  1114→                {providersError ? (
+  1115→                  <Input
+  1116→                    value={providerId}
+  1117→                    onChange={(e) => setProviderId(e.target.value)}
+  1118→                    placeholder="ID del proveedor (no se pudo cargar lista)"
+  1119→                    className="mt-1 text-sm"
+  1120→                  />
+  1121→                ) : providers.length === 0 ? (
+  1122→                  <div className="text-xs text-muted-foreground mt-1">Cargando proveedores...</div>
+  1123→                ) : (
+  1124→                  <Select value={providerId} onValueChange={setProviderId}>
+  1125→                    <SelectTrigger className="w-full mt-1 text-sm">
+  1126→                      <SelectValue placeholder="Selecciona proveedor" />
+  1127→                    </SelectTrigger>
+  1128→                    <SelectContent>
+  1129→                      {providers.map((p) => (
+  1130→                        <SelectItem key={p.id} value={p.id}>{p.companyName}</SelectItem>
+  1131→                      ))}
+  1132→                    </SelectContent>
+  1133→                  </Select>
+  1134→                )}
+  1135→              </div>
+  1136→              <div className="grid grid-cols-2 gap-2">
+  1137→                <div>
+  1138→                  <Label className="text-xs">Tipo</Label>
+  1139→                  <Select value={type} onValueChange={setType}>
+  1140→                    <SelectTrigger className="w-full mt-1 text-sm">
+  1141→                      <SelectValue />
+  1142→                    </SelectTrigger>
+  1143→                    <SelectContent>
+  1144→                      <SelectItem value="QR">QR</SelectItem>
+  1145→                      <SelectItem value="IMAGE">Imagen</SelectItem>
+  1146→                      <SelectItem value="LOGO">Logo</SelectItem>
+  1147→                    </SelectContent>
+  1148→                  </Select>
+  1149→                </div>
+  1150→                <div>
+  1151→                  <Label className="text-xs">Precio $</Label>
+  1152→                  <Input
+  1153→                    type="number"
+  1154→                    value={price}
+  1155→                    onChange={(e) => setPrice(e.target.value)}
+  1156→                    min={0}
+  1157→                    className="mt-1 text-sm"
+  1158→                  />
+  1159→                </div>
+  1160→              </div>
+  1161→              {(type === 'IMAGE' || type === 'LOGO') && (
+  1162→                <div>
+  1163→                  <Label className="text-xs">URL de imagen</Label>
+  1164→                  <Input
+  1165→                    value={imageUrl}
+  1166→                    onChange={(e) => setImageUrl(e.target.value)}
+  1167→                    placeholder="https://..."
+  1168→                    className="mt-1 text-sm"
+  1169→                  />
+  1170→                </div>
+  1171→              )}
+  1172→            </>
+  1173→          )}
+  1174→
+  1175→          {/* Admin puede editar precio de vendidos */}
+  1176→          {isSold && isAdmin && (
+  1177→            <div className="grid grid-cols-2 gap-2">
+  1178→              <div>
+  1179→                <Label className="text-xs">Tipo</Label>
+  1180→                <Select value={type} onValueChange={setType} disabled>
+  1181→                  <SelectTrigger className="w-full mt-1 text-sm">
+  1182→                    <SelectValue />
+  1183→                  </SelectTrigger>
+  1184→                  <SelectContent>
+  1185→                    <SelectItem value="QR">QR</SelectItem>
+  1186→                    <SelectItem value="IMAGE">Imagen</SelectItem>
+  1187→                    <SelectItem value="LOGO">Logo</SelectItem>
+  1188→                  </SelectContent>
+  1189→                </Select>
+  1190→              </div>
+  1191→              <div>
+  1192→                <Label className="text-xs">Precio $</Label>
+  1193→                <Input type="number" value={price} disabled className="mt-1 text-sm" />
+  1194→              </div>
+  1195→            </div>
+  1196→          )}
+  1197→        </div>
+  1198→
+  1199→        <Separator />
+  1200→
+  1201→        <DialogFooter className="flex-wrap gap-2">
+  1202→          {!currentUser && (
+  1203→            <div className="w-full text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 flex items-center gap-2">
+  1204→              <LogIn className="size-4" /> Inicia sesión para gestionar este espacio.
+  1205→            </div>
+  1206→          )}
+  1207→          {currentUser && isAvailable && (
+  1208→            <>
+  1209→              <Button variant="outline" onClick={() => patch('reserve')} disabled={saving}>
+  1210→                <Clock className="size-4 mr-1.5" /> Reservar
+  1211→              </Button>
+  1212→              {canAssign && (
+  1213→                <Button onClick={() => patch('assign')} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700">
+  1214→                  {saving ? <RefreshCw className="size-4 mr-1.5 animate-spin" /> : <ShoppingBag className="size-4 mr-1.5" />}
+  1215→                  Asignar y vender
+  1216→                </Button>
+  1217→              )}
+  1218→            </>
+  1219→          )}
+  1220→          {currentUser && isReserved && (
+  1221→            <>
+  1222→              <Button variant="outline" onClick={() => patch('release')} disabled={saving}>
+  1223→                <XCircle className="size-4 mr-1.5" /> Liberar
+  1224→              </Button>
+  1225→              {canAssign && (
+  1226→                <Button onClick={() => patch('assign')} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700">
+  1227→                  {saving ? <RefreshCw className="size-4 mr-1.5 animate-spin" /> : <ShoppingBag className="size-4 mr-1.5" />}
+  1228→                  Confirmar venta
+  1229→                </Button>
+  1230→              )}
+  1231→            </>
+  1232→          )}
+  1233→          {currentUser && isSold && isAdmin && (
+  1234→            <Button variant="outline" onClick={() => patch('release')} disabled={saving}>
+  1235→              <Lock className="size-4 mr-1.5" /> Liberar (admin)
+  1236→            </Button>
+  1237→          )}
+  1238→          <Button variant="ghost" onClick={onClose}>Cerrar</Button>
+  1239→        </DialogFooter>
+  1240→      </DialogContent>
+  1241→    </Dialog>
+  1242→  )
+  1243→}
+  1244→
+  1245→// ---------- Utilidades de export ----------
+  1246→
+  1247→function downloadBlob(content: string, filename: string, mime: string) {
+  1248→  const blob = new Blob([content], { type: mime })
+  1249→  const url = URL.createObjectURL(blob)
+  1250→  const a = document.createElement('a')
+  1251→  a.href = url
+  1252→  a.download = filename
+  1253→  document.body.appendChild(a)
+  1254→  a.click()
+  1255→  document.body.removeChild(a)
+  1256→  setTimeout(() => URL.revokeObjectURL(url), 1000)
+  1257→}
+  1258→
+  1259→function buildSVG(data: BagPlanData): string {
+  1260→  const cellSize = 20
+  1261→  const panelGap = 30
+  1262→  const labelHeight = 24
+  1263→  let totalHeight = 0
+  1264→  const maxWidth = Math.max(...BAG_PANELS.map((p) => p.cols)) * cellSize
+  1265→
+  1266→  const panels = BAG_PANELS.map((p) => {
+  1267→    const y = totalHeight + labelHeight
+  1268→    const cells: string[] = []
+  1269→    for (let pos = p.start; pos <= p.end; pos++) {
+  1270→      const idx = pos - p.start
+  1271→      const r = Math.floor(idx / p.cols)
+  1272→      const c = idx % p.cols
+  1273→      const x = c * cellSize
+  1274→      const cy = y + r * cellSize
+  1275→      const space = data.spaces.find((s) => s.position === pos)
+  1276→      let fill = '#f5f5f5'
+  1277→      let stroke = '#ddd'
+  1278→      if (space?.status === 'AVAILABLE') { fill = '#ecfdf5'; stroke = '#a7f3d0' }
+  1279→      else if (space?.status === 'RESERVED') { fill = '#fef3c7'; stroke = '#fcd34d' }
+  1280→      else if (space?.status === 'SOLD') {
+  1281→        const color = space.provider?.companyName ? sponsorColor(space.provider.companyName) : '#fecdd3'
+  1282→        const { h, s, l } = parseHslLocal(color)
+  1283→        fill = `hsl(${h}, ${s}%, ${Math.min(l + 25, 88)}%)`
+  1284→        stroke = color
+  1285→      }
+  1286→      cells.push(`<rect x="${x}" y="${cy}" width="${cellSize}" height="${cellSize}" fill="${fill}" stroke="${stroke}" />`)
+  1287→      cells.push(`<text x="${x + cellSize / 2}" y="${cy + cellSize / 2 + 3}" font-size="7" text-anchor="middle" fill="#555">${pos}</text>`)
+  1288→    }
+  1289→    const panelSVG = `
+  1290→      <text x="0" y="${totalHeight + 16}" font-size="13" font-weight="bold" fill="#064e3b">${p.label} · ${p.widthCm}×${p.heightCm} cm</text>
+  1291→      ${cells.join('\n')}
+  1292→    `
+  1293→    totalHeight = y + p.rows * cellSize + panelGap
+  1294→    return panelSVG
+  1295→  })
+  1296→
+  1297→  return `<svg xmlns="http://www.w3.org/2000/svg" width="${maxWidth}" height="${totalHeight}" viewBox="0 0 ${maxWidth} ${totalHeight}">
+  1298→  <rect width="${maxWidth}" height="${totalHeight}" fill="white" />
+  1299→  <text x="0" y="14" font-size="14" font-weight="bold" fill="#065f46">${data.edition.name}</text>
+  1300→  ${panels.join('\n')}
+  1301→</svg>`
+  1302→}
+  1303→
+  1304→function parseHslLocal(hsl: string): { h: number; s: number; l: number } {
+  1305→  const m = hsl.match(/hsl\(\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)%\s*,\s*(-?\d+(?:\.\d+)?)%\s*\)/)
+  1306→  if (!m) return { h: 150, s: 45, l: 55 }
+  1307→  return { h: parseFloat(m[1]), s: parseFloat(m[2]), l: parseFloat(m[3]) }
+  1308→}
+  1309→

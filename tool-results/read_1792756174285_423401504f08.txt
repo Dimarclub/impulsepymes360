@@ -1,0 +1,1698 @@
+     1→<!DOCTYPE html>
+     2→<html lang="es">
+     3→<head>
+     4→    <meta charset="UTF-8">
+     5→    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     6→    <title>Publibags - Publicidad Ambulante en Fundas Ecológicas | ImpulsePymes360</title>
+     7→    <meta name="description" content="Publibags transforma fundas ecológicas en soportes publicitarios que circulan por toda la ciudad. 140 espacios (114 vendibles) de 7x7cm desde $47/mes. Diseño profesional incluido.">
+     8→    <meta name="theme-color" content="#0B1120">
+     9→    <link rel="canonical" href="https://www.impulsepymes360.com/publibags/">
+    10→
+    11→    <!-- Open Graph -->
+    12→    <meta property="og:type" content="website">
+    13→    <meta property="og:title" content="Publibags - Publicidad Ecológica Ambulante | ImpulsePymes360">
+    14→    <meta property="og:description" content="140 espacios publicitarios (114 vendibles) en fundas ecológicas que circulan por la ciudad. $47/mes por espacio.">
+    15→    <meta property="og:url" content="https://www.impulsepymes360.com/publibags/">
+    16→    <meta property="og:image" content="https://www.impulsepymes360.com/publibags/img/hero.jpg">
+    17→    <meta property="og:locale" content="es_EC">
+    18→    <meta name="twitter:card" content="summary_large_image">
+    19→
+    20→    <!-- Favicon -->
+    21→    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230B1120'/%3E%3Ctext x='50' y='68' font-family='Outfit,sans-serif' font-size='52' font-weight='800' text-anchor='middle' fill='%2300D4AA'%3EPB%3C/text%3E%3C/svg%3E">
+    22→
+    23→    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    24→    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    25→
+    26→    <style>
+    27→        :root {
+    28→            --bg: #0B1120;
+    29→            --bg-card: #15203A;
+    30→            --border: #243352;
+    31→            --accent: #00D4AA;
+    32→            --gold: #F5A623;
+    33→            --text: #E8EDF5;
+    34→            --muted: #6B7FA0;
+    35→            --success: #22C55E;
+    36→            --purple: #A855F7;
+    37→        }
+    38→
+    39→        * { margin: 0; padding: 0; box-sizing: border-box; }
+    40→
+    41→        body {
+    42→            font-family: 'DM Sans', sans-serif;
+    43→            background: var(--bg);
+    44→            color: var(--text);
+    45→            line-height: 1.6;
+    46→            min-height: 100vh;
+    47→            overflow-x: hidden;
+    48→        }
+    49→
+    50→        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+    51→
+    52→        .bg-glow {
+    53→            position: fixed;
+    54→            top: 0; left: 0;
+    55→            width: 100%; height: 100%;
+    56→            background: 
+    57→                radial-gradient(ellipse at 20% 20%, rgba(0,212,170,0.05) 0%, transparent 50%),
+    58→                radial-gradient(ellipse at 80% 80%, rgba(34,197,94,0.04) 0%, transparent 50%);
+    59→            pointer-events: none;
+    60→            z-index: 0;
+    61→        }
+    62→
+    63→        .wnavbar {
+    64→            position: sticky;
+    65→            top: 0;
+    66→            z-index: 100;
+    67→            background: rgba(11, 17, 32, 0.95);
+    68→            backdrop-filter: blur(12px);
+    69→            border-bottom: 1px solid var(--border);
+    70→        }
+    71→
+    72→        .wnavbar-inner {
+    73→            max-width: 1300px;
+    74→            margin: 0 auto;
+    75→            padding: 0 24px;
+    76→            display: flex;
+    77→            align-items: center;
+    78→            justify-content: space-between;
+    79→            height: 68px;
+    80→            gap: 12px;
+    81→        }
+    82→
+    83→        .wlogo {
+    84→            font-family: 'Outfit', sans-serif;
+    85→            font-size: 1.4rem;
+    86→            font-weight: 800;
+    87→            color: var(--text);
+    88→            text-decoration: none;
+    89→            flex-shrink: 0;
+    90→        }
+    91→
+    92→        .wlogo span { color: var(--accent); }
+    93→
+    94→        .wnav-links {
+    95→            display: flex;
+    96→            align-items: center;
+    97→            gap: 4px;
+    98→            list-style: none;
+    99→        }
+   100→
+   101→        .wnav-links > li > a,
+   102→        .wdropdown-btn {
+   103→            color: var(--muted);
+   104→            font-size: 0.88rem;
+   105→            font-weight: 500;
+   106→            padding: 8px 12px;
+   107→            border-radius: 8px;
+   108→            text-decoration: none;
+   109→            transition: all 0.3s ease;
+   110→            background: none;
+   111→            border: none;
+   112→            cursor: pointer;
+   113→            font-family: 'DM Sans', sans-serif;
+   114→            display: inline-flex;
+   115→            align-items: center;
+   116→            gap: 6px;
+   117→        }
+   118→
+   119→        .wnav-links > li > a:hover,
+   120→        .wdropdown-btn:hover {
+   121→            color: var(--text);
+   122→            background: var(--bg-card);
+   123→        }
+   124→
+   125→        .btn-tienda {
+   126→            background: var(--accent) !important;
+   127→            color: var(--bg) !important;
+   128→            font-weight: 600 !important;
+   129→        }
+   130→
+   131→        .btn-tienda:hover { background: #00F0C0 !important; }
+   132→
+   133→        .btn-secondary-nav {
+   134→            background: var(--bg-card) !important;
+   135→            color: var(--text) !important;
+   136→            border: 1px solid var(--border) !important;
+   137→        }
+   138→
+   139→        .btn-tareas {
+   140→            background: linear-gradient(135deg, var(--accent), var(--gold)) !important;
+   141→            color: var(--bg) !important;
+   142→            font-weight: 700 !important;
+   143→            display: inline-flex;
+   144→            align-items: center;
+   145→            gap: 6px;
+   146→            position: relative;
+   147→        }
+   148→
+   149→        .btn-tareas:hover {
+   150→            filter: brightness(1.1);
+   151→            transform: translateY(-1px);
+   152→        }
+   153→
+   154→        .badge-tareas {
+   155→            background: var(--bg);
+   156→            color: var(--gold);
+   157→            font-size: 0.65rem;
+   158→            font-weight: 700;
+   159→            padding: 2px 7px;
+   160→            border-radius: 10px;
+   161→            margin-left: 4px;
+   162→            line-height: 1;
+   163→            min-width: 18px;
+   164→            text-align: center;
+   165→        }
+   166→
+   167→        .wdropdown-wrap { position: relative; }
+   168→
+   169→        .wdropdown-menu {
+   170→            position: absolute;
+   171→            top: 100%; left: 0;
+   172→            margin-top: 8px;
+   173→            background: var(--bg-card);
+   174→            border: 1px solid var(--border);
+   175→            border-radius: 14px;
+   176→            padding: 8px;
+   177→            min-width: 240px;
+   178→            opacity: 0;
+   179→            visibility: hidden;
+   180→            transform: translateY(-8px);
+   181→            transition: all 0.3s ease;
+   182→            z-index: 100;
+   183→            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+   184→        }
+   185→
+   186→        .wdropdown-wrap.open .wdropdown-menu {
+   187→            opacity: 1;
+   188→            visibility: visible;
+   189→            transform: translateY(0);
+   190→        }
+   191→
+   192→        .wdropdown-menu a {
+   193→            display: flex;
+   194→            align-items: center;
+   195→            gap: 10px;
+   196→            padding: 10px 14px;
+   197→            color: var(--muted);
+   198→            font-size: 0.85rem;
+   199→            border-radius: 8px;
+   200→            text-decoration: none;
+   201→            transition: all 0.3s ease;
+   202→        }
+   203→
+   204→        .wdropdown-menu a:hover {
+   205→            color: var(--text);
+   206→            background: var(--bg);
+   207→        }
+   208→
+   209→        .wdropdown-menu a i {
+   210→            width: 20px;
+   211→            text-align: center;
+   212→            color: var(--accent);
+   213→            font-size: 0.9rem;
+   214→        }
+   215→
+   216→        .whamburger {
+   217→            display: none;
+   218→            flex-direction: column;
+   219→            gap: 5px;
+   220→            background: none;
+   221→            border: none;
+   222→            cursor: pointer;
+   223→            padding: 8px;
+   224→        }
+   225→
+   226→        .whamburger span {
+   227→            width: 24px;
+   228→            height: 2px;
+   229→            background: var(--text);
+   230→            border-radius: 2px;
+   231→            transition: all 0.3s ease;
+   232→        }
+   233→
+   234→        /* HERO */
+   235→        .hero-publibags {
+   236→            padding: 70px 24px 0;
+   237→            text-align: center;
+   238→            position: relative;
+   239→            z-index: 1;
+   240→        }
+   241→
+   242→        .hero-content { max-width: 900px; margin: 0 auto; }
+   243→
+   244→        .badge-hero {
+   245→            display: inline-flex;
+   246→            align-items: center;
+   247→            gap: 8px;
+   248→            background: rgba(0, 212, 170, 0.12);
+   249→            color: var(--accent);
+   250→            padding: 8px 18px;
+   251→            border-radius: 50px;
+   252→            font-size: 0.85rem;
+   253→            font-weight: 600;
+   254→            margin-bottom: 24px;
+   255→            border: 1px solid rgba(0, 212, 170, 0.2);
+   256→        }
+   257→
+   258→        .hero-publibags h1 {
+   259→            font-size: clamp(1.8rem, 4vw, 2.8rem);
+   260→            font-weight: 800;
+   261→            margin-bottom: 16px;
+   262→            line-height: 1.2;
+   263→        }
+   264→
+   265→        .hero-publibags h1 .highlight { color: var(--gold); }
+   266→
+   267→        .hero-publibags .hero-p {
+   268→            font-size: 1.05rem;
+   269→            color: var(--muted);
+   270→            max-width: 780px;
+   271→            margin: 0 auto 32px;
+   272→            line-height: 1.7;
+   273→        }
+   274→
+   275→        .precio-hero {
+   276→            display: inline-flex;
+   277→            align-items: center;
+   278→            gap: 20px;
+   279→            background: linear-gradient(135deg, rgba(0,212,170,0.1) 0%, rgba(245,166,35,0.08) 100%);
+   280→            border: 1px solid var(--accent);
+   281→            border-radius: 14px;
+   282→            padding: 20px 32px;
+   283→            margin-bottom: 32px;
+   284→            flex-wrap: wrap;
+   285→            justify-content: center;
+   286→        }
+   287→
+   288→        .precio-hero .precio-valor {
+   289→            font-family: 'Outfit', sans-serif;
+   290→            font-size: 2.8rem;
+   291→            font-weight: 800;
+   292→            color: var(--accent);
+   293→            line-height: 1;
+   294→        }
+   295→
+   296→        .precio-hero .precio-label {
+   297→            text-align: left;
+   298→            color: var(--muted);
+   299→            font-size: 0.9rem;
+   300→            line-height: 1.4;
+   301→        }
+   302→
+   303→        .precio-hero .precio-label strong {
+   304→            color: var(--text);
+   305→            display: block;
+   306→            font-size: 1rem;
+   307→        }
+   308→
+   309→        .hero-actions {
+   310→            display: flex;
+   311→            gap: 16px;
+   312→            justify-content: center;
+   313→            flex-wrap: wrap;
+   314→        }
+   315→
+   316→        .btn {
+   317→            display: inline-flex;
+   318→            align-items: center;
+   319→            gap: 8px;
+   320→            padding: 12px 24px;
+   321→            border-radius: 8px;
+   322→            font-family: 'Outfit', sans-serif;
+   323→            font-weight: 600;
+   324→            font-size: 0.9rem;
+   325→            transition: all 0.3s ease;
+   326→            border: none;
+   327→            cursor: pointer;
+   328→            text-decoration: none;
+   329→        }
+   330→
+   331→        .btn-gold { background: var(--gold); color: var(--bg); }
+   332→        .btn-gold:hover { background: #FFB849; transform: translateY(-2px); }
+   333→        .btn-primary { background: var(--accent); color: var(--bg); }
+   334→        .btn-primary:hover { background: #00F0C0; transform: translateY(-2px); }
+   335→        .btn-outline {
+   336→            background: transparent;
+   337→            color: var(--text);
+   338→            border: 1px solid var(--border);
+   339→        }
+   340→        .btn-outline:hover { background: var(--bg-card); border-color: var(--accent); }
+   341→        .btn-lg { padding: 16px 32px; font-size: 1rem; }
+   342→
+   343→        /* IMAGEN HERO */
+   344→        .hero-image {
+   345→            max-width: 1000px;
+   346→            margin: 56px auto 0;
+   347→            border-radius: 20px;
+   348→            overflow: hidden;
+   349→            border: 2px solid var(--border);
+   350→            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+   351→            position: relative;
+   352→        }
+   353→
+   354→        .hero-image::before {
+   355→            content: '';
+   356→            position: absolute;
+   357→            inset: 0;
+   358→            background: linear-gradient(180deg, transparent 60%, rgba(11, 17, 32, 0.7) 100%);
+   359→            pointer-events: none;
+   360→            z-index: 1;
+   361→        }
+   362→
+   363→        .hero-image img {
+   364→            width: 100%;
+   365→            height: auto;
+   366→            display: block;
+   367→            transition: transform 0.5s ease;
+   368→        }
+   369→
+   370→        .hero-image:hover img {
+   371→            transform: scale(1.03);
+   372→        }
+   373→
+   374→        /* SECCIONES */
+   375→        .section {
+   376→            position: relative;
+   377→            z-index: 1;
+   378→            padding: 70px 24px;
+   379→        }
+   380→
+   381→        .section-container { max-width: 1300px; margin: 0 auto; }
+   382→
+   383→        .section-label {
+   384→            color: var(--accent);
+   385→            font-size: 0.8rem;
+   386→            font-weight: 700;
+   387→            text-transform: uppercase;
+   388→            letter-spacing: 2px;
+   389→            margin-bottom: 12px;
+   390→        }
+   391→
+   392→        .section-label.purple { color: var(--purple); }
+   393→
+   394→        .section-title {
+   395→            font-size: clamp(1.6rem, 3vw, 2.2rem);
+   396→            margin-bottom: 16px;
+   397→            color: var(--text);
+   398→            font-weight: 700;
+   399→        }
+   400→
+   401→        .section-subtitle {
+   402→            color: var(--muted);
+   403→            font-size: 1rem;
+   404→            margin-bottom: 40px;
+   405→            max-width: 750px;
+   406→        }
+   407→
+   408→        .text-center { text-align: center; }
+   409→        .text-center .section-subtitle { margin-left: auto; margin-right: auto; }
+   410→
+   411→        /* ANATOMÍA */
+   412→        .anatomia-section {
+   413→            padding: 70px 24px;
+   414→            background: linear-gradient(180deg, transparent 0%, rgba(21,32,58,0.4) 50%, transparent 100%);
+   415→            position: relative;
+   416→            z-index: 1;
+   417→        }
+   418→
+   419→        .funda-diagrama {
+   420→            margin: 40px auto;
+   421→            padding: 32px 24px;
+   422→            background: var(--bg-card);
+   423→            border: 1px solid var(--border);
+   424→            border-radius: 20px;
+   425→            position: relative;
+   426→            overflow: hidden;
+   427→            max-width: 1000px;
+   428→        }
+   429→
+   430→        .funda-diagrama::before {
+   431→            content: '';
+   432→            position: absolute;
+   433→            top: 0; left: 0; right: 0;
+   434→            height: 4px;
+   435→            background: linear-gradient(90deg, var(--accent) 0%, var(--gold) 50%, var(--purple) 100%);
+   436→        }
+   437→
+   438→        .anatomia-grid {
+   439→            max-width: 1000px;
+   440→            margin: 40px auto 0;
+   441→            display: grid;
+   442→            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+   443→            gap: 20px;
+   444→        }
+   445→
+   446→        .anatomia-card {
+   447→            background: var(--bg-card);
+   448→            border: 1px solid var(--border);
+   449→            border-radius: 14px;
+   450→            padding: 24px 20px;
+   451→            text-align: center;
+   452→            transition: all 0.3s ease;
+   453→            position: relative;
+   454→            overflow: hidden;
+   455→        }
+   456→
+   457→        .anatomia-card::before {
+   458→            content: '';
+   459→            position: absolute;
+   460→            top: 0; left: 0; right: 0;
+   461→            height: 3px;
+   462→            background: linear-gradient(90deg, var(--accent) 0%, var(--gold) 100%);
+   463→            opacity: 0;
+   464→            transition: opacity 0.3s ease;
+   465→        }
+   466→
+   467→        .anatomia-card:hover {
+   468→            border-color: var(--accent);
+   469→            transform: translateY(-4px);
+   470→            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+   471→        }
+   472→
+   473→        .anatomia-card:hover::before { opacity: 1; }
+   474→
+   475→        .anatomia-card i {
+   476→            font-size: 1.8rem;
+   477→            color: var(--accent);
+   478→            margin-bottom: 12px;
+   479→        }
+   480→
+   481→        .anatomia-card .anatomia-numero {
+   482→            font-family: 'Outfit', sans-serif;
+   483→            font-size: 2.2rem;
+   484→            font-weight: 800;
+   485→            color: var(--text);
+   486→            line-height: 1;
+   487→            margin-bottom: 4px;
+   488→        }
+   489→
+   490→        .anatomia-card .anatomia-label {
+   491→            font-size: 0.8rem;
+   492→            color: var(--muted);
+   493→            text-transform: uppercase;
+   494→            letter-spacing: 1px;
+   495→            font-weight: 600;
+   496→        }
+   497→
+   498→        .anatomia-card .anatomia-desc {
+   499→            font-size: 0.78rem;
+   500→            color: var(--muted);
+   501→            margin-top: 8px;
+   502→        }
+   503→
+   504→        /* Bloque resumen vendibles */
+   505→        .vendibles-box {
+   506→            max-width: 900px;
+   507→            margin: 32px auto 0;
+   508→            background: linear-gradient(135deg, rgba(0,212,170,0.08) 0%, rgba(245,166,35,0.05) 100%);
+   509→            border: 1px solid var(--accent);
+   510→            border-radius: 16px;
+   511→            padding: 24px 32px;
+   512→            display: grid;
+   513→            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+   514→            gap: 24px;
+   515→            text-align: center;
+   516→        }
+   517→
+   518→        .vendibles-item .vendibles-numero {
+   519→            font-family: 'Outfit', sans-serif;
+   520→            font-size: 2rem;
+   521→            font-weight: 800;
+   522→            color: var(--accent);
+   523→            line-height: 1;
+   524→        }
+   525→
+   526→        .vendibles-item .vendibles-label {
+   527→            font-size: 0.8rem;
+   528→            color: var(--muted);
+   529→            margin-top: 6px;
+   530→        }
+   531→
+   532→        /* PASOS CON IMÁGENES */
+   533→        .pasos-grid {
+   534→            display: grid;
+   535→            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+   536→            gap: 24px;
+   537→            max-width: 1200px;
+   538→            margin: 40px auto 0;
+   539→        }
+   540→
+   541→        .paso-card {
+   542→            text-align: center;
+   543→            padding: 0;
+   544→            position: relative;
+   545→            background: var(--bg-card);
+   546→            border: 1px solid var(--border);
+   547→            border-radius: 16px;
+   548→            overflow: hidden;
+   549→            transition: all 0.3s ease;
+   550→        }
+   551→
+   552→        .paso-card:hover {
+   553→            border-color: var(--accent);
+   554→            transform: translateY(-4px);
+   555→            box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+   556→        }
+   557→
+   558→        .paso-imagen {
+   559→            width: 100%;
+   560→            height: 160px;
+   561→            overflow: hidden;
+   562→            position: relative;
+   563→            background: var(--bg);
+   564→        }
+   565→
+   566→        .paso-imagen img {
+   567→            width: 100%;
+   568→            height: 100%;
+   569→            object-fit: cover;
+   570→            transition: transform 0.5s ease;
+   571→        }
+   572→
+   573→        .paso-card:hover .paso-imagen img {
+   574→            transform: scale(1.08);
+   575→        }
+   576→
+   577→        .paso-imagen::after {
+   578→            content: '';
+   579→            position: absolute;
+   580→            inset: 0;
+   581→            background: linear-gradient(180deg, transparent 40%, rgba(21,32,58,0.9) 100%);
+   582→            pointer-events: none;
+   583→        }
+   584→
+   585→        .paso-info {
+   586→            padding: 20px 20px 24px;
+   587→        }
+   588→
+   589→        .paso-numero {
+   590→            display: inline-flex;
+   591→            align-items: center;
+   592→            justify-content: center;
+   593→            width: 48px;
+   594→            height: 48px;
+   595→            border-radius: 50%;
+   596→            background: rgba(0,212,170,0.15);
+   597→            border: 2px solid var(--accent);
+   598→            color: var(--accent);
+   599→            font-family: 'Outfit', sans-serif;
+   600→            font-size: 1.3rem;
+   601→            font-weight: 800;
+   602→            margin-bottom: 12px;
+   603→        }
+   604→
+   605→        .paso-card h3 {
+   606→            font-size: 1.05rem;
+   607→            margin-bottom: 8px;
+   608→            color: var(--text);
+   609→        }
+   610→
+   611→        .paso-card p {
+   612→            font-size: 0.85rem;
+   613→            color: var(--muted);
+   614→            line-height: 1.5;
+   615→        }
+   616→
+   617→        /* VENTAJAS */
+   618→        .ventajas-grid {
+   619→            display: grid;
+   620→            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+   621→            gap: 20px;
+   622→            max-width: 1100px;
+   623→            margin: 40px auto 0;
+   624→        }
+   625→
+   626→        .ventaja-card {
+   627→            background: var(--bg-card);
+   628→            border: 1px solid var(--border);
+   629→            border-radius: 14px;
+   630→            padding: 24px;
+   631→            display: flex;
+   632→            gap: 16px;
+   633→            align-items: flex-start;
+   634→            transition: all 0.3s ease;
+   635→        }
+   636→
+   637→        .ventaja-card:hover {
+   638→            border-color: var(--accent);
+   639→            transform: translateY(-2px);
+   640→        }
+   641→
+   642→        .ventaja-card i {
+   643→            font-size: 1.5rem;
+   644→            color: var(--accent);
+   645→            flex-shrink: 0;
+   646→            margin-top: 2px;
+   647→        }
+   648→
+   649→        .ventaja-card h4 {
+   650→            font-size: 0.95rem;
+   651→            margin-bottom: 6px;
+   652→            color: var(--text);
+   653→        }
+   654→
+   655→        .ventaja-card p {
+   656→            font-size: 0.82rem;
+   657→            color: var(--muted);
+   658→            line-height: 1.5;
+   659→        }
+   660→
+   661→        /* ECO */
+   662→        .eco-section {
+   663→            padding: 80px 24px;
+   664→            position: relative;
+   665→            z-index: 1;
+   666→            background: linear-gradient(rgba(11,17,32,0.9), rgba(11,17,32,0.95)), 
+   667→                        url('img/eco-bg.jpg') center/cover;
+   668→            border-top: 1px solid var(--border);
+   669→            border-bottom: 1px solid var(--border);
+   670→        }
+   671→
+   672→        .eco-content {
+   673→            max-width: 900px;
+   674→            margin: 0 auto;
+   675→            text-align: center;
+   676→        }
+   677→
+   678→        .eco-stats {
+   679→            display: grid;
+   680→            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+   681→            gap: 20px;
+   682→            margin-top: 40px;
+   683→        }
+   684→
+   685→        .eco-stat {
+   686→            background: rgba(21, 32, 58, 0.85);
+   687→            backdrop-filter: blur(8px);
+   688→            border: 1px solid var(--border);
+   689→            border-radius: 14px;
+   690→            padding: 24px 16px;
+   691→            text-align: center;
+   692→            transition: all 0.3s ease;
+   693→        }
+   694→
+   695→        .eco-stat:hover {
+   696→            border-color: var(--success);
+   697→            transform: translateY(-3px);
+   698→        }
+   699→
+   700→        .eco-stat i {
+   701→            font-size: 1.6rem;
+   702→            color: var(--success);
+   703→            margin-bottom: 12px;
+   704→        }
+   705→
+   706→        .eco-stat .eco-numero {
+   707→            font-family: 'Outfit', sans-serif;
+   708→            font-size: 1.8rem;
+   709→            font-weight: 800;
+   710→            color: var(--success);
+   711→            line-height: 1;
+   712→        }
+   713→
+   714→        .eco-stat .eco-label {
+   715→            font-size: 0.78rem;
+   716→            color: var(--muted);
+   717→            margin-top: 6px;
+   718→        }
+   719→
+   720→        /* PROPUESTA DIMARCLUB */
+   721→        .propuesta-section {
+   722→            padding: 70px 24px;
+   723→            background: linear-gradient(160deg, rgba(168,85,247,0.06) 0%, rgba(245,166,35,0.03) 100%);
+   724→            border-top: 1px solid var(--border);
+   725→            border-bottom: 1px solid var(--border);
+   726→            position: relative;
+   727→            z-index: 1;
+   728→        }
+   729→
+   730→        .propuesta-grid {
+   731→            display: grid;
+   732→            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+   733→            gap: 18px;
+   734→            max-width: 1200px;
+   735→            margin: 40px auto 0;
+   736→        }
+   737→
+   738→        .propuesta-card {
+   739→            background: var(--bg-card);
+   740→            border: 1px solid var(--border);
+   741→            border-radius: 14px;
+   742→            padding: 22px 18px;
+   743→            text-align: center;
+   744→            transition: all 0.3s ease;
+   745→        }
+   746→
+   747→        .propuesta-card:hover {
+   748→            border-color: var(--purple);
+   749→            transform: translateY(-4px);
+   750→            box-shadow: 0 8px 30px rgba(168,85,247,0.15);
+   751→        }
+   752→
+   753→        .propuesta-card i {
+   754→            font-size: 1.5rem;
+   755→            color: var(--purple);
+   756→            margin-bottom: 10px;
+   757→            display: block;
+   758→        }
+   759→
+   760→        .propuesta-card h4 {
+   761→            font-size: 0.9rem;
+   762→            color: var(--text);
+   763→            margin-bottom: 6px;
+   764→            font-weight: 700;
+   765→        }
+   766→
+   767→        .propuesta-card p {
+   768→            font-size: 0.78rem;
+   769→            color: var(--muted);
+   770→            line-height: 1.5;
+   771→        }
+   772→
+   773→        .propuesta-cta {
+   774→            text-align: center;
+   775→            margin-top: 40px;
+   776→        }
+   777→
+   778→        .propuesta-cta .btn { margin: 0 6px; }
+   779→
+   780→        /* RED UNIVERSAL */
+   781→        .red-info-section {
+   782→            padding: 60px 24px;
+   783→            background: rgba(21, 32, 58, 0.4);
+   784→            border-top: 1px solid var(--border);
+   785→            border-bottom: 1px solid var(--border);
+   786→            position: relative;
+   787→            z-index: 1;
+   788→        }
+   789→
+   790→        .red-info-box {
+   791→            max-width: 900px;
+   792→            margin: 0 auto;
+   793→            background: var(--bg-card);
+   794→            border: 1px solid var(--accent);
+   795→            border-radius: 18px;
+   796→            padding: 32px 28px;
+   797→            display: grid;
+   798→            grid-template-columns: auto 1fr;
+   799→            gap: 24px;
+   800→            align-items: center;
+   801→        }
+   802→
+   803→        .red-info-icon {
+   804→            width: 72px;
+   805→            height: 72px;
+   806→            border-radius: 50%;
+   807→            background: rgba(0,212,170,0.15);
+   808→            color: var(--accent);
+   809→            display: flex;
+   810→            align-items: center;
+   811→            justify-content: center;
+   812→            font-size: 2rem;
+   813→            flex-shrink: 0;
+   814→        }
+   815→
+   816→        .red-info-content h3 {
+   817→            font-size: 1.2rem;
+   818→            color: var(--text);
+   819→            margin-bottom: 8px;
+   820→        }
+   821→
+   822→        .red-info-content p {
+   823→            color: var(--muted);
+   824→            font-size: 0.9rem;
+   825→            line-height: 1.6;
+   826→            margin-bottom: 12px;
+   827→        }
+   828→
+   829→        .red-info-content .red-info-link {
+   830→            color: var(--accent);
+   831→            text-decoration: none;
+   832→            font-weight: 600;
+   833→            font-size: 0.9rem;
+   834→        }
+   835→
+   836→        .red-info-content .red-info-link:hover { text-decoration: underline; }
+   837→
+   838→        /* CTA */
+   839→        .cta-planes {
+   840→            padding: 60px 24px;
+   841→            text-align: center;
+   842→            background: linear-gradient(160deg, rgba(0,212,170,0.05) 0%, transparent 100%);
+   843→            border-top: 1px solid var(--border);
+   844→            border-bottom: 1px solid var(--border);
+   845→            position: relative;
+   846→            z-index: 1;
+   847→        }
+   848→
+   849→        .cta-planes h2 {
+   850→            font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+   851→            margin-bottom: 12px;
+   852→            color: var(--text);
+   853→        }
+   854→
+   855→        .cta-planes h2 span { color: var(--success); }
+   856→
+   857→        .cta-planes p {
+   858→            color: var(--muted);
+   859→            max-width: 700px;
+   860→            margin: 0 auto 24px;
+   861→            line-height: 1.6;
+   862→        }
+   863→
+   864→        /* CONTACTO */
+   865→        .contact-section {
+   866→            text-align: center;
+   867→            padding: 60px 24px;
+   868→            background: var(--bg-card);
+   869→            border-top: 1px solid var(--border);
+   870→            position: relative;
+   871→            z-index: 1;
+   872→        }
+   873→
+   874→        .contact-section h3 {
+   875→            font-size: 1.3rem;
+   876→            margin-bottom: 12px;
+   877→        }
+   878→
+   879→        .contact-section p {
+   880→            color: var(--muted);
+   881→            margin-bottom: 24px;
+   882→        }
+   883→
+   884→        .whatsapp-btn {
+   885→            background: #25D366;
+   886→            color: white;
+   887→            font-size: 1rem;
+   888→            padding: 14px 28px;
+   889→            border-radius: 50px;
+   890→            display: inline-flex;
+   891→            align-items: center;
+   892→            gap: 10px;
+   893→            text-decoration: none;
+   894→            font-weight: 700;
+   895→            transition: all 0.3s ease;
+   896→        }
+   897→
+   898→        .whatsapp-btn:hover {
+   899→            box-shadow: 0 8px 30px rgba(37,211,102,0.3);
+   900→            transform: translateY(-2px);
+   901→        }
+   902→
+   903→        .volver-section {
+   904→            text-align: center;
+   905→            padding: 30px 24px;
+   906→            border-top: 1px solid var(--border);
+   907→            position: relative;
+   908→            z-index: 1;
+   909→        }
+   910→
+   911→        .volver-btn {
+   912→            display: inline-flex;
+   913→            align-items: center;
+   914→            gap: 8px;
+   915→            color: var(--muted);
+   916→            text-decoration: none;
+   917→            font-size: 0.9rem;
+   918→            padding: 10px 20px;
+   919→            border: 1px solid var(--border);
+   920→            border-radius: 50px;
+   921→            transition: all 0.3s ease;
+   922→        }
+   923→
+   924→        .volver-btn:hover {
+   925→            color: var(--accent);
+   926→            border-color: var(--accent);
+   927→        }
+   928→
+   929→        /* FOOTER */
+   930→        .wfooter {
+   931→            position: relative;
+   932→            z-index: 1;
+   933→            background: var(--bg-card);
+   934→            border-top: 1px solid var(--border);
+   935→            padding: 48px 24px 24px;
+   936→        }
+   937→
+   938→        .footer-grid {
+   939→            max-width: 1300px;
+   940→            margin: 0 auto;
+   941→            display: grid;
+   942→            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+   943→            gap: 32px;
+   944→            margin-bottom: 32px;
+   945→        }
+   946→
+   947→        .footer-grid h4 {
+   948→            font-size: 0.95rem;
+   949→            margin-bottom: 16px;
+   950→            color: var(--text);
+   951→        }
+   952→
+   953→        .footer-grid a {
+   954→            display: block;
+   955→            color: var(--muted);
+   956→            font-size: 0.85rem;
+   957→            padding: 5px 0;
+   958→            text-decoration: none;
+   959→            transition: all 0.3s ease;
+   960→        }
+   961→
+   962→        .footer-grid a:hover { color: var(--accent); }
+   963→
+   964→        .footer-social {
+   965→            display: flex;
+   966→            gap: 16px;
+   967→            justify-content: center;
+   968→            margin-bottom: 24px;
+   969→        }
+   970→
+   971→        .footer-social a {
+   972→            width: 40px;
+   973→            height: 40px;
+   974→            border-radius: 50%;
+   975→            background: var(--bg);
+   976→            border: 1px solid var(--border);
+   977→            display: flex;
+   978→            align-items: center;
+   979→            justify-content: center;
+   980→            color: var(--muted);
+   981→            transition: all 0.3s ease;
+   982→        }
+   983→
+   984→        .footer-social a:hover {
+   985→            background: var(--accent);
+   986→            color: var(--bg);
+   987→            border-color: var(--accent);
+   988→        }
+   989→
+   990→        .footer-bottom {
+   991→            text-align: center;
+   992→            color: var(--muted);
+   993→            font-size: 0.85rem;
+   994→            border-top: 1px solid var(--border);
+   995→            padding-top: 24px;
+   996→            max-width: 1300px;
+   997→            margin: 0 auto;
+   998→        }
+   999→
+  1000→        /* RESPONSIVE */
+  1001→        @media (max-width: 900px) {
+  1002→            .whamburger { display: flex; }
+  1003→            
+  1004→            .wnav-links {
+  1005→                position: absolute;
+  1006→                top: 68px;
+  1007→                left: 0; right: 0;
+  1008→                background: var(--bg-card);
+  1009→                border-bottom: 1px solid var(--border);
+  1010→                flex-direction: column;
+  1011→                padding: 16px 24px;
+  1012→                gap: 4px;
+  1013→                display: none;
+  1014→                max-height: calc(100vh - 68px);
+  1015→                overflow-y: auto;
+  1016→                align-items: stretch;
+  1017→            }
+  1018→            
+  1019→            .wnav-links.open { display: flex; }
+  1020→            
+  1021→            .wnav-links > li > a,
+  1022→            .wdropdown-btn {
+  1023→                width: 100%;
+  1024→                justify-content: space-between;
+  1025→                padding: 12px 14px;
+  1026→            }
+  1027→            
+  1028→            .wdropdown-menu {
+  1029→                position: static;
+  1030→                opacity: 1;
+  1031→                visibility: visible;
+  1032→                transform: none;
+  1033→                background: var(--bg);
+  1034→                border: none;
+  1035→                padding: 0;
+  1036→                margin-top: 4px;
+  1037→                box-shadow: none;
+  1038→                display: none;
+  1039→            }
+  1040→            
+  1041→            .wdropdown-wrap.open .wdropdown-menu { display: block; }
+  1042→            
+  1043→            .hero-actions { flex-direction: column; align-items: stretch; }
+  1044→            .hero-actions .btn { width: 100%; justify-content: center; }
+  1045→            .red-info-box { grid-template-columns: 1fr; text-align: center; }
+  1046→            .red-info-icon { margin: 0 auto; }
+  1047→        }
+  1048→
+  1049→        @media (max-width: 600px) {
+  1050→            .precio-hero { padding: 16px 20px; gap: 12px; }
+  1051→            .precio-hero .precio-valor { font-size: 2.2rem; }
+  1052→            .anatomia-grid { grid-template-columns: repeat(2, 1fr); }
+  1053→            .hero-image { margin-top: 32px; border-radius: 14px; }
+  1054→            .funda-diagrama { padding: 16px 12px; }
+  1055→            .paso-imagen { height: 130px; }
+  1056→        }
+  1057→    </style>
+  1058→</head>
+  1059→<body>
+  1060→
+  1061→<div class="bg-glow"></div>
+  1062→
+  1063→<!-- ==================== NAVBAR ==================== -->
+  1064→<nav class="wnavbar">
+  1065→    <div class="wnavbar-inner">
+  1066→        <a class="wlogo" href="/">Impulse<span>Pymes360</span></a>
+  1067→        
+  1068→        <ul class="wnav-links" id="wnavLinks">
+  1069→            <li class="wdropdown-wrap">
+  1070→                <button class="wdropdown-btn" type="button">
+  1071→                    <i class="fas fa-th"></i> Ecosistema <i class="fas fa-caret-down" style="font-size:0.7rem;"></i>
+  1072→                </button>
+  1073→                <div class="wdropdown-menu">
+  1074→                    <a href="/dimarclub/"><i class="fas fa-users"></i> DimarClub</a>
+  1075→                    <a href="/incubadora/"><i class="fas fa-seedling"></i> Incubadora</a>
+  1076→                    <a href="/webexpress/"><i class="fas fa-globe"></i> WebExpress</a>
+  1077→                    <a href="/impulso360/"><i class="fas fa-shopping-cart"></i> Impulso360</a>
+  1078→                    <a href="/enlaceexpress/"><i class="fas fa-headset"></i> Enlace Express</a>
+  1079→                    <a href="/publibags/"><i class="fas fa-recycle"></i> Publibags</a>
+  1080→                    <a href="/fuerzadelta/"><i class="fas fa-motorcycle"></i> Fuerza Delta</a>
+  1081→                    <a href="/dimarpost/"><i class="fas fa-bolt"></i> DimarPost</a>
+  1082→                </div>
+  1083→            </li>
+  1084→            
+  1085→            <li><a href="/impulso360/" class="btn-tienda"><i class="fas fa-store"></i> Tienda</a></li>
+  1086→            <li><a href="/impulso360/#clasificados" class="btn-secondary-nav"><i class="fas fa-newspaper"></i> Clasificados</a></li>
+  1087→            <li><a href="/planes.html"><i class="fas fa-tags"></i> Planes</a></li>
+  1088→            <li>
+  1089→                <a href="/tareas.html" class="btn-tareas">
+  1090→                    <i class="fas fa-tasks"></i> Tareas
+  1091→                    <span class="badge-tareas" id="badgeTareas">0</span>
+  1092→                </a>
+  1093→            </li>
+  1094→            
+  1095→            <li class="wdropdown-wrap">
+  1096→                <button class="wdropdown-btn" type="button">
+  1097→                    <i class="fas fa-store-alt"></i> Proveedores <i class="fas fa-caret-down" style="font-size:0.7rem;"></i>
+  1098→                </button>
+  1099→                <div class="wdropdown-menu">
+  1100→                    <a href="/registro-proveedores/"><i class="fas fa-rocket"></i> Quiero ser Proveedor</a>
+  1101→                    <a href="/backoffice-proveedor/"><i class="fas fa-globe"></i> Mi Backoffice</a>
+  1102→                    <a href="/login.html"><i class="fas fa-sign-in-alt"></i> Mi Cuenta</a>
+  1103→                </div>
+  1104→            </li>
+  1105→            
+  1106→            <li class="wdropdown-wrap">
+  1107→                <button class="wdropdown-btn" type="button">
+  1108→                    <i class="fas fa-users"></i> Miembros <i class="fas fa-caret-down" style="font-size:0.7rem;"></i>
+  1109→                </button>
+  1110→                <div class="wdropdown-menu">
+  1111→                    <a href="/registro-socios/"><i class="fas fa-user-tie"></i> Ser Socio</a>
+  1112→                    <a href="/backoffice-miembro/"><i class="fas fa-network-wired"></i> Mi Red</a>
+  1113→                    <a href="/registro-clientes/"><i class="fas fa-user"></i> Ser Cliente</a>
+  1114→                </div>
+  1115→            </li>
+  1116→            
+  1117→            <li><a href="/login.html" class="btn-secondary-nav"><i class="fas fa-sign-in-alt"></i> Acceso</a></li>
+  1118→        </ul>
+  1119→        
+  1120→        <button class="whamburger" id="whamburger" aria-label="Abrir menú">
+  1121→            <span></span><span></span><span></span>
+  1122→        </button>
+  1123→    </div>
+  1124→</nav>
+  1125→
+  1126→<!-- ==================== HERO ==================== -->
+  1127→<section class="hero-publibags">
+  1128→    <div class="hero-content">
+  1129→        <span class="badge-hero">
+  1130→            <i class="fas fa-recycle"></i> Publicidad Ecológica Ambulante
+  1131→        </span>
+  1132→        
+  1133→        <h1>Convierte cada funda en <span class="highlight">publicidad que viaja</span> por tu ciudad</h1>
+  1134→        
+  1135→        <p class="hero-p">
+  1136→            Publibags transforma las fundas ecológicas en soportes publicitarios que circulan por toda la ciudad. 
+  1137→            Cada cliente que compra se lleva tu marca, y cada funda reutilizada multiplica tu visibilidad sin coste adicional.
+  1138→        </p>
+  1139→        
+  1140→        <div class="precio-hero">
+  1141→            <div class="precio-valor">$47</div>
+  1142→            <div class="precio-label">
+  1143→                <strong>por espacio publicitario</strong>
+  1144→                Mensual · 7cm × 7cm
+  1145→            </div>
+  1146→        </div>
+  1147→        
+  1148→        <div class="hero-actions">
+  1149→            <a href="/planes.html" class="btn btn-gold btn-lg">
+  1150→                <i class="fas fa-tags"></i> Ver Planes Integrales
+  1151→            </a>
+  1152→            <a href="#como-funciona" class="btn btn-outline btn-lg">
+  1153→                <i class="fas fa-info-circle"></i> Cómo funciona
+  1154→            </a>
+  1155→        </div>
+  1156→        
+  1157→        <p style="font-size:0.85rem;color:var(--muted);margin-top:20px;">
+  1158→            <i class="fas fa-check-circle" style="color:var(--success)"></i> Sin plásticos · Sin desperdicio · Diseño profesional incluido
+  1159→        </p>
+  1160→    </div>
+  1161→
+  1162→    <!-- IMAGEN HERO -->
+  1163→    <div class="hero-image">
+  1164→        <img src="img/hero.jpg" 
+  1165→             alt="Fundas ecológicas Publibags circulando por la ciudad" 
+  1166→             loading="lazy">
+  1167→    </div>
+  1168→</section>
+  1169→
+  1170→<!-- ==================== ANATOMÍA DE LA FUNDA ==================== -->
+  1171→<section class="anatomia-section">
+  1172→    <div class="section-container">
+  1173→        <p class="section-label text-center">Anatomía de una funda</p>
+  1174→        <h2 class="section-title text-center">140 espacios publicitarios por funda</h2>
+  1175→        <p class="section-subtitle text-center" style="margin-left:auto;margin-right:auto;">
+  1176→            Cada funda de 48cm × 48cm tiene espacios de 7cm × 7cm distribuidos en todas sus caras. De los 140, <strong style="color:var(--accent);">114 son vendibles</strong>.
+  1177→        </p>
+  1178→
+  1179→        <!-- DIAGRAMA VISUAL -->
+  1180→        <div class="funda-diagrama">
+  1181→            <svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;max-width:900px;display:block;margin:0 auto;">
+  1182→                <defs>
+  1183→                    <pattern id="grid-front" width="20" height="20" patternUnits="userSpaceOnUse">
+  1184→                        <rect width="20" height="20" fill="#15203A" stroke="#243352" stroke-width="0.5"/>
+  1185→                    </pattern>
+  1186→                    <linearGradient id="gradiente-funda" x1="0%" y1="0%" x2="100%" y2="100%">
+  1187→                        <stop offset="0%" stop-color="#1a2332"/>
+  1188→                        <stop offset="100%" stop-color="#15203A"/>
+  1189→                    </linearGradient>
+  1190→                </defs>
+  1191→
+  1192→                <rect x="150" y="80" width="500" height="340" rx="12" fill="url(#gradiente-funda)" stroke="#00D4AA" stroke-width="2"/>
+  1193→
+  1194→                <text x="400" y="70" text-anchor="middle" fill="#00D4AA" font-family="Outfit" font-weight="700" font-size="14">FRENTE · 49 ESPACIOS</text>
+  1195→                <rect x="170" y="100" width="460" height="140" fill="url(#grid-front)" rx="8" stroke="#243352" stroke-width="1"/>
+  1196→                
+  1197→                <g fill="rgba(0,212,170,0.15)" stroke="#00D4AA" stroke-width="0.5">
+  1198→                    <rect x="180" y="110" width="20" height="20" rx="2"/>
+  1199→                    <rect x="205" y="110" width="20" height="20" rx="2"/>
+  1200→                    <rect x="230" y="110" width="20" height="20" rx="2"/>
+  1201→                    <rect x="255" y="110" width="20" height="20" rx="2"/>
+  1202→                    <rect x="280" y="110" width="20" height="20" rx="2"/>
+  1203→                    <rect x="305" y="110" width="20" height="20" rx="2"/>
+  1204→                    <rect x="330" y="110" width="20" height="20" rx="2"/>
+  1205→                </g>
+  1206→                <text x="400" y="240" text-anchor="middle" fill="#6B7FA0" font-family="DM Sans" font-size="11">7cm × 7cm cada espacio</text>
+  1207→
+  1208→                <text x="400" y="280" text-anchor="middle" fill="#00D4AA" font-family="Outfit" font-weight="700" font-size="14">ATRÁS · 49 ESPACIOS</text>
+  1209→                <rect x="170" y="290" width="460" height="120" fill="url(#grid-front)" rx="8" stroke="#243352" stroke-width="1"/>
+  1210→                <text x="400" y="355" text-anchor="middle" fill="#6B7FA0" font-family="DM Sans" font-size="11">Misma distribución que el frente</text>
+  1211→
+  1212→                <text x="80" y="180" text-anchor="middle" fill="#F5A623" font-family="Outfit" font-weight="700" font-size="13" transform="rotate(-90 80 180)">LATERALES · 28</text>
+  1213→                <rect x="100" y="100" width="50" height="310" fill="rgba(245,166,35,0.08)" rx="8" stroke="#F5A623" stroke-width="1" stroke-dasharray="4,4"/>
+  1214→                
+  1215→                <text x="720" y="180" text-anchor="middle" fill="#F5A623" font-family="Outfit" font-weight="700" font-size="13" transform="rotate(90 720 180)">LATERALES · 28</text>
+  1216→                <rect x="650" y="100" width="50" height="310" fill="rgba(245,166,35,0.08)" rx="8" stroke="#F5A623" stroke-width="1" stroke-dasharray="4,4"/>
+  1217→
+  1218→                <text x="400" y="50" text-anchor="middle" fill="#A855F7" font-family="Outfit" font-weight="700" font-size="12">SOLAPA · 14 ESPACIOS</text>
+  1219→                <rect x="280" y="30" width="240" height="35" fill="rgba(168,85,247,0.1)" rx="6" stroke="#A855F7" stroke-width="1" stroke-dasharray="4,4"/>
+  1220→
+  1221→                <g font-family="DM Sans" font-size="11" fill="#6B7FA0">
+  1222→                    <text x="400" y="445" text-anchor="middle" fill="#E8EDF5" font-family="Outfit" font-weight="700" font-size="13">FUNDA COMPLETA 48cm × 48cm</text>
+  1223→                    <text x="400" y="465" text-anchor="middle" font-size="11">Total: 140 espacios publicitarios · 114 vendibles</text>
+  1224→                </g>
+  1225→            </svg>
+  1226→        </div>
+  1227→
+  1228→        <div class="anatomia-grid">
+  1229→            <div class="anatomia-card">
+  1230→                <i class="fas fa-square"></i>
+  1231→                <div class="anatomia-numero">49</div>
+  1232→                <div class="anatomia-label">Frente</div>
+  1233→                <div class="anatomia-desc">Espacios publicitarios</div>
+  1234→            </div>
+  1235→            
+  1236→            <div class="anatomia-card">
+  1237→                <i class="fas fa-square"></i>
+  1238→                <div class="anatomia-numero">49</div>
+  1239→                <div class="anatomia-label">Atrás</div>
+  1240→                <div class="anatomia-desc">Espacios publicitarios</div>
+  1241→            </div>
+  1242→            
+  1243→            <div class="anatomia-card">
+  1244→                <i class="fas fa-columns"></i>
+  1245→                <div class="anatomia-numero">28</div>
+  1246→                <div class="anatomia-label">Laterales</div>
+  1247→                <div class="anatomia-desc">Espacios publicitarios</div>
+  1248→            </div>
+  1249→            
+  1250→            <div class="anatomia-card">
+  1251→                <i class="fas fa-bookmark"></i>
+  1252→                <div class="anatomia-numero">14</div>
+  1253→                <div class="anatomia-label">Solapa</div>
+  1254→                <div class="anatomia-desc">Espacios publicitarios</div>
+  1255→            </div>
+  1256→        </div>
+  1257→
+  1258→        <!-- Bloque resumen vendibles -->
+  1259→        <div class="vendibles-box">
+  1260→            <div class="vendibles-item">
+  1261→                <div class="vendibles-numero">140</div>
+  1262→                <div class="vendibles-label">Espacios totales</div>
+  1263→            </div>
+  1264→            <div class="vendibles-item">
+  1265→                <div class="vendibles-numero" style="color:var(--gold);">114</div>
+  1266→                <div class="vendibles-label">Vendibles</div>
+  1267→            </div>
+  1268→            <div class="vendibles-item">
+  1269→                <div class="vendibles-numero">$47</div>
+  1270→                <div class="vendibles-label">Por espacio / mes</div>
+  1271→            </div>
+  1272→            <div class="vendibles-item">
+  1273→                <div class="vendibles-numero">10.000</div>
+  1274→                <div class="vendibles-label">Fundas por campaña</div>
+  1275→            </div>
+  1276→        </div>
+  1277→    </div>
+  1278→</section>
+  1279→
+  1280→<!-- ==================== CÓMO FUNCIONA ==================== -->
+  1281→<section class="section" id="como-funciona">
+  1282→    <div class="section-container">
+  1283→        <p class="section-label text-center">Cómo funciona</p>
+  1284→        <h2 class="section-title text-center">Tu marca en las manos de miles de clientes</h2>
+  1285→        <p class="section-subtitle text-center" style="margin-left:auto;margin-right:auto;">
+  1286→            Un proceso simple que convierte cada compra en una oportunidad publicitaria.
+  1287→        </p>
+  1288→        
+  1289→        <div class="pasos-grid">
+  1290→            <div class="paso-card">
+  1291→                <div class="paso-imagen">
+  1292→                    <img src="img/paso-1.jpg" alt="Diseño profesional" loading="lazy">
+  1293→                </div>
+  1294→                <div class="paso-info">
+  1295→                    <div class="paso-numero">1</div>
+  1296→                    <h3>Diseñamos</h3>
+  1297→                    <p>Diseño profesional de tu espacio publicitario con tu logo y sitio web.</p>
+  1298→                </div>
+  1299→            </div>
+  1300→
+  1301→            <div class="paso-card">
+  1302→                <div class="paso-imagen">
+  1303→                    <img src="img/paso-2.jpg" alt="Impresión ecológica" loading="lazy">
+  1304→                </div>
+  1305→                <div class="paso-info">
+  1306→                    <div class="paso-numero">2</div>
+  1307→                    <h3>Imprimimos</h3>
+  1308→                    <p>Impresión en fundas de papel 100% ecológico y reciclable.</p>
+  1309→                </div>
+  1310→            </div>
+  1311→
+  1312→            <div class="paso-card">
+  1313→                <div class="paso-imagen">
+  1314→                    <img src="img/paso-3.jpg" alt="Distribución en comercios" loading="lazy">
+  1315→                </div>
+  1316→                <div class="paso-info">
+  1317→                    <div class="paso-numero">3</div>
+  1318→                    <h3>Distribuimos</h3>
+  1319→                    <p>Las fundas llegan a comercios y tiendas aliadas de la ciudad.</p>
+  1320→                </div>
+  1321→            </div>
+  1322→
+  1323→            <div class="paso-card">
+  1324→                <div class="paso-imagen">
+  1325→                    <img src="img/paso-4.jpg" alt="Circulación por la ciudad" loading="lazy">
+  1326→                </div>
+  1327→                <div class="paso-info">
+  1328→                    <div class="paso-numero">4</div>
+  1329→                    <h3>Circulamos</h3>
+  1330→                    <p>Cada cliente que compra se lleva tu marca por toda la ciudad.</p>
+  1331→                </div>
+  1332→            </div>
+  1333→
+  1334→            <div class="paso-card">
+  1335→                <div class="paso-imagen">
+  1336→                    <img src="img/paso-5.jpg" alt="Medición de resultados" loading="lazy">
+  1337→                </div>
+  1338→                <div class="paso-info">
+  1339→                    <div class="paso-numero">5</div>
+  1340→                    <h3>Medimos</h3>
+  1341→                    <p>Medición real de circulación e impacto de tu publicidad.</p>
+  1342→                </div>
+  1343→            </div>
+  1344→        </div>
+  1345→    </div>
+  1346→</section>
+  1347→
+  1348→<!-- ==================== VENTAJAS ==================== -->
+  1349→<section class="section" style="background:rgba(21,32,58,0.3);">
+  1350→    <div class="section-container">
+  1351→        <p class="section-label text-center">¿Por qué Publibags?</p>
+  1352→        <h2 class="section-title text-center">Ventajas que marcan la diferencia</h2>
+  1353→        
+  1354→        <div class="ventajas-grid">
+  1355→            <div class="ventaja-card">
+  1356→                <i class="fas fa-leaf"></i>
+  1357→                <div>
+  1358→                    <h4>100% Ecológico</h4>
+  1359→                    <p>Fundas de papel reciclado, sin plásticos ni desperdicio.</p>
+  1360→                </div>
+  1361→            </div>
+  1362→            
+  1363→            <div class="ventaja-card">
+  1364→                <i class="fas fa-chart-line"></i>
+  1365→                <div>
+  1366→                    <h4>Medición Real</h4>
+  1367→                    <p>Sabes cuántas fundas circulan y cuántas visitas generan.</p>
+  1368→                </div>
+  1369→            </div>
+  1370→            
+  1371→            <div class="ventaja-card">
+  1372→                <i class="fas fa-palette"></i>
+  1373→                <div>
+  1374→                    <h4>Diseño Incluido</h4>
+  1375→                    <p>Diseñamos tu espacio publicitario sin costo adicional.</p>
+  1376→                </div>
+  1377→            </div>
+  1378→            
+  1379→            <div class="ventaja-card">
+  1380→                <i class="fas fa-globe"></i>
+  1381→                <div>
+  1382→                    <h4>Enlace a tu Web</h4>
+  1383→                    <p>Cada anuncio incluye el logo y la URL de tu sitio web.</p>
+  1384→                </div>
+  1385→            </div>
+  1386→            
+  1387→            <div class="ventaja-card">
+  1388→                <i class="fas fa-redo"></i>
+  1389→                <div>
+  1390→                    <h4>Reutilización</h4>
+  1391→                    <p>Cada funda se reutiliza, multiplicando tu visibilidad.</p>
+  1392→                </div>
+  1393→            </div>
+  1394→            
+  1395→            <div class="ventaja-card">
+  1396→                <i class="fas fa-users"></i>
+  1397→                <div>
+  1398→                    <h4>Alcance Masivo</h4>
+  1399→                    <p>Miles de clientes ven tu marca cada día en la ciudad.</p>
+  1400→                </div>
+  1401→            </div>
+  1402→        </div>
+  1403→    </div>
+  1404→</section>
+  1405→
+  1406→<!-- ==================== IMPACTO ECOLÓGICO ==================== -->
+  1407→<section class="eco-section">
+  1408→    <div class="eco-content">
+  1409→        <p class="section-label">Impacto ambiental</p>
+  1410→        <h2 class="section-title">Publicidad que cuida el planeta</h2>
+  1411→        <p class="section-subtitle" style="margin-left:auto;margin-right:auto;">
+  1412→            Cada funda evita plásticos de un solo uso y promueve la economía circular.
+  1413→        </p>
+  1414→        
+  1415→        <div class="eco-stats">
+  1416→            <div class="eco-stat">
+  1417→                <i class="fas fa-tree"></i>
+  1418→                <div class="eco-numero">100%</div>
+  1419→                <div class="eco-label">Papel reciclado</div>
+  1420→            </div>
+  1421→            
+  1422→            <div class="eco-stat">
+  1423→                <i class="fas fa-recycle"></i>
+  1424→                <div class="eco-numero">3R</div>
+  1425→                <div class="eco-label">Reducir, reutilizar, reciclar</div>
+  1426→            </div>
+  1427→            
+  1428→            <div class="eco-stat">
+  1429→                <i class="fas fa-ban"></i>
+  1430→                <div class="eco-numero">0%</div>
+  1431→                <div class="eco-label">Plástico</div>
+  1432→            </div>
+  1433→            
+  1434→            <div class="eco-stat">
+  1435→                <i class="fas fa-seedling"></i>
+  1436→                <div class="eco-numero">∞</div>
+  1437→                <div class="eco-label">Reutilizaciones</div>
+  1438→            </div>
+  1439→        </div>
+  1440→    </div>
+  1441→</section>
+  1442→
+  1443→<!-- ==================== PROPUESTA DIMARCLUB ==================== -->
+  1444→<section class="propuesta-section">
+  1445→    <div class="section-container">
+  1446→        <div class="text-center">
+  1447→            <p class="section-label purple">Propuesta única de valor</p>
+  1448→            <h2 class="section-title">Anunciarte aquí te da más que visibilidad</h2>
+  1449→            <p class="section-subtitle" style="margin-left:auto;margin-right:auto;">
+  1450→                Cada proveedor que anuncia en Publibags accede también a la comunidad DimarClub: beneficios exclusivos para ti y tus clientes.
+  1451→            </p>
+  1452→        </div>
+  1453→
+  1454→        <div class="propuesta-grid">
+  1455→
+  1456→            <div class="propuesta-card">
+  1457→                <i class="fas fa-ambulance"></i>
+  1458→                <h4>Ambulancia Gratis</h4>
+  1459→                <p>Emergencias dentro de la ciudad, sin costo.</p>
+  1460→            </div>
+  1461→
+  1462→            <div class="propuesta-card">
+  1463→                <i class="fas fa-tools"></i>
+  1464→                <h4>Servicios Técnicos</h4>
+  1465→                <p>Electricidad, mecánica, sanitarios. Solo materiales.</p>
+  1466→            </div>
+  1467→
+  1468→            <div class="propuesta-card">
+  1469→                <i class="fas fa-leaf"></i>
+  1470→                <h4>Medicina Ancestral</h4>
+  1471→                <p>Consultas gratuitas con terapeutas naturales.</p>
+  1472→            </div>
+  1473→
+  1474→            <div class="propuesta-card">
+  1475→                <i class="fas fa-truck"></i>
+  1476→                <h4>Entrega Gratis</h4>
+  1477→                <p>En todas las compras del marketplace.</p>
+  1478→            </div>
+  1479→
+  1480→            <div class="propuesta-card">
+  1481→                <i class="fas fa-hand-holding-usd"></i>
+  1482→                <h4>Préstamos con Garantía</h4>
+  1483→                <p>Capital desde $5.000 sin importar el buró.</p>
+  1484→            </div>
+  1485→
+  1486→            <div class="propuesta-card">
+  1487→                <i class="fas fa-credit-card"></i>
+  1488→                <h4>Línea de Crédito 75%</h4>
+  1489→                <p>Sobre tus haberes, para emprender.</p>
+  1490→            </div>
+  1491→
+  1492→            <div class="propuesta-card">
+  1493→                <i class="fas fa-chart-line"></i>
+  1494→                <h4>Inversión 3% Mensual</h4>
+  1495→                <p>Tu capital genera utilidad cada mes.</p>
+  1496→            </div>
+  1497→
+  1498→            <div class="propuesta-card">
+  1499→                <i class="fas fa-tasks"></i>
+  1500→                <h4>Hub de Tareas CPA</h4>
+  1501→                <p>Gana dinero completando tareas simples.</p>
+  1502→            </div>
+  1503→
+  1504→            <div class="propuesta-card">
+  1505→                <i class="fas fa-gift"></i>
+  1506→                <h4>Fundas con Descuentos</h4>
+  1507→                <p>Numeradas, reemplazan cupones tradicionales.</p>
+  1508→            </div>
+  1509→
+  1510→            <div class="propuesta-card">
+  1511→                <i class="fas fa-building"></i>
+  1512→                <h4>Coworking $150/mes</h4>
+  1513→                <p>Espacio profesional con salón de eventos.</p>
+  1514→            </div>
+  1515→
+  1516→            <div class="propuesta-card">
+  1517→                <i class="fas fa-graduation-cap"></i>
+  1518→                <h4>Capacitación</h4>
+  1519→                <p>Formación técnica y financiera continua.</p>
+  1520→            </div>
+  1521→
+  1522→            <div class="propuesta-card">
+  1523→                <i class="fas fa-users-cog"></i>
+  1524→                <h4>Reuniones Semanales</h4>
+  1525→                <p>Sábados 10 AM. Comunidad activa.</p>
+  1526→            </div>
+  1527→
+  1528→        </div>
+  1529→
+  1530→        <div class="propuesta-cta">
+  1531→            <a href="/dimarclub/" class="btn btn-primary btn-lg"><i class="fas fa-users"></i> Conocer DimarClub</a>
+  1532→            <a href="/registro-proveedores/" class="btn btn-outline btn-lg"><i class="fas fa-store"></i> Ser Proveedor</a>
+  1533→        </div>
+  1534→    </div>
+  1535→</section>
+  1536→
+  1537→<!-- ==================== RED UNIVERSAL ==================== -->
+  1538→<section class="red-info-section">
+  1539→    <div class="red-info-box">
+  1540→        <div class="red-info-icon"><i class="fas fa-network-wired"></i></div>
+  1541→        <div class="red-info-content">
+  1542→            <h3>¿Y si además quieres ganar como afiliado?</h3>
+  1543→            <p>Cada proveedor también puede construir su propia <strong style="color:var(--accent);">Red Universal de 3 Niveles</strong> y ganar el <strong style="color:var(--accent);">3% de cada uno de sus 3 niveles</strong>. El presupuesto de comisiones es del 12% base, sube a 13%, 14% o hasta 15% máximo según el caso.</p>
+  1544→            <a href="/dimarclub/" class="red-info-link">
+  1545→                Ver cómo funciona la Red Universal <i class="fas fa-arrow-right"></i>
+  1546→            </a>
+  1547→        </div>
+  1548→    </div>
+  1549→</section>
+  1550→
+  1551→<!-- ==================== CTA A PLANES ==================== -->
+  1552→<section class="cta-planes">
+  1553→    <h2>¿Listo para ver tu marca en <span>todas partes</span>?</h2>
+  1554→    <p>Contrata un plan integral y obtén <strong style="color:var(--success)">GRATIS</strong> tu espacio en funda, además de sitio web, marketplace, call center, fundas numeradas con descuentos y más.</p>
+  1555→    <a href="/planes.html" class="btn btn-gold btn-lg">
+  1556→        <i class="fas fa-tags"></i> Ver Planes Integrales
+  1557→    </a>
+  1558→</section>
+  1559→
+  1560→<!-- ==================== CONTACTO ==================== -->
+  1561→<section class="contact-section">
+  1562→    <h3><i class="fas fa-rocket" style="color:var(--accent)"></i> ¿Listo para activar tu plan?</h3>
+  1563→    <p>Contáctanos y empieza a posicionar tu marca en toda la ciudad.</p>
+  1564→    
+  1565→    <a href="https://wa.me/593992689844?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20Publibags" 
+  1566→       target="_blank" 
+  1567→       rel="noopener"
+  1568→       class="whatsapp-btn">
+  1569→        <i class="fab fa-whatsapp"></i> Hablar por WhatsApp
+  1570→    </a>
+  1571→    
+  1572→    <br><br>
+  1573→    
+  1574→    <a href="/planes.html" class="btn btn-primary btn-lg">
+  1575→        <i class="fas fa-rocket"></i> Ver Planes y Activar
+  1576→    </a>
+  1577→</section>
+  1578→
+  1579→<!-- VOLVER -->
+  1580→<section class="volver-section">
+  1581→    <a href="/" class="volver-btn">
+  1582→        <i class="fas fa-arrow-left"></i> Volver al Portal Principal
+  1583→    </a>
+  1584→</section>
+  1585→
+  1586→<!-- FOOTER -->
+  1587→<footer class="wfooter">
+  1588→    <div class="footer-grid">
+  1589→        <div>
+  1590→            <h4>ImpulsePymes360</h4>
+  1591→            <a href="/">Inicio</a>
+  1592→            <a href="/planes.html">Planes</a>
+  1593→            <a href="/tareas.html">Tareas</a>
+  1594→            <a href="/login.html">Acceso</a>
+  1595→        </div>
+  1596→        <div>
+  1597→            <h4>Ecosistema</h4>
+  1598→            <a href="/dimarclub/">DimarClub</a>
+  1599→            <a href="/incubadora/">Incubadora</a>
+  1600→            <a href="/webexpress/">WebExpress</a>
+  1601→            <a href="/impulso360/">Impulso360</a>
+  1602→            <a href="/enlaceexpress/">Enlace Express</a>
+  1603→        </div>
+  1604→        <div>
+  1605→            <h4>Más Servicios</h4>
+  1606→            <a href="/publibags/">Publibags</a>
+  1607→            <a href="/fuerzadelta/">Fuerza Delta</a>
+  1608→            <a href="/dimarpost/">DimarPost</a>
+  1609→            <a href="/impulso360/#clasificados">Clasificados</a>
+  1610→            <a href="/tareas.html">Hub de Tareas</a>
+  1611→        </div>
+  1612→        <div>
+  1613→            <h4>Contacto</h4>
+  1614→            <a href="mailto:info@impulsepymes360.com"><i class="fas fa-envelope"></i> info@impulsepymes360.com</a>
+  1615→            <a href="https://wa.me/593992689844" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> +593 99 268 9844</a>
+  1616→            <a href="#"><i class="fas fa-map-marker-alt"></i> Ecuador</a>
+  1617→        </div>
+  1618→        <div>
+  1619→            <h4>Legal</h4>
+  1620→            <a href="/terminos.html">Términos y condiciones</a>
+  1621→            <a href="/privacidad.html">Política de privacidad</a>
+  1622→            <a href="/cookies.html">Política de cookies</a>
+  1623→        </div>
+  1624→    </div>
+  1625→    <div class="footer-social">
+  1626→        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+  1627→        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+  1628→        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+  1629→        <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+  1630→        <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+  1631→    </div>
+  1632→    <div class="footer-bottom">
+  1633→        <p>&copy; 2026 ImpulsePymes360. Todos los derechos reservados.</p>
+  1634→    </div>
+  1635→</footer>
+  1636→
+  1637→<script>
+  1638→    var dropdowns = document.querySelectorAll('.wdropdown-wrap');
+  1639→    
+  1640→    dropdowns.forEach(function(dropdown) {
+  1641→        var btn = dropdown.querySelector('.wdropdown-btn');
+  1642→        if (btn) {
+  1643→            btn.addEventListener('click', function(e) {
+  1644→                e.preventDefault();
+  1645→                e.stopPropagation();
+  1646→                dropdowns.forEach(function(other) {
+  1647→                    if (other !== dropdown) other.classList.remove('open');
+  1648→                });
+  1649→                dropdown.classList.toggle('open');
+  1650→            });
+  1651→        }
+  1652→    });
+  1653→    
+  1654→    document.addEventListener('click', function(e) {
+  1655→        if (!e.target.closest('.wdropdown-wrap')) {
+  1656→            dropdowns.forEach(function(d) { d.classList.remove('open'); });
+  1657→        }
+  1658→    });
+  1659→
+  1660→    // Cerrar dropdown al hacer clic en un enlace interno
+  1661→    document.querySelectorAll('.wdropdown-menu a').forEach(function(link) {
+  1662→        link.addEventListener('click', function() {
+  1663→            dropdowns.forEach(function(d) { d.classList.remove('open'); });
+  1664→        });
+  1665→    });
+  1666→    
+  1667→    var hamburger = document.getElementById('whamburger');
+  1668→    var navLinks = document.getElementById('wnavLinks');
+  1669→    
+  1670→    if (hamburger && navLinks) {
+  1671→        hamburger.addEventListener('click', function() {
+  1672→            this.classList.toggle('active');
+  1673→            navLinks.classList.toggle('open');
+  1674→        });
+  1675→    }
+  1676→    
+  1677→    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+  1678→        anchor.addEventListener('click', function(e) {
+  1679→            var href = this.getAttribute('href');
+  1680→            if (href === '#') return;
+  1681→            var target = document.querySelector(href);
+  1682→            if (target) {
+  1683→                e.preventDefault();
+  1684→                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  1685→            }
+  1686→        });
+  1687→    });
+  1688→
+  1689→    /* Badge de tareas pendientes — placeholder hasta integrar backend */
+  1690→    (function cargarBadgeTareas() {
+  1691→        var badge = document.getElementById('badgeTareas');
+  1692→        if (!badge) return;
+  1693→        // TODO: reemplazar por fetch('/api/tareas/pendientes')
+  1694→        badge.textContent = '0';
+  1695→    })();
+  1696→</script>
+  1697→</body>
+  1698→</html>
