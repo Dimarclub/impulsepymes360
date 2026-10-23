@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIMARCLUB - App Socio Delta</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--bg:#0B1120;--sidebar:#0F172A;--card:#15203A;--border:#243352;--accent:#00D4AA;--accent-dim:rgba(0,212,170,.12);--gold:#F5A623;--text:#E8EDF5;--muted:#6B7FA0;--success:#22C55E;--danger:#EF4444;--blue:#60A5FA;--warn:#FBBF24;--purple:#A855F7}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+h1,h2,h3,h4{font-family:'Outfit',sans-serif}body::before{content:'';position:fixed;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at 20% 20%,rgba(0,212,170,0.04) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(96,165,250,0.04) 0%,transparent 50%);animation:bgS 20s ease-in-out infinite alternate;z-index:-1;pointer-events:none}@keyframes bgS{0%{transform:translate(0,0)}100%{transform:translate(-5%,-5%) rotate(3deg)}}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(11,17,32,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:11px 26px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.topbar-l{display:flex;align-items:center;gap:14px}
+.topbar-t{font-family:'Outfit';font-size:1.05rem;font-weight:700}
+.topbar-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sel-delta{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:.85rem;font-family:'DM Sans';outline:none;cursor:pointer;max-width:100%}
+.sel-delta:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(96,165,250,.15)}
+.sel-delta option{background:var(--sidebar);color:var(--text)}
+.notif-badge{background:var(--danger);color:#fff;border-radius:50%;padding:1px 7px;font-size:.6rem;font-weight:700;margin-left:5px}
+.sec{padding:26px;animation:fS .35s ease}.sec.active{display:block}@keyframes fS{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.kpi-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:22px}
+.kpi-c{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px}
+.kpi-c .kpi-v{font-size:1.4rem;font-weight:800;font-family:'Outfit'}.kpi-c .kpi-l{font-size:.68rem;color:var(--muted)}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px}.p-hd{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}.p-hd h3{font-size:.9rem;font-weight:700}.p-bd{padding:0}.p-bd.pad{padding:18px}
+.dt{width:100%;border-collapse:collapse;font-size:.76rem}.dt thead th{background:rgba(255,255,255,.03);padding:10px 12px;text-align:left;font-weight:600;color:var(--muted);font-size:.66rem;text-transform:uppercase;letter-spacing:.7px;white-space:nowrap;border-bottom:1px solid var(--border)}.dt tbody td{padding:8px 12px;border-bottom:1px solid rgba(36,51,82,.5);vertical-align:middle}.dt tbody tr:last-child td{border-bottom:none}.tw{overflow-x:auto}
+.rb{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:.65rem;font-weight:700;white-space:nowrap}
+.rb-ok{background:rgba(34,197,94,.15);color:#22C55E}.rb-warn{background:rgba(245,166,35,.15);color:var(--gold)}.rb-pend{background:rgba(96,165,250,.15);color:#60A5FA}.rb-ruta{background:rgba(168,85,247,.15);color:#A855F7}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:none;border-radius:8px;font-size:.78rem;font-weight:600;font-family:'DM Sans';cursor:pointer;transition:all .2s;white-space:nowrap}.btn:active{transform:scale(.97)}
+.btn-p{background:var(--success);color:#fff}.btn-p:hover{background:#16a34a;box-shadow:0 4px 20px rgba(34,197,94,.3)}
+.btn-d{background:rgba(239,68,68,.12);color:var(--danger)}.btn-d:hover{background:rgba(239,68,68,.25)}
+.btn-s{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--border)}
+.btn-sm{padding:4px 10px;font-size:.7rem}
+.btn-purple{background:rgba(168,85,247,.15);color:var(--purple)}.btn-purple:hover{background:rgba(168,85,247,.25)}
+.empty-s{text-align:center;padding:35px 20px;color:var(--muted)}.empty-s i{font-size:2rem;margin-bottom:12px;opacity:.4}.empty-s p{font-size:.82rem}
+.back-btn{position:fixed;top:20px;right:20px;background:var(--card);border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:50px;text-decoration:none;font-family:'Outfit';font-weight:600;font-size:.8rem;transition:all .3s;z-index:10}.back-btn:hover{color:var(--accent);border-color:var(--accent)}
+#toastC{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px}.toast{padding:12px 16px;border-radius:10px;font-size:.8rem;font-weight:500;display:flex;align-items:center;gap:8px;animation:tI .35s ease;min-width:260px;max-width:380px;box-shadow:0 10px 40px rgba(0,0,0,.4)}.toast.out{animation:tO .3s ease forwards}.toast-success{background:#0D3320;border:1px solid #166534;color:#86EFAC}.toast-error{background:#3B1111;border:1px solid #7F1D1D;color:#FCA5A5}.toast-info{background:#0C2340;border:1px solid #1E3A5F;color:#93C5FD}@keyframes tI{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}@keyframes tO{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(60px)}}
+.profile-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;align-items:center;gap:18px;margin-bottom:20px;flex-wrap:wrap}
+.profile-img{width:56px;height:56px;background:var(--bg);border:2px solid var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:var(--accent)}
+.profile-info h3{font-size:1rem;font-weight:700;margin-bottom:2px}.profile-info p{font-size:.78rem;color:var(--muted)}
+.stat-val{text-align:center;padding:16px;background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.1);border-radius:12px;margin-top:4px}
+.stat-val span{font-family:'Outfit';font-size:1.6rem;font-weight:800;color:var(--success);display:block}
+.stat-val p{font-size:.7rem;color:var(--muted);margin-top:2px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.fs-sm{padding:5px 10px;font-size:.72rem;border-radius:6px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text);outline:none}
+.map-container{width:100%;height:180px;background:var(--bg);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.78rem;flex-direction:column;gap:6px;margin-bottom:12px}
+.map-container i{font-size:1.8rem;opacity:.3}
+.firma-input{border:2px dashed var(--border);border-radius:10px;padding:14px;text-align:center;background:rgba(255,255,255,.02);width:100%;min-height:70px;color:var(--text);font-size:1rem;font-family:'DM Sans';outline:none;transition:border-color .2s}
+.firma-input:focus{border-color:var(--accent)}
+.mo-ov{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}.mo-ov.show{display:flex}
+.mo-box{background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:420px;max-height:85vh;overflow-y:auto;animation:modalIn .25s ease}@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.mo-hd{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}.mo-hd h3{font-size:.9rem;font-weight:700}
+.mo-bd{padding:18px}.mo-ft{padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.confirm-body{text-align:center;padding:10px 0}.confirm-body i{font-size:2.2rem;margin-bottom:12px}.confirm-body p{font-size:.85rem;color:var(--muted);line-height:1.5}.confirm-body strong{color:var(--text)}
+.mo-cl{background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:4px}.mo-cl:hover{color:var(--text)}
+.notif-list{max-height:200px;overflow-y:auto}
+.notif-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(36,51,82,.3);font-size:.78rem}
+.notif-item .notif-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.notif-item .notif-icon.success{background:rgba(34,197,94,.15);color:var(--success)}
+.notif-item .notif-icon.info{background:rgba(96,165,250,.15);color:var(--blue)}
+.notif-item .notif-text{flex:1}
+.notif-item .notif-text p{margin:0;font-weight:500}
+.notif-item .notif-text span{font-size:.65rem;color:var(--muted)}
+.estado-indicator{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:50px;font-size:.75rem;font-weight:700}
+.estado-disponible{background:rgba(34,197,94,.15);color:var(--success);border:1px solid var(--success)}
+.estado-ruta{background:rgba(168,85,247,.15);color:var(--purple);border:1px solid var(--purple)}
+.estado-alerta{background:rgba(245,166,35,.15);color:var(--gold);border:1px solid var(--gold)}
+@media(max-width:768px){.sec{padding:16px}.kpi-g{grid-template-columns:repeat(2,1fr);gap:10px}.back-btn{top:auto;bottom:20px;right:20px}}
+</style>
+</head>
+<body>
+
+<a href="../hub.html" class="back-btn"><i class="fas fa-arrow-left"></i> Volver al Portal</a>
+
+<header class="topbar">
+    <div class="topbar-l">
+        <span class="topbar-t"><i class="fas fa-motorcycle" style="margin-right:6px;color:var(--blue)"></i> App Socio Delta</span>
+    </div>
+    <div class="topbar-r">
+        <select class="sel-delta" id="selDelta">
+            <option value="">-- Selecciona tu ID --</option>
+        </select>
+        <button class="btn btn-sm btn-s" onclick="abrirNotificaciones()"><i class="fas fa-bell"></i><span class="notif-badge" id="notifBadge">0</span></button>
+        <button class="btn btn-sm btn-d" onclick="cerrarSesion()"><i class="fas fa-sign-out-alt"></i> Salir</button>
+    </div>
+</header>
+
+<section class="sec" id="sec-login" style="text-align:center; padding-top:100px;">
+    <i class="fas fa-motorcycle" style="font-size:3.5rem; color:var(--blue); opacity:0.2; margin-bottom:20px;"></i>
+    <h2 style="font-size:1.3rem; margin-bottom:8px; color:var(--text)">Bienvenido Socio Delta</h2>
+    <p style="color:var(--muted); max-width:300px; margin:0 auto; line-height:1.6; font-size:.9rem;">Selecciona tu ID de Delta en el menú de arriba para ver tus viajes asignados y registrar entregas.</p>
+</section>
+
+<section class="sec" id="sec-delta" style="display:none;">
+    <div class="profile-card" id="profCard"></div>
+    
+    <div class="kpi-g">
+        <div class="kpi-c"><div style="color:var(--gold)" class="kpi-v" id="kPend">0</div><div class="kpi-l">Viajes Pendientes</div></div>
+        <div class="kpi-c"><div style="color:var(--success)" class="kpi-v" id="kHechos">0</div><div class="kpi-l">Viajes Realizados</div></div>
+        <div class="kpi-c"><div style="color:var(--blue)" class="kpi-v" id="kHoy">0</div><div class="kpi-l">Entregas Hoy</div></div>
+        <div class="kpi-c" style="grid-column: 1 / -1; background:linear-gradient(135deg, rgba(34,197,94,.05), rgba(0,0,0,0));">
+            <div class="stat-val">
+                <span id="kGanado">$0.00</span>
+                <p>Mi Ganancia Total (5% Comisión)</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="p-hd"><h3><i class="fas fa-route" style="margin-right:6px;color:var(--gold)"></i>Mis Tareas Asignadas</h3>
+            <div class="filters">
+                <select class="fs-sm" id="fTipoTarea">
+                    <option value="todos">Todos</option>
+                    <option value="pedido">Pedidos</option>
+                    <option value="sobre">Sobres B2B</option>
+                </select>
+            </div>
+        </div>
+        <div class="p-bd"><div class="tw"><table class="dt"><thead><tr><th>Código</th><th>Tipo</th><th>Cliente / Empresa</th><th>Dirección</th><th style="text-align:right">A Cobrar</th><th style="text-align:center">Acción</th></tr></thead><tbody id="viajesB"><tr><td colspan="6"><div class="empty-s" style="padding:24px"><i class="fas fa-check-double"></i><p>¡Excelente! No tienes tareas pendientes.</p></div></td></tr></tbody></table></div></div>
+    </div>
+
+    <div class="panel">
+        <div class="p-hd"><h3><i class="fas fa-history" style="margin-right:6px;color:var(--success)"></i>Historial de Entregas</h3></div>
+        <div class="p-bd"><div class="tw"><table class="dt"><thead><tr><th>Código</th><th>Tipo</th><th>Cliente</th><th>Fecha</th><th style="text-align:right">Ganancia</th></tr></thead><tbody id="histB"><tr><td colspan="5"><div class="empty-s" style="padding:24px"><p>Sin historial</p></div></td></tr></tbody></table></div></div>
+    </div>
+</section>
+
+<!-- MODAL: FIRMA -->
+<div class="mo-ov" id="moFirma">
+    <div class="mo-box">
+        <div class="mo-hd"><h3><i class="fas fa-pen" style="color:var(--accent)"></i> Confirmar Entrega</h3><button class="mo-cl" onclick="cerrarModal('moFirma')"><i class="fas fa-xmark"></i></button></div>
+        <div class="mo-bd">
+            <p style="font-size:.8rem;color:var(--muted);margin-bottom:12px">El receptor debe firmar para confirmar la entrega de <strong id="firmaCod">--</strong></p>
+            <input type="text" class="firma-input" id="firmaInput" placeholder="Firma del receptor (Nombre completo)" autocomplete="off">
+            <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn btn-p" onclick="confirmarFirma()"><i class="fas fa-check"></i> Confirmar Entrega</button>
+                <button class="btn btn-s" onclick="cerrarModal('moFirma')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: INCIDENCIA -->
+<div class="mo-ov" id="moIncidencia">
+    <div class="mo-box">
+        <div class="mo-hd"><h3><i class="fas fa-triangle-exclamation" style="color:var(--danger)"></i> Reportar Incidencia</h3><button class="mo-cl" onclick="cerrarModal('moIncidencia')"><i class="fas fa-xmark"></i></button></div>
+        <div class="mo-bd">
+            <input type="hidden" id="incidenciaCod">
+            <div style="margin-bottom:12px"><label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:4px">Motivo</label>
+                <select class="fs-sm" id="incTipo" style="width:100%;padding:8px">
+                    <option value="Cliente no encontrado">Cliente no encontrado</option>
+                    <option value="Dirección incorrecta">Dirección incorrecta</option>
+                    <option value="Cliente no paga">Cliente no paga</option>
+                    <option value="Paquete dañado">Paquete dañado</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+            <div style="margin-bottom:12px"><label style="font-size:.7rem;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:4px">Descripción</label>
+                <textarea id="incDesc" rows="3" style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);font-family:'DM Sans';resize:vertical;font-size:.8rem" placeholder="Detalla el problema..."></textarea>
+            </div>
+            <button class="btn btn-d" onclick="guardarIncidenciaDelta()" style="width:100%;justify-content:center"><i class="fas fa-save"></i> Guardar Incidencia</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: NOTIFICACIONES -->
+<div class="mo-ov" id="moNotif">
+    <div class="mo-box">
+        <div class="mo-hd"><h3><i class="fas fa-bell" style="color:var(--gold)"></i> Notificaciones</h3><button class="mo-cl" onclick="cerrarModal('moNotif')"><i class="fas fa-xmark"></i></button></div>
+        <div class="mo-bd"><div id="notifList" class="notif-list"></div></div>
+    </div>
+</div>
+
+<!-- MODAL: CONFIRMACIÓN -->
+<div class="mo-ov" id="moConfirm"><div class="mo-box"><div class="mo-bd"><div class="confirm-body"><i class="fas fa-triangle-exclamation" style="color:var(--warn)"></i><p id="confirmMsg">¿Estás seguro?</p></div></div><div class="mo-ft"><button class="btn btn-s" onclick="cerrarModal('moConfirm')">Cancelar</button><button class="btn btn-p" id="confirmBtn" style="background:var(--success);color:#fff"><i class="fas fa-check"></i> Confirmar</button></div></div></div>
+
+<div id="toastC"></div>
+
+<script>
+let deltas = [], pedidos = [], mensajeria = [], incidencias = [], notificaciones = [];
+let deltaActual = null;
+let firmaPendiente = null;
+let confirmCallback = null;
+const FLETE_COMISION = 0.05;
+
+function gD() {
+    const s = JSON.parse(localStorage.getItem('dc_data') || '{"data":{},"cnt":{}}');
+    if (!s.data) s.data = {}; if (!s.cnt) s.cnt = {};
+    deltas = s.data.deltas || [];
+    pedidos = s.data.pedidos || [];
+    mensajeria = s.data.mensajeria || [];
+    incidencias = s.data.incidencias || [];
+    notificaciones = s.data.notificaciones || [];
+    cargarSelect();
+    actualizarBadgeNotif();
+}
+
+function sD() {
+    try {
+        const mainData = JSON.parse(localStorage.getItem('dc_data') || '{"data":{},"cnt":{}}');
+        if(!mainData.data) mainData.data = {};
+        if(!mainData.cnt) mainData.cnt = {};
+        mainData.data.deltas = deltas;
+        mainData.data.pedidos = pedidos;
+        mainData.data.mensajeria = mensajeria;
+        mainData.data.incidencias = incidencias;
+        mainData.data.notificaciones = notificaciones;
+        localStorage.setItem('dc_data', JSON.stringify(mainData));
+    } catch(e) {
+        toast('Error: Memoria llena.', 'error');
+    }
+}
+
+function fM(n){return'$'+(n||0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+function gFecha(){return new Date().toISOString().split('T')[0]}
+function escHtml(s){if(!s)return'';const d=document.createElement('div');d.appendChild(document.createTextNode(String(s)));return d.innerHTML;}
+
+function toast(m,t){const c=document.getElementById('toastC');const t2=document.createElement('div');const ic=t==='success'?'fa-circle-check':t==='error'?'fa-circle-exclamation':'fa-circle-info';t2.className='toast toast-'+t;t2.innerHTML='<i class="fas '+ic+'"></i><span>'+m+'</span>';c.appendChild(t2);setTimeout(function(){t2.classList.add('out');setTimeout(function(){t2.remove()},300)},3500)}
+
+function abrirModal(id){document.getElementById(id).classList.add('show');}
+function cerrarModal(id){document.getElementById(id).classList.remove('show');}
+
+function showConfirm(msg, onConfirm) {
+    document.getElementById('confirmMsg').innerHTML = msg;
+    confirmCallback = onConfirm;
+    const btn = document.getElementById('confirmBtn');
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener('click', function() {
+        cerrarModal('moConfirm');
+        if (typeof confirmCallback === 'function') confirmCallback();
+        confirmCallback = null;
+    });
+    abrirModal('moConfirm');
+}
+document.getElementById('moConfirm').addEventListener('click', e => { if(e.target === e.currentTarget) cerrarModal('moConfirm'); });
+
+function cerrarSesion() {
+    showConfirm('¿Estás seguro de que deseas <strong>cerrar sesión</strong>?', function() {
+        deltaActual = null;
+        document.getElementById('selDelta').value = '';
+        document.getElementById('sec-login').style.display = 'block';
+        document.getElementById('sec-delta').style.display = 'none';
+        toast('Sesión cerrada', 'info');
+    });
+}
+
+function cargarSelect() {
+    const sel = document.getElementById('selDelta');
+    const disponibles = deltas.filter(d => d.estado === 'Disponible' || d.estado === 'En Ruta' || d.estado === 'En Alerta');
+    sel.innerHTML = '<option value="">-- Selecciona tu ID --</option>';
+    disponibles.forEach(function(d) {
+        const o = document.createElement('option');
+        o.value = d.id;
+        o.textContent = d.id + ' - ' + d.nom + ' (' + d.estado + ')';
+        if(deltaActual && d.id === deltaActual.id) o.selected = true;
+        sel.appendChild(o);
+    });
+}
+
+document.getElementById('selDelta').addEventListener('change', cambiarDelta);
+
+function cambiarDelta() {
+    const id = document.getElementById('selDelta').value;
+    if(!id) {
+        document.getElementById('sec-login').style.display = 'block';
+        document.getElementById('sec-delta').style.display = 'none';
+        deltaActual = null;
+        return;
+    }
+    gD(); 
+    deltaActual = deltas.find(d => d.id === id);
+    if(!deltaActual) return;
+    document.getElementById('sec-login').style.display = 'none';
+    document.getElementById('sec-delta').style.display = 'block';
+    const p = document.getElementById('profCard');
+    const estadoClase = deltaActual.estado === 'Disponible' ? 'estado-disponible' : deltaActual.estado === 'En Ruta' ? 'estado-ruta' : 'estado-alerta';
+    p.innerHTML = `<div class="profile-img"><i class="fas fa-user-shield"></i></div>
+        <div class="profile-info">
+            <h3>${deltaActual.nom} <span class="estado-indicator ${estadoClase}" style="margin-left:8px"><i class="fas fa-circle" style="font-size:.5rem"></i> ${deltaActual.estado}</span></h3>
+            <p><i class="fas fa-id-badge" style="color:var(--accent);margin-right:3px"></i> ${deltaActual.id} &nbsp;|&nbsp; 
+               <i class="fas fa-motorcycle" style="color:var(--blue);margin-right:3px"></i> ${deltaActual.veh} ${deltaActual.placa !== 'N/A' ? '('+deltaActual.placa+')' : ''} &nbsp;|&nbsp;
+               <i class="fas fa-clock" style="color:var(--gold);margin-right:3px"></i> ${deltaActual.turno || 'N/A'}
+            </p>
+        </div>`;
+    rDash();
+    rViajes();
+}
+
+function rDash() {
+    if(!deltaActual) return;
+    gD(); 
+    deltaActual = deltas.find(d => d.id === deltaActual.id); 
+    if(!deltaActual) return;
+    const misPedidos = pedidos.filter(p => p.delta === deltaActual.id);
+    const misSobres = mensajeria.filter(m => m.deltaId === deltaActual.id);
+    const pendPedidos = misPedidos.filter(p => p.estado !== 'Entregado / Cobrado');
+    const pendSobres = misSobres.filter(m => m.estado !== 'Entregado / Cobrado');
+    const totalPend = pendPedidos.length + pendSobres.length;
+    const hechosPedidos = misPedidos.filter(p => p.estado === 'Entregado / Cobrado');
+    const hechosSobres = misSobres.filter(m => m.estado === 'Entregado / Cobrado');
+    const totalHechos = hechosPedidos.length + hechosSobres.length;
+    const hoy = gFecha();
+    const entregasHoy = (deltaActual.historial || []).filter(h => h.fecha === hoy).length;
+    document.getElementById('kPend').textContent = totalPend;
+    document.getElementById('kHechos').textContent = totalHechos;
+    document.getElementById('kHoy').textContent = entregasHoy;
+    const gananciaPedidos = hechosPedidos.reduce((s, p) => s + (p.total * FLETE_COMISION), 0);
+    const gananciaSobres = hechosSobres.reduce((s, m) => s + (m.monto * FLETE_COMISION), 0);
+    document.getElementById('kGanado').textContent = fM(gananciaPedidos + gananciaSobres);
+}
+
+function rViajes() {
+    if(!deltaActual) return;
+    const b = document.getElementById('viajesB');
+    const fTipo = document.getElementById('fTipoTarea').value;
+    let pendPedidos = pedidos.filter(p => p.delta === deltaActual.id && p.estado !== 'Entregado / Cobrado');
+    let pendSobres = mensajeria.filter(m => m.deltaId === deltaActual.id && m.estado !== 'Entregado / Cobrado');
+    if(fTipo === 'pedido') pendSobres = [];
+    if(fTipo === 'sobre') pendPedidos = [];
+    const totalPend = pendPedidos.length + pendSobres.length;
+    if(!totalPend) {
+        b.innerHTML = '<tr><td colspan="6"><div class="empty-s" style="padding:24px"><i class="fas fa-check-double"></i><p>¡Excelente! No tienes tareas pendientes.</p></div></td></tr>';
+    } else {
+        let html = '';
+        pendPedidos.forEach(p => {
+            html += `<tr><td style="color:var(--accent);font-weight:700;white-space:nowrap">${p.cod}</td><td><span class="rb rb-pend">Pedido</span></td><td><strong>${escHtml(p.cliente)}</strong></td><td style="font-size:.72rem;color:var(--muted)">${escHtml(p.dir)}</td><td style="text-align:right;font-weight:700;color:var(--gold);white-space:nowrap">${fM(p.total)}</td><td style="text-align:center"><button class="btn btn-p btn-sm" onclick="prepararEntrega('${p.cod}','pedido')"><i class="fas fa-check"></i> Entregar</button> <button class="btn btn-sm btn-d" onclick="reportarIncidencia('${p.cod}','pedido')"><i class="fas fa-flag"></i></button></td></tr>`;
+        });
+        pendSobres.forEach(m => {
+            html += `<tr><td style="color:var(--purple);font-weight:700;white-space:nowrap">${m.id}</td><td><span class="rb rb-ruta">Sobre B2B</span></td><td><strong>${escHtml(m.empresa)}</strong><br><span style="font-size:.68rem;color:var(--muted)">${escHtml(m.destinatario)}</span></td><td style="font-size:.72rem;color:var(--muted)">${escHtml(m.dir)}</td><td style="text-align:right;font-weight:700;color:var(--gold);white-space:nowrap">${fM(m.monto)}</td><td style="text-align:center"><button class="btn btn-p btn-sm" onclick="prepararEntrega('${m.id}','sobre')"><i class="fas fa-check"></i> Entregar</button> <button class="btn btn-sm btn-d" onclick="reportarIncidencia('${m.id}','sobre')"><i class="fas fa-flag"></i></button></td></tr>`;
+        });
+        b.innerHTML = html;
+    }
+    const hB = document.getElementById('histB');
+    const hechosPedidos = pedidos.filter(p => p.delta === deltaActual.id && p.estado === 'Entregado / Cobrado');
+    const hechosSobres = mensajeria.filter(m => m.deltaId === deltaActual.id && m.estado === 'Entregado / Cobrado');
+    if(!hechosPedidos.length && !hechosSobres.length) {
+        hB.innerHTML = '<tr><td colspan="5"><div class="empty-s" style="padding:24px"><p>Sin historial de entregas aún.</p></div></td></tr>';
+    } else {
+        let histHtml = '';
+        hechosPedidos.slice().reverse().forEach(p => {
+            const ganancia = p.total * FLETE_COMISION;
+            histHtml += `<tr><td style="color:var(--accent);font-weight:700">${p.cod}</td><td><span class="rb rb-ok">Pedido</span></td><td>${escHtml(p.cliente)}</td><td style="font-size:.72rem;color:var(--muted)">${p.fecha || gFecha()}</td><td style="text-align:right;font-weight:700;color:var(--success)">${fM(ganancia)}</td></tr>`;
+        });
+        hechosSobres.slice().reverse().forEach(m => {
+            const ganancia = m.monto * FLETE_COMISION;
+            histHtml += `<tr><td style="color:var(--purple);font-weight:700">${m.id}</td><td><span class="rb rb-ok">Sobre</span></td><td>${escHtml(m.empresa)}</td><td style="font-size:.72rem;color:var(--muted)">${m.fec || gFecha()}</td><td style="text-align:right;font-weight:700;color:var(--success)">${fM(ganancia)}</td></tr>`;
+        });
+        hB.innerHTML = histHtml;
+    }
+}
+
+function prepararEntrega(cod, tipo) {
+    firmaPendiente = { cod: cod, tipo: tipo };
+    document.getElementById('firmaCod').textContent = cod;
+    document.getElementById('firmaInput').value = '';
+    abrirModal('moFirma');
+}
+
+function confirmarFirma() {
+    const firma = document.getElementById('firmaInput').value.trim();
+    if(!firma){ toast('Ingresa la firma del receptor', 'error'); return; }
+    if(!firmaPendiente) return;
+    const cod = firmaPendiente.cod;
+    const tipo = firmaPendiente.tipo;
+    if(tipo === 'pedido'){
+        const p = pedidos.find(x => x.cod === cod);
+        if(!p){ toast('Pedido no encontrado', 'error'); cerrarModal('moFirma'); return; }
+        if(p.estado === 'Entregado / Cobrado'){ toast('Este pedido ya fue entregado', 'error'); cerrarModal('moFirma'); return; }
+        p.estado = 'Entregado / Cobrado';
+        if(!p.fecha) p.fecha = gFecha();
+        const mainData = JSON.parse(localStorage.getItem('dc_data') || '{"data":{},"cnt":{}}');
+        if(!mainData.data) mainData.data = {}; if(!mainData.cnt) mainData.cnt = {};
+        if(!mainData.data.ingresos) mainData.data.ingresos = [];
+        const currentCntI = mainData.cnt.i || 1;
+        mainData.data.ingresos.push({ id:'ING-'+String(currentCntI++).padStart(4,'0'), fec: gFecha(), con:'Cobro Delta App - Pedido '+p.cod+' ('+p.cliente+')', mon: p.total, cat: 'Ventas Marketplace' });
+        mainData.cnt.i = currentCntI;
+        const d = deltas.find(x => x.id === deltaActual.id);
+        if(d) { if(!d.historial) d.historial = []; d.historial.push({ fecha: gFecha(), cod: cod, tipo: 'pedido', firma: firma }); d.estado = 'Disponible'; d.entregas = (d.entregas || 0) + 1; }
+        try { localStorage.setItem('dc_data', JSON.stringify(mainData)); } catch(e) { toast('Error al guardar ingreso', 'error'); }
+        toast('✅ Pedido entregado. Ganancia: '+fM(p.total * FLETE_COMISION), 'success');
+        agregarNotificacion('Pedido '+cod+' entregado a '+p.cliente, 'success');
+    } else if(tipo === 'sobre'){
+        const m = mensajeria.find(x => x.id === cod);
+        if(!m){ toast('Sobre no encontrado', 'error'); cerrarModal('moFirma'); return; }
+        if(m.estado === 'Entregado / Cobrado'){ toast('Este sobre ya fue entregado', 'error'); cerrarModal('moFirma'); return; }
+        m.estado = 'Entregado / Cobrado';
+        if(m.monto > 0){
+            const mainData = JSON.parse(localStorage.getItem('dc_data') || '{"data":{},"cnt":{}}');
+            if(!mainData.data) mainData.data = {}; if(!mainData.cnt) mainData.cnt = {};
+            if(!mainData.data.ingresos) mainData.data.ingresos = [];
+            const currentCntI = mainData.cnt.i || 1;
+            mainData.data.ingresos.push({ id:'ING-'+String(currentCntI++).padStart(4,'0'), fec: gFecha(), con:'Mensajería B2B - Sobre '+m.id+' ('+m.empresa+')', mon: m.monto, cat: 'Mensajería B2B' });
+            mainData.cnt.i = currentCntI;
+            try { localStorage.setItem('dc_data', JSON.stringify(mainData)); } catch(e) { toast('Error al guardar ingreso', 'error'); }
+        }
+        const d = deltas.find(x => x.id === deltaActual.id);
+        if(d) { if(!d.historial) d.historial = []; d.historial.push({ fecha: gFecha(), cod: cod, tipo: 'sobre', firma: firma }); d.estado = 'Disponible'; d.entregas = (d.entregas || 0) + 1; }
+        toast('✅ Sobre entregado. Ganancia: '+fM(m.monto * FLETE_COMISION), 'success');
+        agregarNotificacion('Sobre '+cod+' entregado a '+m.destinatario, 'success');
+    }
+    sD();
+    cerrarModal('moFirma');
+    firmaPendiente = null;
+    rDash();
+    rViajes();
+    cargarSelect();
+}
+
+function reportarIncidencia(cod, tipo) {
+    document.getElementById('incidenciaCod').value = cod + '|' + tipo;
+    document.getElementById('incDesc').value = '';
+    abrirModal('moIncidencia');
+}
+
+function guardarIncidenciaDelta() {
+    const raw = document.getElementById('incidenciaCod').value;
+    const tipoInc = document.getElementById('incTipo').value;
+    const desc = document.getElementById('incDesc').value.trim();
+    if(!desc){ toast('Describe la incidencia', 'error'); return; }
+    const cod = raw.split('|')[0];
+    const tipo = raw.split('|')[1] || 'general';
+    incidencias.push({ id: 'INC-' + String(incidencias.length + 1).padStart(4,'0'), codigo: cod, tipo: tipo, incTipo: tipoInc, desc: desc, fecha: gFecha(), delta: deltaActual.id, resuelta: false });
+    if(tipo === 'pedido'){
+        const p = pedidos.find(x => x.cod === cod);
+        if(p) p.estado = 'Pendiente (Alerta Master)';
+    }
+    sD();
+    cerrarModal('moIncidencia');
+    toast('Incidencia reportada', 'success');
+    agregarNotificacion('Incidencia reportada para '+cod, 'info');
+    rViajes();
+}
+
+function agregarNotificacion(msg, tipo) {
+    notificaciones.push({ cod: deltaActual ? deltaActual.id : 'sistema', msg: msg, tipo: tipo, fecha: gFecha(), leida: false });
+    sD();
+    actualizarBadgeNotif();
+}
+
+function actualizarBadgeNotif() {
+    const badge = document.getElementById('notifBadge');
+    const noLeidas = notificaciones.filter(n => !n.leida && n.cod === (deltaActual ? deltaActual.id : 'sistema')).length;
+    badge.textContent = noLeidas;
+    badge.style.display = noLeidas > 0 ? 'inline' : 'none';
+}
+
+function abrirNotificaciones() {
+    const list = document.getElementById('notifList');
+    const misNotifs = notificaciones.filter(n => n.cod === (deltaActual ? deltaActual.id : 'sistema'));
+    if(!misNotifs.length){
+        list.innerHTML = '<div class="empty-s" style="padding:20px"><i class="fas fa-bell-slash"></i><p>Sin notificaciones</p></div>';
+    } else {
+        list.innerHTML = misNotifs.slice().reverse().map(n => `
+            <div class="notif-item">
+                <div class="notif-icon ${n.tipo}"><i class="fas ${n.tipo === 'success' ? 'fa-circle-check' : n.tipo === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info'}"></i></div>
+                <div class="notif-text"><p>${n.msg}</p><span>${n.fecha}</span></div>
+            </div>
+        `).join('');
+        notificaciones.forEach(n => { if(n.cod === deltaActual.id) n.leida = true; });
+        sD();
+        actualizarBadgeNotif();
+    }
+    abrirModal('moNotif');
+}
+
+document.getElementById('fTipoTarea').addEventListener('change', rViajes);
+gD();
+</script>
+</body>
+</html>

@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0B1120">
+    
+    <!-- ===== SEO ===== -->
+    <title>App Socio Delta - IMPULSO 360</title>
+    <meta name="description" content="App para Socios Delta de IMPULSO 360. Gestiona tus entregas, registra incidencias y controla tus ganancias.">
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- ===== FAVICON ===== -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+    <!-- ===== FUENTES ===== -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- ===== ESTILOS GLOBALES ===== -->
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        /* ===== ESTILOS ESPECÍFICOS DE DELTA-APP ===== */
+
+        /* ===== TOPBAR ===== */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(11, 17, 32, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 11px 26px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .topbar-l {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .topbar-t {
+            font-family: 'Outfit';
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+        .topbar-r {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .sel-delta {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text);
+            font-size: 0.85rem;
+            font-family: 'DM Sans';
+            outline: none;
+            cursor: pointer;
+            max-width: 100%;
+        }
+        .sel-delta:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+        }
+        .sel-delta option {
+            background: var(--bg-sidebar);
+            color: var(--text);
+        }
+
+        /* ===== BADGE DE NOTIFICACIONES ===== */
+        .notif-badge {
+            background: var(--danger);
+            color: #fff;
+            border-radius: 50%;
+            padding: 1px 7px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            margin-left: 5px;
+        }
+
+        /* ===== PERFIL ===== */
+        .profile-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .profile-img {
+            width: 56px;
+            height: 56px;
+            background: var(--bg);
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: var(--accent);
+        }
+        .profile-info h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .profile-info p {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        /* ===== ESTADO ===== */
+        .estado-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .estado-disponible {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+        .estado-ruta {
+            background: rgba(168, 85, 247, 0.15);
+            color: var(--purple);
+            border: 1px solid var(--purple);
+        }
+        .estado-alerta {
+            background: rgba(245, 166, 35, 0.15);
+            color: var(--gold);
+            border: 1px solid var(--gold);
+        }
+
+        /* ===== KPI ===== */
+        .kpi-g {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+        .kpi-c {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            transition: var(--transition);
+        }
+        .kpi-c:hover {
+            border-color: var(--accent);
+        }
+        .kpi-c .kpi-v {
+            font-size: 1.4rem;
+            font-weight: 800;
+            font-family: 'Outfit';
+        }
+        .kpi-c .kpi-l {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+        }
+
+        .stat-val {
+            text-align: center;
+            padding: 16px;
+            background: rgba(34, 197, 94, 0.05);
+            border: 1px solid rgba(34, 197, 94, 0.1);
+            border-radius: 12px;
+            margin-top: 4px;
+        }
+        .stat-val span {
+            font-family: 'Outfit';
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--success);
+            display: block;
+        }
+        .stat-val p {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ===== PANELES ===== */
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .p-hd {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .p-hd h3 {
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+        .p-bd { padding: 0; }
+        .p-bd.pad { padding: 18px; }
+
+        /* ===== TABLA ===== */
+        .dt {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.76rem;
+        }
+        .dt thead th {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.66rem;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            white-space: nowrap;
+            border-bottom: 1px solid var(--border);
+        }
+        .dt tbody td {
+            padding: 8px 12px;
+            border-bottom: 1px solid rgba(36, 51, 82, 0.5);
+            vertical-align: middle;
+        }
+        .dt tbody tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .dt tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* ===== BADGES ===== */
+        .rb {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .rb-ok { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .rb-warn { background: rgba(245, 166, 35, 0.15); color: var(--gold); }
+        .rb-pend { background: rgba(96, 165, 250, 0.15); color: var(--blue); }
+        .rb-ruta { background: rgba(168, 85, 247, 0.15); color: var(--purple); }
+
+        /* ===== FILTROS ===== */
+        .filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .fs-sm {
+            padding: 5px 10px;
+            font-size: 0.72rem;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            color: var(--text);
+            outline: none;
+            font-family: 'DM Sans';
+        }
+        .fs-sm:focus {
+            border-color: var(--accent);
+        }
+
+        /* ===== FIRMA ===== */
+        .firma-input {
+            border: 2px dashed var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.02);
+            width: 100%;
+            min-height: 70px;
+            color: var(--text);
+            font-size: 1rem;
+            font-family: 'DM Sans';
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .firma-input:focus {
+            border-color: var(--accent);
+        }
+
+        /* ===== MODALES ===== */
+        .mo-ov {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .mo-ov.show { display: flex; }
+        .mo-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            width: 100%;
+            max-width: 420px;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: modalIn 0.25s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .mo-hd {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .mo-hd h3 {
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+        .mo-bd { padding: 18px; }
+        .mo-ft {
+            padding: 12px 18px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .mo-cl {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 4px;
+            transition: var(--transition);
+        }
+        .mo-cl:hover {
+            color: var(--text);
+        }
+
+        /* ===== NOTIFICACIONES ===== */
+        .notif-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .notif-item {
+            display: flex;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(36, 51, 82, 0.3);
+            font-size: 0.78rem;
+        }
+        .notif-item .notif-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .notif-item .notif-icon.success {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success);
+        }
+        .notif-item .notif-icon.info {
+            background: rgba(96, 165, 250, 0.15);
+            color: var(--blue);
+        }
+        .notif-item .notif-text { flex: 1; }
+        .notif-item .notif-text p { margin: 0; font-weight: 500; }
+        .notif-item .notif-text span { font-size: 0.65rem; color: var(--text-muted); }
+
+        /* ===== EMPTY ===== */
+        .empty-state {
+            text-align: center;
+            padding: 35px 20px;
+            color: var(--text-muted);
+        }
+        .empty-state i {
+            font-size: 2rem;
+            margin-bottom: 12px;
+            opacity: 0.4;
+            display: block;
+        }
+        .empty-state p {
+            font-size: 0.82rem;
+        }
+
+        /* ===== CONFIRMACIÓN ===== */
+        .confirm-body {
+            text-align: center;
+            padding: 10px 0;
+        }
+        .confirm-body i {
+            font-size: 2.2rem;
+            margin-bottom: 12px;
+        }
+        .confirm-body p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+        .confirm-body strong {
+            color: var(--text);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .sec { padding: 16px; }
+            .kpi-g {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            .topbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .topbar-r {
+                flex-wrap: wrap;
+            }
+            .sel-delta {
+                width: 100%;
+            }
+        }
+        @media (max-width: 480px) {
+            .kpi-g { grid-template-columns: 1fr 1fr; }
+            .profile-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            .dt thead th,
+            .dt tbody td {
+                padding: 6px 8px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== FONDO ANIMADO ===== -->
+<div class="bg-glow"></div>
+
+<!-- ===== TOPBAR ===== -->
+<header class="topbar">
+    <div class="topbar-l">
+        <span class="topbar-t"><i class="fas fa-motorcycle" style="margin-right:6px; color:var(--blue);"></i> App Socio Delta</span>
+    </div>
+    <div class="topbar-r">
+        <select class="sel-delta" id="selDelta">
+            <option value="">-- Selecciona tu ID --</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" onclick="abrirNotificaciones()"><i class="fas fa-bell"></i><span class="notif-badge" id="notifBadge">0</span></button>
+        <a href="../hub.html" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Salir</a>
+    </div>
+</header>
+
+<!-- ===== SECCIÓN LOGIN ===== -->
+<section class="sec" id="sec-login" style="text-align:center; padding-top:100px;">
+    <i class="fas fa-motorcycle" style="font-size:3.5rem; color:var(--blue); opacity:0.2; margin-bottom:20px;"></i>
+    <h2 style="font-size:1.3rem; margin-bottom:8px; color:var(--text);">Bienvenido Socio Delta</h2>
+    <p style="color:var(--text-muted); max-width:300px; margin:0 auto; line-height:1.6; font-size:0.9rem;">Selecciona tu ID de Delta en el menú de arriba para ver tus viajes asignados y registrar entregas.</p>
+</section>
+
+<!-- ===== SECCIÓN DELTA ===== -->
+<section class="sec" id="sec-delta" style="display:none;">
+    
+    <!-- Perfil -->
+    <div class="profile-card" id="profCard"></div>
+    
+    <!-- KPI -->
+    <div class="kpi-g">
+        <div class="kpi-c"><div style="color:var(--gold);" class="kpi-v" id="kPend">0</div><div class="kpi-l"><i class="fas fa-clock"></i> Viajes Pendientes</div></div>
+        <div class="kpi-c"><div style="color:var(--success);" class="kpi-v" id="kHechos">0</div><div class="kpi-l"><i class="fas fa-check-double"></i> Viajes Realizados</div></div>
+        <div class="kpi-c"><div style="color:var(--blue);" class="kpi-v" id="kHoy">0</div><div class="kpi-l"><i class="fas fa-calendar-day"></i> Entregas Hoy</div></div>
+        <div class="kpi-c" style="grid-column: 1 / -1; background:linear-gradient(135deg, rgba(34,197,94,0.05), rgba(0,0,0,0));">
+            <div class="stat-val">
+                <span id="kGanado">$0.00</span>
+                <p><i class="fas fa-coins" style="color:var(--gold);"></i> Mi Ganancia Total (5% Comisión)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tareas Asignadas -->
+    <div class="panel">
+        <div class="p-hd">
+            <h3><i class="fas fa-route" style="margin-right:6px; color:var(--gold);"></i>Mis Tareas Asignadas</h3>
+            <div class="filters">
+                <select class="fs-sm" id="fTipoTarea">
+                    <option value="todos">Todos</option>
+                    <option value="pedido">Pedidos</option>
+                    <option value="sobre">Sobres B2B</option>
+                </select>
+            </div>
+        </div>
+        <div class="p-bd">
+            <div class="table-wrapper" style="overflow-x:auto;">
+                <table class="dt">
+                    <thead><tr><th>Código</th><th>Tipo</th><th>Cliente / Empresa</th><th>Dirección</th><th style="text-align:right;">A Cobrar</th><th style="text-align:center;">Acción</th></tr></thead>
+                    <tbody id="viajesB"><tr><td colspan="6"><div class="empty-state"><i class="fas fa-check-double"></i><p>¡Excelente! No tienes tareas pendientes.</p></div></td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Historial -->
+    <div class="panel">
+        <div class="p-hd"><h3><i class="fas fa-history" style="margin-right:6px; color:var(--success);"></i>Historial de Entregas</h3></div>
+        <div class="p-bd">
+            <div class="table-wrapper" style="overflow-x:auto;">
+                <table class="dt">
+                    <thead><tr><th>Código</th><th>Tipo</th><th>Cliente</th><th>Fecha</th><th style="text-align:right;">Ganancia</th></tr></thead>
+                    <tbody id="histB"><tr><td colspan="5"><div class="empty-state"><p>Sin historial de entregas aún.</p></div></td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== MODALES ===== -->
+
+<!-- FIRMA -->
+<div class="mo-ov" id="moFirma">
+    <div class="mo-box">
+        <div class="mo-hd"><h3><i class="fas fa-pen" style="color:var(--accent);"></i> Confirmar Entrega</h3><button class="mo-cl" onclick="cerrarModal('moFirma')"><i class="fas fa-xmark"></i></button></div>
+        <div class="mo-bd">
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">El receptor debe firmar para confirmar la entrega de <strong id="firmaCod">--</strong></p>
+            <input type="text" class="firma-input" id="firmaInput" placeholder="Firma del receptor (Nombre completo)" autocomplete="off">
+            <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn btn-primary" onclick="confirmarFirma()"><i class="fas fa-check"></i> Confirmar Entrega</button>
+                <button class="btn btn-secondary" onclick="cerrarModal('moFirma')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- INCIDENCIA -->
+<div class="mo-ov" id="moIncidencia">
+    <div class="mo-box">
+        <div class="mo-hd"><h3><i class="fas fa-triangle-exclamation" style="color:var(--danger);"></i> Reportar Incidencia</h3><button class="mo-cl" onclick="cerrarModal('moIncidencia')"><i class="fas fa-xmark"></i></button></div>
+        <div class="mo-bd">
+            <input type="hidden" id="incidenciaCod">
+            <div style="margin-bottom:12px;">
+                <label style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">Motivo</label>
+                <select class="fs-sm" id="incTipo" style="width:100%; padding:8px;">
+                    <option value="Cliente no encontrado">Cliente no encontrado</option>
+                    <option value="Dirección incorrecta">Dirección incorrecta</option>
+                    <option value="Cliente no paga">Cliente no paga</option>
+                    <option value="Paquete dañado">Paquete dañado</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; display:block; margin-bottom:4px;">Descripción</label>
+                <textarea id="incDesc" rows="3" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border); background:rgba(255,255,255,0.04); color:var(--text); font-family:'DM Sans'; resize:vertical; font-size:0.8rem;" placeholder="Detalla el problema..."></textarea>
+            </div>
+            <button class="btn btn-danger" onclick="guardarIncidenciaDelta()" style="width:100%; justify-content:center;"><i class="fas fa-save"></i> Guardar Incidencia</button>
+        </div>
+    </div>
+</div>
+
+<!-- NOTIFICACIONES -->
+<div class="mo-ov" id="moNotif">
+    <div class="mo-box">
+        <div class="mo-hd"><h3><i class="fas fa-bell" style="color:var(--gold);"></i> Notificaciones</h3><button class="mo-cl" onclick="cerrarModal('moNotif')"><i class="fas fa-xmark"></i></button></div>
+        <div class="mo-bd"><div id="notifList" class="notif-list"></div></div>
+    </div>
+</div>
+
+<!-- CONFIRMACIÓN -->
+<div class="mo-ov" id="moConfirm">
+    <div class="mo-box">
+        <div class="mo-bd">
+            <div class="confirm-body">
+                <i class="fas fa-triangle-exclamation" style="color:var(--warning);"></i>
+                <p id="confirmMsg">¿Estás seguro?</p>
+            </div>
+        </div>
+        <div class="mo-ft">
+            <button class="btn btn-secondary" onclick="cerrarModal('moConfirm')">Cancelar</button>
+            <button class="btn btn-primary" id="confirmBtn" style="background:var(--success); color:#fff;"><i class="fas fa-check"></i> Confirmar</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div id="toastC"></div>
+
+<!-- ===== SCRIPTS ===== -->
+<script src="../js/app.js"></script>
+<script>
+    // ==========================================
+    // CONSTANTES
+    // ==========================================
+    var FLETE_COMISION = 0.05;
+
+    // ==========================================
+    // VARIABLES GLOBALES
+    // ==========================================
+    var deltas = [], pedidos = [], mensajeria = [], incidencias = [], notificaciones = [];
+    var deltaActual = null;
+    var firmaPendiente = null;
+    var confirmCallback = null;
+
+    // ==========================================
+    // DATA MANAGEMENT
+    // ==========================================
+    function gD() {
+        var s = getMainData();
+        deltas = s.data.deltas || [];
+        pedidos = s.data.pedidos || [];
+        mensajeria = s.data.mensajeria || [];
+        incidencias = s.data.incidencias || [];
+        notificaciones = s.data.notificaciones || [];
+        cargarSelect();
+        actualizarBadgeNotif();
+    }
+
+    function sD() {
+        try {
+            var mainData = getMainData();
+            mainData.data.deltas = deltas;
+            mainData.data.pedidos = pedidos;
+            mainData.data.mensajeria = mensajeria;
+            mainData.data.incidencias = incidencias;
+            mainData.data.notificaciones = notificaciones;
+            saveMainData(mainData);
+        } catch(e) {
+            toast('Error: Memoria llena.', 'error');
+        }
+    }
+
+    function getMainData() {
+        try { return JSON.parse(localStorage.getItem('dc_data') || '{"data":{},"cnt":{}}'); }
+        catch(e) { return { data: {}, cnt: {} }; }
+    }
+
+    function saveMainData(data) {
+        try { localStorage.setItem('dc_data', JSON.stringify(data)); }
+        catch(e) { toast('Error al guardar', 'error'); }
+    }
+
+    // ==========================================
+    // SELECT DE DELTAS
+    // ==========================================
+    function cargarSelect() {
+        var sel = document.getElementById('selDelta');
+        var disponibles = deltas.filter(function(d) {
+            return d.estado === 'Disponible' || d.estado === 'En Ruta' || d.estado === 'En Alerta';
+        });
+        sel.innerHTML = '<option value="">-- Selecciona tu ID --</option>';
+        for (var i = 0; i < disponibles.length; i++) {
+            var d = disponibles[i];
+            var o = document.createElement('option');
+            o.value = d.id;
+            o.textContent = d.id + ' - ' + d.nom + ' (' + d.estado + ')';
+            if (deltaActual && d.id === deltaActual.id) o.selected = true;
+            sel.appendChild(o);
+        }
+    }
+
+    document.getElementById('selDelta').addEventListener('change', cambiarDelta);
+
+    function cambiarDelta() {
+        var id = document.getElementById('selDelta').value;
+        if (!id) {
+            document.getElementById('sec-login').style.display = 'block';
+            document.getElementById('sec-delta').style.display = 'none';
+            deltaActual = null;
+            return;
+        }
+        gD();
+        deltaActual = null;
+        for (var i = 0; i < deltas.length; i++) {
+            if (deltas[i].id === id) { deltaActual = deltas[i]; break; }
+        }
+        if (!deltaActual) return;
+        document.getElementById('sec-login').style.display = 'none';
+        document.getElementById('sec-delta').style.display = 'block';
+        renderPerfil();
+        rDash();
+        rViajes();
+    }
+
+    function renderPerfil() {
+        var p = document.getElementById('profCard');
+        var estadoClase = deltaActual.estado === 'Disponible' ? 'estado-disponible' :
+                          deltaActual.estado === 'En Ruta' ? 'estado-ruta' : 'estado-alerta';
+        p.innerHTML = '<div class="profile-img"><i class="fas fa-user-shield"></i></div>' +
+            '<div class="profile-info">' +
+                '<h3>' + deltaActual.nom + ' <span class="estado-indicator ' + estadoClase + '" style="margin-left:8px;"><i class="fas fa-circle" style="font-size:0.5rem;"></i> ' + deltaActual.estado + '</span></h3>' +
+                '<p><i class="fas fa-id-badge" style="color:var(--accent); margin-right:3px;"></i> ' + deltaActual.id + ' &nbsp;|&nbsp; ' +
+                   '<i class="fas fa-motorcycle" style="color:var(--blue); margin-right:3px;"></i> ' + deltaActual.veh + (deltaActual.placa !== 'N/A' ? ' (' + deltaActual.placa + ')' : '') + ' &nbsp;|&nbsp; ' +
+                   '<i class="fas fa-clock" style="color:var(--gold); margin-right:3px;"></i> ' + (deltaActual.turno || 'N/A') +
+                '</p>' +
+            '</div>';
+    }
+
+    // ==========================================
+    // DASHBOARD
+    // ==========================================
+    function rDash() {
+        if (!deltaActual) return;
+        gD();
+        for (var i = 0; i < deltas.length; i++) {
+            if (deltas[i].id === deltaActual.id) { deltaActual = deltas[i]; break; }
+        }
+        if (!deltaActual) return;
+
+        var misPedidos = [];
+        var misSobres = [];
+        for (var j = 0; j < pedidos.length; j++) {
+            if (pedidos[j].delta === deltaActual.id) misPedidos.push(pedidos[j]);
+        }
+        for (var k = 0; k < mensajeria.length; k++) {
+            if (mensajeria[k].deltaId === deltaActual.id) misSobres.push(mensajeria[k]);
+        }
+
+        var pendPedidos = misPedidos.filter(function(p) { return p.estado !== 'Entregado / Cobrado'; });
+        var pendSobres = misSobres.filter(function(m) { return m.estado !== 'Entregado / Cobrado'; });
+        var totalPend = pendPedidos.length + pendSobres.length;
+
+        var hechosPedidos = misPedidos.filter(function(p) { return p.estado === 'Entregado / Cobrado'; });
+        var hechosSobres = misSobres.filter(function(m) { return m.estado === 'Entregado / Cobrado'; });
+        var totalHechos = hechosPedidos.length + hechosSobres.length;
+
+        var hoy = new Date().toISOString().split('T')[0];
+        var entregasHoy = 0;
+        if (deltaActual.historial) {
+            for (var l = 0; l < deltaActual.historial.length; l++) {
+                if (deltaActual.historial[l].fecha === hoy) entregasHoy++;
+            }
+        }
+
+        document.getElementById('kPend').textContent = totalPend;
+        document.getElementById('kHechos').textContent = totalHechos;
+        document.getElementById('kHoy').textContent = entregasHoy;
+
+        var gananciaPedidos = 0;
+        for (var m = 0; m < hechosPedidos.length; m++) {
+            gananciaPedidos += hechosPedidos[m].total * FLETE_COMISION;
+        }
+        var gananciaSobres = 0;
+        for (var n = 0; n < hechosSobres.length; n++) {
+            gananciaSobres += hechosSobres[n].monto * FLETE_COMISION;
+        }
+        document.getElementById('kGanado').textContent = fM(gananciaPedidos + gananciaSobres);
+    }
+
+    // ==========================================
+    // VIAJES
+    // ==========================================
+    function rViajes() {
+        if (!deltaActual) return;
+        var b = document.getElementById('viajesB');
+        var fTipo = document.getElementById('fTipoTarea').value;
+
+        var pendPedidos = [];
+        var pendSobres = [];
+        for (var i = 0; i < pedidos.length; i++) {
+            if (pedidos[i].delta === deltaActual.id && pedidos[i].estado !== 'Entregado / Cobrado') {
+                pendPedidos.push(pedidos[i]);
+            }
+        }
+        for (var j = 0; j < mensajeria.length; j++) {
+            if (mensajeria[j].deltaId === deltaActual.id && mensajeria[j].estado !== 'Entregado / Cobrado') {
+                pendSobres.push(mensajeria[j]);
+            }
+        }
+
+        if (fTipo === 'pedido') pendSobres = [];
+        if (fTipo === 'sobre') pendPedidos = [];
+
+        var totalPend = pendPedidos.length + pendSobres.length;
+        if (!totalPend) {
+            b.innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fas fa-check-double"></i><p>¡Excelente! No tienes tareas pendientes.</p></div></td></tr>';
+        } else {
+            var html = '';
+            for (var k = 0; k < pendPedidos.length; k++) {
+                var p = pendPedidos[k];
+                html += '<tr>' +
+                    '<td style="color:var(--accent); font-weight:700; white-space:nowrap;">' + p.cod + '</td>' +
+                    '<td><span class="rb rb-pend">Pedido</span></td>' +
+                    '<td><strong>' + escHtml(p.cliente) + '</strong></td>' +
+                    '<td style="font-size:0.72rem; color:var(--text-muted);">' + escHtml(p.dir) + '</td>' +
+                    '<td style="text-align:right; font-weight:700; color:var(--gold); white-space:nowrap;">' + fM(p.total) + '</td>' +
+                    '<td style="text-align:center;">' +
+                        '<button class="btn btn-primary btn-sm" onclick="prepararEntrega(\'' + p.cod + '\',\'pedido\')"><i class="fas fa-check"></i> Entregar</button> ' +
+                        '<button class="btn btn-danger btn-sm" onclick="reportarIncidencia(\'' + p.cod + '\',\'pedido\')"><i class="fas fa-flag"></i></button>' +
+                    '</td>' +
+                '</tr>';
+            }
+            for (var l = 0; l < pendSobres.length; l++) {
+                var m = pendSobres[l];
+                html += '<tr>' +
+                    '<td style="color:var(--purple); font-weight:700; white-space:nowrap;">' + m.id + '</td>' +
+                    '<td><span class="rb rb-ruta">Sobre B2B</span></td>' +
+                    '<td><strong>' + escHtml(m.empresa) + '</strong><br><span style="font-size:0.68rem; color:var(--text-muted);">' + escHtml(m.destinatario) + '</span></td>' +
+                    '<td style="font-size:0.72rem; color:var(--text-muted);">' + escHtml(m.dir) + '</td>' +
+                    '<td style="text-align:right; font-weight:700; color:var(--gold); white-space:nowrap;">' + fM(m.monto) + '</td>' +
+                    '<td style="text-align:center;">' +
+                        '<button class="btn btn-primary btn-sm" onclick="prepararEntrega(\'' + m.id + '\',\'sobre\')"><i class="fas fa-check"></i> Entregar</button> ' +
+                        '<button class="btn btn-danger btn-sm" onclick="reportarIncidencia(\'' + m.id + '\',\'sobre\')"><i class="fas fa-flag"></i></button>' +
+                    '</td>' +
+                '</tr>';
+            }
+            b.innerHTML = html;
+        }
+
+        // Historial
+        var hB = document.getElementById('histB');
+        var hechosPedidos = [];
+        var hechosSobres = [];
+        for (var n = 0; n < pedidos.length; n++) {
+            if (pedidos[n].delta === deltaActual.id && pedidos[n].estado === 'Entregado / Cobrado') {
+                hechosPedidos.push(pedidos[n]);
+            }
+        }
+        for (var o = 0; o < mensajeria.length; o++) {
+            if (mensajeria[o].deltaId === deltaActual.id && mensajeria[o].estado === 'Entregado / Cobrado') {
+                hechosSobres.push(mensajeria[o]);
+            }
+        }
+
+        if (!hechosPedidos.length && !hechosSobres.length) {
+            hB.innerHTML = '<tr><td colspan="5"><div class="empty-state"><p>Sin historial de entregas aún.</p></div></td></tr>';
+        } else {
+            var histHtml = '';
+            for (var p2 = hechosPedidos.length - 1; p2 >= 0; p2--) {
+                var ped = hechosPedidos[p2];
+                var ganancia = ped.total * FLETE_COMISION;
+                histHtml += '<tr>' +
+                    '<td style="color:var(--accent); font-weight:700;">' + ped.cod + '</td>' +
+                    '<td><span class="rb rb-ok">Pedido</span></td>' +
+                    '<td>' + escHtml(ped.cliente) + '</td>' +
+                    '<td style="font-size:0.72rem; color:var(--text-muted);">' + (ped.fecha || new Date().toISOString().split('T')[0]) + '</td>' +
+                    '<td style="text-align:right; font-weight:700; color:var(--success);">' + fM(ganancia) + '</td>' +
+                '</tr>';
+            }
+            for (var q = hechosSobres.length - 1; q >= 0; q--) {
+                var sob = hechosSobres[q];
+                var ganancia2 = sob.monto * FLETE_COMISION;
+                histHtml += '<tr>' +
+                    '<td style="color:var(--purple); font-weight:700;">' + sob.id + '</td>' +
+                    '<td><span class="rb rb-ok">Sobre</span></td>' +
+                    '<td>' + escHtml(sob.empresa) + '</td>' +
+                    '<td style="font-size:0.72rem; color:var(--text-muted);">' + (sob.fec || new Date().toISOString().split('T')[0]) + '</td>' +
+                    '<td style="text-align:right; font-weight:700; color:var(--success);">' + fM(ganancia2) + '</td>' +
+                '</tr>';
+            }
+            hB.innerHTML = histHtml;
+        }
+    }
+
+    document.getElementById('fTipoTarea').addEventListener('change', rViajes);
+
+    // ==========================================
+    // ENTREGAS
+    // ==========================================
+    function prepararEntrega(cod, tipo) {
+        firmaPendiente = { cod: cod, tipo: tipo };
+        document.getElementById('firmaCod').textContent = cod;
+        document.getElementById('firmaInput').value = '';
+        abrirModal('moFirma');
+    }
+
+    function confirmarFirma() {
+        var firma = document.getElementById('firmaInput').value.trim();
+        if (!firma) { toast('Ingresa la firma del receptor', 'error'); return; }
+        if (!firmaPendiente) return;
+        var cod = firmaPendiente.cod;
+        var tipo = firmaPendiente.tipo;
+
+        if (tipo === 'pedido') {
+            var p = null;
+            for (var i = 0; i < pedidos.length; i++) {
+                if (pedidos[i].cod === cod) { p = pedidos[i]; break; }
+            }
+            if (!p) { toast('Pedido no encontrado', 'error'); cerrarModal('moFirma'); return; }
+            if (p.estado === 'Entregado / Cobrado') { toast('Este pedido ya fue entregado', 'error'); cerrarModal('moFirma'); return; }
+            p.estado = 'Entregado / Cobrado';
+            if (!p.fecha) p.fecha = new Date().toISOString().split('T')[0];
+
+            var mainData = getMainData();
+            if (!mainData.data) mainData.data = {};
+            if (!mainData.cnt) mainData.cnt = {};
+            if (!mainData.data.ingresos) mainData.data.ingresos = [];
+            if (!mainData.cnt.i) mainData.cnt.i = 1;
+            mainData.data.ingresos.push({
+                id: 'ING-' + String(mainData.cnt.i++).padStart(4, '0'),
+                fec: new Date().toISOString().split('T')[0],
+                con: 'Cobro Delta App - Pedido ' + p.cod + ' (' + p.cliente + ')',
+                mon: p.total,
+                cat: 'Ventas Marketplace'
+            });
+            saveMainData(mainData);
+
+            var d = null;
+            for (var j = 0; j < deltas.length; j++) {
+                if (deltas[j].id === deltaActual.id) { d = deltas[j]; break; }
+            }
+            if (d) {
+                if (!d.historial) d.historial = [];
+                d.historial.push({ fecha: new Date().toISOString().split('T')[0], cod: cod, tipo: 'pedido', firma: firma });
+                d.estado = 'Disponible';
+                d.entregas = (d.entregas || 0) + 1;
+            }
+            toast('✅ Pedido entregado. Ganancia: ' + fM(p.total * FLETE_COMISION), 'success');
+            agregarNotificacion('Pedido ' + cod + ' entregado a ' + p.cliente, 'success');
+
+        } else if (tipo === 'sobre') {
+            var m = null;
+            for (var k = 0; k < mensajeria.length; k++) {
+                if (mensajeria[k].id === cod) { m = mensajeria[k]; break; }
+            }
+            if (!m) { toast('Sobre no encontrado', 'error'); cerrarModal('moFirma'); return; }
+            if (m.estado === 'Entregado / Cobrado') { toast('Este sobre ya fue entregado', 'error'); cerrarModal('moFirma'); return; }
+            m.estado = 'Entregado / Cobrado';
+
+            if (m.monto > 0) {
+                var mainData2 = getMainData();
+                if (!mainData2.data) mainData2.data = {};
+                if (!mainData2.cnt) mainData2.cnt = {};
+                if (!mainData2.data.ingresos) mainData2.data.ingresos = [];
+                if (!mainData2.cnt.i) mainData2.cnt.i = 1;
+                mainData2.data.ingresos.push({
+                    id: 'ING-' + String(mainData2.cnt.i++).padStart(4, '0'),
+                    fec: new Date().toISOString().split('T')[0],
+                    con: 'Mensajería B2B - Sobre ' + m.id + ' (' + m.empresa + ')',
+                    mon: m.monto,
+                    cat: 'Mensajería B2B'
+                });
+                saveMainData(mainData2);
+            }
+
+            var d2 = null;
+            for (var l = 0; l < deltas.length; l++) {
+                if (deltas[l].id === deltaActual.id) { d2 = deltas[l]; break; }
+            }
+            if (d2) {
+                if (!d2.historial) d2.historial = [];
+                d2.historial.push({ fecha: new Date().toISOString().split('T')[0], cod: cod, tipo: 'sobre', firma: firma });
+                d2.estado = 'Disponible';
+                d2.entregas = (d2.entregas || 0) + 1;
+            }
+            toast('✅ Sobre entregado. Ganancia: ' + fM(m.monto * FLETE_COMISION), 'success');
+            agregarNotificacion('Sobre ' + cod + ' entregado a ' + m.destinatario, 'success');
+        }
+
+        sD();
+        cerrarModal('moFirma');
+        firmaPendiente = null;
+        rDash();
+        rViajes();
+        cargarSelect();
+    }
+
+    // ==========================================
+    // INCIDENCIAS
+    // ==========================================
+    function reportarIncidencia(cod, tipo) {
+        document.getElementById('incidenciaCod').value = cod + '|' + tipo;
+        document.getElementById('incDesc').value = '';
+        abrirModal('moIncidencia');
+    }
+
+    function guardarIncidenciaDelta() {
+        var raw = document.getElementById('incidenciaCod').value;
+        var tipoInc = document.getElementById('incTipo').value;
+        var desc = document.getElementById('incDesc').value.trim();
+        if (!desc) { toast('Describe la incidencia', 'error'); return; }
+        var parts = raw.split('|');
+        var cod = parts[0];
+        var tipo = parts[1] || 'general';
+
+        incidencias.push({
+            id: 'INC-' + String(incidencias.length + 1).padStart(4, '0'),
+            codigo: cod,
+            tipo: tipo,
+            incTipo: tipoInc,
+            desc: desc,
+            fecha: new Date().toISOString().split('T')[0],
+            delta: deltaActual.id,
+            resuelta: false
+        });
+
+        if (tipo === 'pedido') {
+            for (var i = 0; i < pedidos.length; i++) {
+                if (pedidos[i].cod === cod) { pedidos[i].estado = 'Pendiente (Alerta Master)'; break; }
+            }
+        }
+        sD();
+        cerrarModal('moIncidencia');
+        toast('Incidencia reportada', 'success');
+        agregarNotificacion('Incidencia reportada para ' + cod, 'info');
+        rViajes();
+    }
+
+    // ==========================================
+    // NOTIFICACIONES
+    // ==========================================
+    function agregarNotificacion(msg, tipo) {
+        notificaciones.push({
+            cod: deltaActual ? deltaActual.id : 'sistema',
+            msg: msg,
+            tipo: tipo,
+            fecha: new Date().toISOString().split('T')[0],
+            leida: false
+        });
+        sD();
+        actualizarBadgeNotif();
+    }
+
+    function actualizarBadgeNotif() {
+        var badge = document.getElementById('notifBadge');
+        var noLeidas = 0;
+        for (var i = 0; i < notificaciones.length; i++) {
+            if (!notificaciones[i].leida && notificaciones[i].cod === (deltaActual ? deltaActual.id : 'sistema')) {
+                noLeidas++;
+            }
+        }
+        badge.textContent = noLeidas;
+        badge.style.display = noLeidas > 0 ? 'inline' : 'none';
+    }
+
+    function abrirNotificaciones() {
+        var list = document.getElementById('notifList');
+        var misNotifs = [];
+        for (var i = 0; i < notificaciones.length; i++) {
+            if (notificaciones[i].cod === (deltaActual ? deltaActual.id : 'sistema')) {
+                misNotifs.push(notificaciones[i]);
+            }
+        }
+        if (!misNotifs.length) {
+            list.innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><p>Sin notificaciones</p></div>';
+        } else {
+            var html = '';
+            for (var j = misNotifs.length - 1; j >= 0; j--) {
+                var n = misNotifs[j];
+                var tipoIcon = n.tipo === 'success' ? 'fa-circle-check' : n.tipo === 'error' ? 'fa-circle-exclamation' : 'fa-circle-info';
+                html += '<div class="notif-item">' +
+                    '<div class="notif-icon ' + n.tipo + '"><i class="fas ' + tipoIcon + '"></i></div>' +
+                    '<div class="notif-text"><p>' + n.msg + '</p><span>' + n.fecha + '</span></div>' +
+                '</div>';
+            }
+            list.innerHTML = html;
+            for (var k = 0; k < notificaciones.length; k++) {
+                if (notificaciones[k].cod === deltaActual.id) notificaciones[k].leida = true;
+            }
+            sD();
+            actualizarBadgeNotif();
+        }
+        abrirModal('moNotif');
+    }
+
+    // ==========================================
+    // MODALES
+    // ==========================================
+    function abrirModal(id) {
+        document.getElementById(id).classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function cerrarModal(id) {
+        document.getElementById(id).classList.remove('show');
+        document.body.style.overflow = 'auto';
+    }
+
+    function showConfirm(msg, onConfirm) {
+        document.getElementById('confirmMsg').innerHTML = msg;
+        confirmCallback = onConfirm;
+        var btn = document.getElementById('confirmBtn');
+        var newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+        newBtn.addEventListener('click', function() {
+            cerrarModal('moConfirm');
+            if (typeof confirmCallback === 'function') confirmCallback();
+            confirmCallback = null;
+        });
+        abrirModal('moConfirm');
+    }
+
+    // ==========================================
+    // SEGURIDAD
+    // ==========================================
+    var sesion = null;
+    try { sesion = JSON.parse(sessionStorage.getItem('dc_sesion')); } catch(e) {}
+    if (!sesion || (sesion.mod !== 'logistica' && sesion.mod !== 'admin')) {
+        window.location.href = '../login.html?mod=logistica';
+    }
+
+    // ==========================================
+    // INIT
+    // ==========================================
+    gD();
+
+    console.log('✅ IMPULSO 360 - App Socio Delta cargada');
+</script>
+</body>
+</html>
