@@ -12,24 +12,24 @@ export interface BagPanel {
   heightCm: number
 }
 
-// 7 paneles del bolso PubliBags — total 270 espacios de 5×5cm.
-// La base comercial tiene 27 espacios más que la versión anterior (54 total).
+// 7 paneles del bolso PubliBags — total 297 espacios de 5×5cm.
+// La base comercial es cuadrada 9×9 = 81 espacios (27 más que la versión de 54).
 export const BAG_PANELS: readonly BagPanel[] = [
   { key: 'frontal', label: 'Frontal', cols: 12, rows: 5, start: 1, end: 60, widthCm: 60, heightCm: 25 },
   { key: 'posterior', label: 'Posterior', cols: 12, rows: 5, start: 61, end: 120, widthCm: 60, heightCm: 25 },
-  { key: 'base', label: 'Base Comercial', cols: 9, rows: 6, start: 121, end: 174, widthCm: 45, heightCm: 30 },
-  { key: 'lateral-izq', label: 'Lateral Izquierdo', cols: 6, rows: 5, start: 175, end: 204, widthCm: 30, heightCm: 25 },
-  { key: 'lateral-der', label: 'Lateral Derecho', cols: 6, rows: 5, start: 205, end: 234, widthCm: 30, heightCm: 25 },
-  { key: 'tapa-sup', label: 'Tapa Superior', cols: 6, rows: 3, start: 235, end: 252, widthCm: 30, heightCm: 15 },
-  { key: 'tapa-inf', label: 'Tapa Inferior', cols: 6, rows: 3, start: 253, end: 270, widthCm: 30, heightCm: 15 },
+  { key: 'base', label: 'Base Comercial', cols: 9, rows: 9, start: 121, end: 201, widthCm: 45, heightCm: 45 },
+  { key: 'lateral-izq', label: 'Lateral Izquierdo', cols: 6, rows: 5, start: 202, end: 231, widthCm: 30, heightCm: 25 },
+  { key: 'lateral-der', label: 'Lateral Derecho', cols: 6, rows: 5, start: 232, end: 261, widthCm: 30, heightCm: 25 },
+  { key: 'tapa-sup', label: 'Tapa Superior', cols: 6, rows: 3, start: 262, end: 279, widthCm: 30, heightCm: 15 },
+  { key: 'tapa-inf', label: 'Tapa Inferior', cols: 6, rows: 3, start: 280, end: 297, widthCm: 30, heightCm: 15 },
 ] as const
 
-export const BAG_TOTAL_SPACES = 270
+export const BAG_TOTAL_SPACES = 297
 export const BAG_SPACE_PRICE = 20
-export const BAG_POTENTIAL_REVENUE = BAG_TOTAL_SPACES * BAG_SPACE_PRICE // $5,400
+export const BAG_POTENTIAL_REVENUE = BAG_TOTAL_SPACES * BAG_SPACE_PRICE // $5,940
 
 /**
- * Devuelve el panel al que pertenece una posición (1..270).
+ * Devuelve el panel al que pertenece una posición (1..297).
  * Lanza error si la posición está fuera de rango.
  */
 export function panelForPosition(position: number): BagPanel {

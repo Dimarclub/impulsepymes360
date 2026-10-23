@@ -25,12 +25,12 @@ function slugify(s: string): string {
 }
 
 /**
- * Asegura que exista una edición "OPEN" con totalSpaces=270 (la edición bolso).
- * Si no existe, la crea con todos los 270 AdSpaces disponibles.
+ * Asegura que exista una edición "OPEN" con totalSpaces=297 (la edición bolso).
+ * Si no existe, la crea con todos los 297 AdSpaces disponibles.
  * Devuelve la edición + sus espacios ya creados.
  */
 async function ensureBagEdition() {
-  // 1. Buscar edición activa del bolso (270 espacios, status OPEN)
+  // 1. Buscar edición activa del bolso (297 espacios, status OPEN)
   let edition = await db.adEdition.findFirst({
     where: { status: 'OPEN', totalSpaces: BAG_TOTAL_SPACES },
     orderBy: { startDate: 'desc' },
