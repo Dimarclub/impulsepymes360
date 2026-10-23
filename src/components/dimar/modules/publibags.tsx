@@ -316,7 +316,7 @@ function Hero({ onSeePlan, onWhats }: { onSeePlan: () => void; onWhats: () => vo
               Convierte cada <span style={{ color: C.emerald }}>funda</span> en publicidad que viaja por tu ciudad
             </h1>
             <p style={{ color: C.textDim, fontSize: 17, marginTop: 18, lineHeight: 1.55, maxWidth: 540 }}>
-              297 espacios publicitarios de 5×5 cm en fundas ecológicas reutilizables que circulan por toda la ciudad.
+              141 espacios publicitarios de 5×5 cm en fundas ecológicas reutilizables que circulan por toda la ciudad.
               Tu marca impresa + QR, vista por miles de personas todos los días.
             </p>
 
@@ -367,15 +367,15 @@ function Hero({ onSeePlan, onWhats }: { onSeePlan: () => void; onWhats: () => vo
             >
               <p style={{ color: C.muted, fontSize: 12, letterSpacing: 2, textTransform: 'uppercase' }}>Espacios totales</p>
               <p style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 900, fontSize: 'clamp(80px, 14vw, 140px)', lineHeight: 1, color: C.emerald, marginTop: 8 }}>
-                297
+                141
               </p>
               <p style={{ color: C.textDim, fontSize: 15, marginTop: 8, maxWidth: 320 }}>
-                Cada uno de 5×5 cm, distribuidos en 7 paneles del bolso de 60×50 cm
+                Cada uno de 5×5 cm, distribuidos en 3 paneles del bolso de 45×35 cm
               </p>
               <div className="grid grid-cols-3 gap-2 w-full mt-6">
                 {[
-                  { label: 'Paneles', value: '7' },
-                  { label: 'Tamaño bolso', value: '60×50cm' },
+                  { label: 'Paneles', value: '3' },
+                  { label: 'Tamaño bolso', value: '45×35cm' },
                   { label: 'Reutilizable', value: '∞' },
                 ].map((s) => (
                   <div key={s.label} className="rounded-lg p-2.5" style={{ background: C.bg, border: `1px solid ${C.border}` }}>
@@ -395,24 +395,20 @@ function Hero({ onSeePlan, onWhats }: { onSeePlan: () => void; onWhats: () => vo
 // ===================== ANATOMÍA =====================
 function Anatomia() {
   const panelInfo = [
-    { label: 'Frontal', dims: '60×25 cm', count: 60, color: C.emerald },
-    { label: 'Posterior', dims: '60×25 cm', count: 60, color: C.purple },
-    { label: 'Base Comercial', dims: '45×45 cm', count: 81, color: C.gold, big: true },
-    { label: 'Lateral Izq.', dims: '30×25 cm', count: 30, color: C.rose },
-    { label: 'Lateral Der.', dims: '30×25 cm', count: 30, color: C.rose },
-    { label: 'Tapa Sup.', dims: '30×15 cm', count: 18, color: C.amber },
-    { label: 'Tapa Inf.', dims: '30×15 cm', count: 18, color: C.amber },
+    { label: 'Frontal', dims: '45×35 cm', count: 63, color: C.emerald },
+    { label: 'Posterior', dims: '45×35 cm', count: 63, color: C.purple },
+    { label: 'Correa / Asa', dims: '75×5 cm', count: 15, color: C.gold, big: true },
   ]
 
   const stats = [
-    { label: 'Espacios totales', value: '297', color: C.emerald },
-    { label: 'Vendibles', value: '297', color: C.emerald },
+    { label: 'Espacios totales', value: '141', color: C.emerald },
+    { label: 'Vendibles', value: '141', color: C.emerald },
     { label: 'Por espacio', value: '$20', color: C.gold },
     { label: 'Interés mensual', value: '5%', color: C.purple },
   ]
 
   return (
-    <Section id="anatomia" eyebrow="Anatomía del bolso" title="297 espacios publicitarios por bolso" subtitle="Cada bolso de 60×50 cm tiene espacios de 5×5 cm distribuidos en 7 paneles. Los 297 espacios son vendibles.">
+    <Section id="anatomia" eyebrow="Anatomía del bolso" title="141 espacios publicitarios por bolso" subtitle="Cada bolso de 45×35 cm tiene espacios de 5×5 cm distribuidos en 3 paneles (Frontal, Posterior y Correa). Los 141 espacios son vendibles.">
       {/* Visual panels */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {panelInfo.map((p) => (
@@ -519,7 +515,7 @@ function PlanoLive({ data, loading, onBuy }: { data: BagPlanData | null; loading
     <Section
       id="plano"
       eyebrow="Plano de corte en vivo"
-      title="Mira los 297 espacios del bolso en tiempo real"
+      title="Mira los 141 espacios del bolso en tiempo real"
       subtitle="Esta es la campaña actual (impresa, llena de patrocinadores) y la próxima campaña (compra abierta)."
     >
       {/* Toggle */}
@@ -569,7 +565,7 @@ function PlanoLive({ data, loading, onBuy }: { data: BagPlanData | null; loading
           style={{ background: C.card, border: `1px solid ${C.border}` }}
         >
           <div className="inline-block size-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: `${C.emerald} transparent transparent transparent` }} />
-          <p style={{ color: C.muted, fontSize: 14, marginTop: 12 }}>Cargando los 297 espacios…</p>
+          <p style={{ color: C.muted, fontSize: 14, marginTop: 12 }}>Cargando los 141 espacios…</p>
         </div>
       ) : !spaces ? (
         <div className="rounded-xl p-12 text-center" style={{ background: C.card, border: `1px solid ${C.border}` }}>
@@ -918,7 +914,7 @@ function CtaPlanes({ onCta }: { onCta: () => void }) {
           ¿Listo para ver tu marca <span style={{ color: C.emerald }}>en todas partes</span>?
         </h2>
         <p style={{ color: C.textDim, fontSize: 16, marginTop: 14, maxWidth: 580, marginLeft: 'auto', marginRight: 'auto' }}>
-          Únete a los 297 espacios del bolso PubliBags. Inversión $20, retorno ambiental + financiero + publicitario.
+          Únete a los 141 espacios del bolso PubliBags. Inversión $20, retorno ambiental + financiero + publicitario.
         </p>
         <button
           onClick={onCta}

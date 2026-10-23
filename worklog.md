@@ -1241,3 +1241,35 @@ Stage Summary:
 - "Alertas y Pedidos" = the alertas-center module, now the first item in admin menu for quick access to order management.
 - New orders (POST /api/orders) now generate ORDER_RECEIVED notifications to: buyer (confirmación), all admins (gestión), and item suppliers (despachar). These appear in both the notification bell (top-right) and the Alertas y Pedidos module.
 - .env NEXTAUTH_SECRET restored.
+
+---
+Task ID: 16-bag-simplified-141 (main agent)
+Agent: main (Z.ai Code)
+Task: Lower the PubliBags bag plan from 297 spaces (7 panels) to 141 spaces (3 panels: Frontal + Posterior + Correa) — simplified/cheaper bag version
+
+Work Log:
+- User decided to lower production costs: simpler bag with 2 surfaces (frente + posterior, 63 spaces each = 126) + 1 correa/asa (85cm × 5cm = 15 spaces) = 141 total.
+- Updated src/lib/bag-plan.ts:
+  * BAG_PANELS now 3 panels: Frontal (9×7=63, 45×35cm), Posterior (9×7=63, 45×35cm), Correa/Asa (15×1=15, 75×5cm)
+  * BAG_TOTAL_SPACES = 141 (was 297)
+  * BAG_POTENTIAL_REVENUE = $2,820 (was $5,940)
+  * Fixed docstring 1..297 → 1..141
+- Cleaned all old bag editions (2 editions of 297 spaces: PRINTED Oct + OPEN Nov) from DB so the API auto-seeds fresh 141-space editions on next call.
+- Updated all hardcoded "297" references in src/components/dimar/modules/publibags.tsx (7 occurrences): hero text, hero visual, anatomia title/subtitle, panelInfo array (now 3 panels: Frontal/Posterior/Correa), stats, plano title, loading text, CTA text. Updated dimensions 60×50→45×35, panel count 7→3.
+- The API (route.ts) and bag-plan.tsx module already use BAG_PANELS/BAG_TOTAL_SPACES dynamically, so no changes needed there.
+
+Verification with Agent Browser:
+- API GET /api/impulse/bag-plan returns:
+  * currentEdition totalSpaces: 141, spaces: 141 (PRINTED, all SOLD, revenue $2,820) ✅
+  * nextEdition totalSpaces: 141, spaces: 141 (OPEN, all AVAILABLE) ✅
+  * panels: frontal:9x7=63, posterior:9x7=126, correa:15x1=141 ✅
+  * stats: total 141, potential $2,820 ✅
+- bag-plan module (Plano Bolso): shows "141" + panels "Frontal, Posterior, Correa / Asa" ✅
+- PubliBags satellite: shows "141" + "3 paneles" + "45×35" + "75×5" + "Correa / Asa" + "Frontal" + "Posterior" — NO leftover "297" ✅
+- Lint: 0 errors, 0 warnings ✅
+
+Stage Summary:
+- Bolso PubliBags simplificado: 141 espacios en 3 paneles (Frontal 63 + Posterior 63 + Correa 15) en lugar de 297 espacios en 7 paneles.
+- Potencial de ingresos por edición: $2,820 (141 × $20) — menor pero más realista con costos de producción bajos.
+- Todas las piezas actualizadas: constante compartida (bag-plan.ts), API auto-seed (141), visualizador (bag-plan.tsx), sitio satélite (publibags.tsx).
+- El flujo de compra → socio + aporte + interés 5% + comisiones sigue igual ($20 por espacio, no cambió).
