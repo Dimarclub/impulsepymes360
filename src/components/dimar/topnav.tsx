@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react'
 import {
   Search, ShoppingCart, ChevronDown, User, LogIn, UserPlus, LogOut, Menu, X,
   Home, Users, Store, Building2, Phone, Sparkles, Loader2, Settings,
-  LayoutDashboard, Truck, Mail, Megaphone, ClipboardList, Rocket, Zap, Globe, MapPin, Grid3x3, PiggyBank, Network, HandCoins, Bell, DollarSign,
+  LayoutDashboard, Truck, Mail, Megaphone, ClipboardList, Rocket, Zap, Globe, MapPin, Grid3x3, PiggyBank, Network, HandCoins, Bell, DollarSign, Package,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -250,6 +250,7 @@ export function TopNav() {
             </DropdownMenu>
             <button onClick={() => toast('Próximamente: Alquiler de departamentos', 'info')} className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md text-foreground hover:text-primary hover:bg-muted/60 transition-colors"><Building2 className="size-4" />Alquiler</button>
             <button onClick={() => setModule('grid')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'grid' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><Grid3x3 className="size-4" />Grid 360</button>
+            <button onClick={() => setModule('bag-plan')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'bag-plan' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><Package className="size-4" />Plano Bolso</button>
             {displayUser?.role === 'SUPPLIER' && (
               <button onClick={() => setModule('supplier-backoffice')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors', activeModule === 'supplier-backoffice' ? 'text-primary bg-primary/10' : 'text-primary hover:bg-primary/5')}><Store className="size-4" />Mi Backoffice</button>
             )}
@@ -311,6 +312,7 @@ export function TopNav() {
               {navItem('Inicio', 'marketplace', Home)}
               {canAccessModule(displayUser?.role, 'affiliates') && navItem('Comunidad', 'affiliates', Users)}
               {navItem('Grid 360', 'grid', Grid3x3)}
+              {navItem('Plano Bolso', 'bag-plan', Package)}
               <a href="https://dimarclub.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md hover:bg-muted"><Sparkles className="size-4" /> Dimarclub</a>
               {navItem('Proveedor', 'suppliers', Store)}
               <button onClick={() => toast('Próximamente', 'info')} className="w-full flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md hover:bg-muted text-left"><Building2 className="size-4" /> Alquiler</button>

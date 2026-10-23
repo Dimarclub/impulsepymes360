@@ -20,6 +20,7 @@ export type ModuleId =
   | 'impulse-wizard'
   | 'web-express'
   | 'publibags'
+  | 'bag-plan'
   | 'directorio'
   | 'fuerza'
   | 'automatizacion'

@@ -27,6 +27,7 @@ import { WebExpressModule } from '@/components/dimar/modules/web-express'
 import { SiteAdminModule } from '@/components/dimar/modules/site-admin'
 import { ZonesModule } from '@/components/dimar/modules/zones'
 import { GridModule } from '@/components/dimar/modules/grid'
+import { BagPlanModule } from '@/components/dimar/modules/bag-plan'
 import { CooperativaModule } from '@/components/dimar/modules/cooperativa'
 import { SupplierBackofficeModule } from '@/components/dimar/modules/supplier-backoffice'
 import { AffiliateBackofficeModule } from '@/components/dimar/modules/affiliate-backoffice'
@@ -98,6 +99,7 @@ function HomeContent() {
       case 'site-admin': return <SiteAdminModule />
       case 'zones': return <ZonesModule />
       case 'grid': return <GridModule />
+      case 'bag-plan': return <BagPlanModule />
       case 'cooperativa': return <CooperativaModule />
       case 'supplier-backoffice': return <SupplierBackofficeModule />
       case 'affiliate-backoffice': return <AffiliateBackofficeModule />

@@ -4,14 +4,14 @@ import type { ModuleId, UserRole } from './types'
 export const ROLE_MODULES: Record<UserRole, ModuleId[] | '*'> = {
   ADMIN: '*',
 
-  CLIENT: ['marketplace', 'affiliates', 'benefits', 'grid', 'cooperativa', 'alertas', 'directorio'],
-  AFFILIATE: ['marketplace', 'affiliates', 'benefits', 'social-bio', 'grid', 'cooperativa', 'affiliate-backoffice', 'alertas', 'directorio'],
-  SUPPLIER: ['marketplace', 'suppliers', 'logistics', 'web-express', 'publibags', 'directorio', 'social', 'social-studio', 'social-bio', 'social-automation', 'impulse', 'impulse-wizard', 'grid', 'supplier-backoffice', 'cooperativa', 'alertas'],
+  CLIENT: ['marketplace', 'affiliates', 'benefits', 'grid', 'bag-plan', 'cooperativa', 'alertas', 'directorio'],
+  AFFILIATE: ['marketplace', 'affiliates', 'benefits', 'social-bio', 'grid', 'bag-plan', 'cooperativa', 'affiliate-backoffice', 'alertas', 'directorio'],
+  SUPPLIER: ['marketplace', 'suppliers', 'logistics', 'web-express', 'publibags', 'bag-plan', 'directorio', 'social', 'social-studio', 'social-bio', 'social-automation', 'impulse', 'impulse-wizard', 'grid', 'supplier-backoffice', 'cooperativa', 'alertas'],
   COURIER: ['marketplace', 'courier-app', 'fuerza'],
   PARTNER: ['marketplace', 'partners', 'benefits', 'cooperativa', 'partner-backoffice', 'directorio'],
 }
 
-export const PUBLIC_MODULES: ModuleId[] = ['marketplace']
+export const PUBLIC_MODULES: ModuleId[] = ['marketplace', 'bag-plan']
 
 export function canAccessModule(role: UserRole | undefined, moduleId: ModuleId): boolean {
   if (!role) return PUBLIC_MODULES.includes(moduleId)
