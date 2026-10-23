@@ -1,0 +1,1110 @@
+     1→'use client'
+     2→
+     3→import { useEffect, useState, useMemo } from 'react'
+     4→import {
+     5→  ShoppingBag,
+     6→  Sparkles,
+     7→  Leaf,
+     8→  TrendingUp,
+     9→  Palette,
+    10→  Link2,
+    11→  Recycle,
+    12→  Eye,
+    13→  Users,
+    14→  Phone,
+    15→  Menu,
+    16→  X,
+    17→  ArrowRight,
+    18→  ChevronRight,
+    19→} from 'lucide-react'
+    20→import { useAppStore } from '@/lib/store'
+    21→import {
+    22→  BAG_PANELS,
+    23→  sponsorColor,
+    24→  type BagPanel,
+    25→} from '@/lib/bag-plan'
+    26→
+    27→// ---------- Tipos (espejo del API bag-plan) ----------
+    28→interface BagSpace {
+    29→  id: string
+    30→  position: number
+    31→  type: string
+    32→  status: string
+    33→  price: number
+    34→  buyerId?: string | null
+    35→  buyerName?: string | null
+    36→  imageUrl?: string | null
+    37→}
+    38→interface BagEdition {
+    39→  id: string
+    40→  name: string
+    41→  slug: string
+    42→  city: string
+    43→  totalSpaces: number
+    44→  bagSize: string
+    45→  printQuantity: number
+    46→  startDate: string
+    47→  endDate: string
+    48→  status: string
+    49→  monthLabel: string
+    50→}
+    51→interface BagStats {
+    52→  total: number
+    53→  available: number
+    54→  reserved: number
+    55→  sold: number
+    56→  revenue: number
+    57→  potential: number
+    58→}
+    59→interface BagPlanData {
+    60→  currentEdition: BagEdition
+    61→  nextEdition: BagEdition
+    62→  currentSpaces: BagSpace[]
+    63→  nextSpaces: BagSpace[]
+    64→  panels: BagPanel[]
+    65→  currentStats: BagStats
+    66→  nextStats: BagStats
+    67→}
+    68→
+    69→// ---------- Paleta oscura ----------
+    70→const C = {
+    71→  bg: '#0B1120',
+    72→  card: '#15203A',
+    73→  card2: '#1A2647',
+    74→  border: '#243352',
+    75→  borderLight: '#2F3F66',
+    76→  emerald: '#00D4AA',
+    77→  emeraldDark: '#00A886',
+    78→  gold: '#F5A623',
+    79→  purple: '#A855F7',
+    80→  text: '#E8EDF5',
+    81→  textDim: '#A0AEC8',
+    82→  muted: '#6B7FA0',
+    83→  success: '#22C55E',
+    84→  rose: '#F43F5E',
+    85→  amber: '#F59E0B',
+    86→}
+    87→
+    88→const WHATSAPP_URL = 'https://wa.me/593992689844?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20Publibags'
+    89→const WHATSAPP_DISPLAY = '+593 99 268 9844'
+    90→
+    91→// ---------- Componente principal ----------
+    92→export function PubliBagsModule() {
+    93→  const setModule = useAppStore((s) => s.setModule)
+    94→  const toast = useAppStore((s) => s.toast)
+    95→  const [data, setData] = useState<BagPlanData | null>(null)
+    96→  const [loading, setLoading] = useState(true)
+    97→  const [mobileNav, setMobileNav] = useState(false)
+    98→
+    99→  // Inyectar Google Fonts (Outfit + DM Sans)
+   100→  useEffect(() => {
+   101→    const id = 'publibags-fonts'
+   102→    if (document.getElementById(id)) return
+   103→    const link = document.createElement('link')
+   104→    link.id = id
+   105→    link.rel = 'stylesheet'
+   106→    link.href =
+   107→      'https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap'
+   108→    document.head.appendChild(link)
+   109→  }, [])
+   110→
+   111→  useEffect(() => {
+   112→    let cancelled = false
+   113→    fetch('/api/impulse/bag-plan')
+   114→      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('no-ok'))))
+   115→      .then((d: BagPlanData) => { if (!cancelled) setData(d) })
+   116→      .catch(() => { /* silent */ })
+   117→      .finally(() => { if (!cancelled) setLoading(false) })
+   118→    return () => { cancelled = true }
+   119→  }, [])
+   120→
+   121→  return (
+   122→    <div
+   123→      className="publibags-satellite"
+   124→      style={{
+   125→        background: C.bg,
+   126→        color: C.text,
+   127→        minHeight: '100vh',
+   128→        fontFamily: "'DM Sans', system-ui, sans-serif",
+   129→      }}
+   130→    >
+   131→      {/* ===== Navbar ===== */}
+   132→      <Navbar
+   133→        mobileNav={mobileNav}
+   134→        setMobileNav={setMobileNav}
+   135→        onCta={() => setModule('bag-plan')}
+   136→      />
+   137→
+   138→      {/* ===== Hero ===== */}
+   139→      <Hero onSeePlan={() => scrollTo('plano')} onWhats={() => window.open(WHATSAPP_URL, '_blank')} />
+   140→
+   141→      {/* ===== Anatomía ===== */}
+   142→      <Anatomia />
+   143→
+   144→      {/* ===== Cómo funciona ===== */}
+   145→      <ComoFunciona />
+   146→
+   147→      {/* ===== Plano LIVE ===== */}
+   148→      <PlanoLive data={data} loading={loading} onBuy={() => setModule('bag-plan')} />
+   149→
+   150→      {/* ===== Ventajas ===== */}
+   151→      <Ventajas />
+   152→
+   153→      {/* ===== Impacto ===== */}
+   154→      <Impacto />
+   155→
+   156→      {/* ===== Propuesta DimarClub ===== */}
+   157→      <Propuesta onCta={() => toast('Próximamente: DimarClub marketplace', 'info')} />
+   158→
+   159→      {/* ===== Red Universal ===== */}
+   160→      <RedUniversal onCta={() => setModule('affiliates')} />
+   161→
+   162→      {/* ===== CTA Planes ===== */}
+   163→      <CtaPlanes onCta={() => setModule('bag-plan')} />
+   164→
+   165→      {/* ===== Contacto ===== */}
+   166→      <Contacto onSeePlans={() => setModule('marketplace')} />
+   167→
+   168→      {/* ===== Footer ===== */}
+   169→      <Footer onBackToPortal={() => setModule('marketplace')} />
+   170→    </div>
+   171→  )
+   172→}
+   173→
+   174→// ===================== NAVBAR =====================
+   175→function Navbar({
+   176→  mobileNav,
+   177→  setMobileNav,
+   178→  onCta,
+   179→}: {
+   180→  mobileNav: boolean
+   181→  setMobileNav: (v: boolean) => void
+   182→  onCta: () => void
+   183→}) {
+   184→  const links = [
+   185→    { href: '#anatomia', label: 'Anatomía' },
+   186→    { href: '#como-funciona', label: 'Cómo funciona' },
+   187→    { href: '#ventajas', label: 'Ventajas' },
+   188→    { href: '#impacto', label: 'Impacto' },
+   189→    { href: '#propuesta', label: 'Propuesta' },
+   190→    { href: '#contacto', label: 'Contacto' },
+   191→  ]
+   192→  return (
+   193→    <header
+   194→      style={{
+   195→        position: 'sticky',
+   196→        top: 0,
+   197→        zIndex: 50,
+   198→        background: 'rgba(11, 17, 32, 0.92)',
+   199→        backdropFilter: 'blur(10px)',
+   200→        borderBottom: `1px solid ${C.border}`,
+   201→      }}
+   202→    >
+   203→      <div className="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between gap-4">
+   204→        <a href="#top" style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 22, color: C.text, textDecoration: 'none' }}>
+   205→          Publi<span style={{ color: C.emerald }}>bags</span>
+   206→        </a>
+   207→        <nav className="hidden lg:flex items-center gap-1">
+   208→          {links.map((l) => (
+   209→            <a
+   210→              key={l.href}
+   211→              href={l.href}
+   212→              style={{
+   213→                color: C.textDim,
+   214→                fontSize: 14,
+   215→                padding: '8px 12px',
+   216→                borderRadius: 6,
+   217→                textDecoration: 'none',
+   218→                transition: 'color .15s, background .15s',
+   219→              }}
+   220→              onMouseEnter={(e) => { e.currentTarget.style.color = C.text; e.currentTarget.style.background = C.card }}
+   221→              onMouseLeave={(e) => { e.currentTarget.style.color = C.textDim; e.currentTarget.style.background = 'transparent' }}
+   222→            >
+   223→              {l.label}
+   224→            </a>
+   225→          ))}
+   226→        </nav>
+   227→        <div className="flex items-center gap-2">
+   228→          <a
+   229→            href={WHATSAPP_URL}
+   230→            target="_blank"
+   231→            rel="noopener noreferrer"
+   232→            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-semibold"
+   233→            style={{ background: C.emerald, color: '#062019' }}
+   234→          >
+   235→            <Phone className="size-3.5" />
+   236→            {WHATSAPP_DISPLAY}
+   237→          </a>
+   238→          <button
+   239→            onClick={onCta}
+   240→            className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-semibold"
+   241→            style={{ background: 'transparent', color: C.emerald, border: `1px solid ${C.emerald}` }}
+   242→          >
+   243→            Comprar espacio
+   244→          </button>
+   245→          <button
+   246→            className="lg:hidden p-2 rounded-md"
+   247→            style={{ color: C.text, background: C.card }}
+   248→            onClick={() => setMobileNav(!mobileNav)}
+   249→            aria-label="Menú"
+   250→          >
+   251→            {mobileNav ? <X className="size-5" /> : <Menu className="size-5" />}
+   252→          </button>
+   253→        </div>
+   254→      </div>
+   255→      {mobileNav && (
+   256→        <div className="lg:hidden border-t" style={{ borderColor: C.border, background: C.card }}>
+   257→          <div className="px-4 py-3 space-y-1">
+   258→            {links.map((l) => (
+   259→              <a
+   260→                key={l.href}
+   261→                href={l.href}
+   262→                onClick={() => setMobileNav(false)}
+   263→                className="block px-3 py-2 rounded-md text-sm"
+   264→                style={{ color: C.textDim }}
+   265→              >
+   266→                {l.label}
+   267→              </a>
+   268→            ))}
+   269→            <a
+   270→              href={WHATSAPP_URL}
+   271→              target="_blank"
+   272→              rel="noopener noreferrer"
+   273→              className="block px-3 py-2 rounded-md text-sm font-semibold"
+   274→              style={{ color: C.emerald }}
+   275→            >
+   276→              WhatsApp: {WHATSAPP_DISPLAY}
+   277→            </a>
+   278→          </div>
+   279→        </div>
+   280→      )}
+   281→    </header>
+   282→  )
+   283→}
+   284→
+   285→// ===================== HERO =====================
+   286→function Hero({ onSeePlan, onWhats }: { onSeePlan: () => void; onWhats: () => void }) {
+   287→  return (
+   288→    <section id="top" style={{ position: 'relative', overflow: 'hidden', padding: '60px 0 80px' }}>
+   289→      {/* glow */}
+   290→      <div
+   291→        style={{
+   292→          position: 'absolute',
+   293→          top: -120,
+   294→          left: '50%',
+   295→          transform: 'translateX(-50%)',
+   296→          width: 600,
+   297→          height: 600,
+   298→          borderRadius: '50%',
+   299→          background: `radial-gradient(circle, ${C.emerald}22 0%, transparent 70%)`,
+   300→          pointerEvents: 'none',
+   301→        }}
+   302→      />
+   303→      <div className="max-w-[1280px] mx-auto px-4 relative">
+   304→        <div className="grid lg:grid-cols-2 gap-10 items-center">
+   305→          <div>
+   306→            <div
+   307→              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-5"
+   308→              style={{ background: `${C.emerald}1A`, color: C.emerald, border: `1px solid ${C.emerald}55` }}
+   309→            >
+   310→              <Sparkles className="size-3.5" />
+   311→              Bolso ecológico publicitario · Guayaquil
+   312→            </div>
+   313→            <h1
+   314→              style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 'clamp(32px, 5vw, 52px)', lineHeight: 1.05, letterSpacing: -1, color: C.text }}
+   315→            >
+   316→              Convierte cada <span style={{ color: C.emerald }}>funda</span> en publicidad que viaja por tu ciudad
+   317→            </h1>
+   318→            <p style={{ color: C.textDim, fontSize: 17, marginTop: 18, lineHeight: 1.55, maxWidth: 540 }}>
+   319→              297 espacios publicitarios de 5×5 cm en fundas ecológicas reutilizables que circulan por toda la ciudad.
+   320→              Tu marca impresa + QR, vista por miles de personas todos los días.
+   321→            </p>
+   322→
+   323→            {/* Price badge */}
+   324→            <div
+   325→              className="inline-flex items-center gap-3 px-4 py-3 rounded-xl mt-6"
+   326→              style={{ background: C.card, border: `1px solid ${C.borderLight}` }}
+   327→            >
+   328→              <div
+   329→                className="size-11 rounded-lg flex items-center justify-center font-bold"
+   330→                style={{ background: `${C.gold}22`, color: C.gold, fontSize: 18 }}
+   331→              >
+   332→                $20
+   333→              </div>
+   334→              <div>
+   335→                <p style={{ fontSize: 14, fontWeight: 600, color: C.text }}>por espacio · pago único</p>
+   336→                <p style={{ fontSize: 12, color: C.muted }}>Se convierte en aporte de capital de socio + 5% interés mensual</p>
+   337→              </div>
+   338→            </div>
+   339→
+   340→            <div className="flex flex-wrap gap-3 mt-7">
+   341→              <button
+   342→                onClick={onSeePlan}
+   343→                className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-semibold text-sm"
+   344→                style={{ background: C.emerald, color: '#062019' }}
+   345→              >
+   346→                Ver plano del bolso <ArrowRight className="size-4" />
+   347→              </button>
+   348→              <button
+   349→                onClick={onWhats}
+   350→                className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-semibold text-sm"
+   351→                style={{ background: 'transparent', color: C.text, border: `1px solid ${C.borderLight}` }}
+   352→              >
+   353→                <Phone className="size-4" /> Hablar por WhatsApp
+   354→              </button>
+   355→            </div>
+   356→          </div>
+   357→
+   358→          {/* Hero visual */}
+   359→          <div className="relative">
+   360→            <div
+   361→              className="rounded-2xl p-8 flex flex-col items-center justify-center text-center"
+   362→              style={{
+   363→                background: `linear-gradient(135deg, ${C.card} 0%, ${C.card2} 100%)`,
+   364→                border: `1px solid ${C.borderLight}`,
+   365→                minHeight: 320,
+   366→              }}
+   367→            >
+   368→              <p style={{ color: C.muted, fontSize: 12, letterSpacing: 2, textTransform: 'uppercase' }}>Espacios totales</p>
+   369→              <p style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 900, fontSize: 'clamp(80px, 14vw, 140px)', lineHeight: 1, color: C.emerald, marginTop: 8 }}>
+   370→                297
+   371→              </p>
+   372→              <p style={{ color: C.textDim, fontSize: 15, marginTop: 8, maxWidth: 320 }}>
+   373→                Cada uno de 5×5 cm, distribuidos en 7 paneles del bolso de 60×50 cm
+   374→              </p>
+   375→              <div className="grid grid-cols-3 gap-2 w-full mt-6">
+   376→                {[
+   377→                  { label: 'Paneles', value: '7' },
+   378→                  { label: 'Tamaño bolso', value: '60×50cm' },
+   379→                  { label: 'Reutilizable', value: '∞' },
+   380→                ].map((s) => (
+   381→                  <div key={s.label} className="rounded-lg p-2.5" style={{ background: C.bg, border: `1px solid ${C.border}` }}>
+   382→                    <p style={{ fontSize: 18, fontWeight: 700, color: C.text }}>{s.value}</p>
+   383→                    <p style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>{s.label}</p>
+   384→                  </div>
+   385→                ))}
+   386→              </div>
+   387→            </div>
+   388→          </div>
+   389→        </div>
+   390→      </div>
+   391→    </section>
+   392→  )
+   393→}
+   394→
+   395→// ===================== ANATOMÍA =====================
+   396→function Anatomia() {
+   397→  const panelInfo = [
+   398→    { label: 'Frontal', dims: '60×25 cm', count: 60, color: C.emerald },
+   399→    { label: 'Posterior', dims: '60×25 cm', count: 60, color: C.purple },
+   400→    { label: 'Base Comercial', dims: '45×45 cm', count: 81, color: C.gold, big: true },
+   401→    { label: 'Lateral Izq.', dims: '30×25 cm', count: 30, color: C.rose },
+   402→    { label: 'Lateral Der.', dims: '30×25 cm', count: 30, color: C.rose },
+   403→    { label: 'Tapa Sup.', dims: '30×15 cm', count: 18, color: C.amber },
+   404→    { label: 'Tapa Inf.', dims: '30×15 cm', count: 18, color: C.amber },
+   405→  ]
+   406→
+   407→  const stats = [
+   408→    { label: 'Espacios totales', value: '297', color: C.emerald },
+   409→    { label: 'Vendibles', value: '297', color: C.emerald },
+   410→    { label: 'Por espacio', value: '$20', color: C.gold },
+   411→    { label: 'Interés mensual', value: '5%', color: C.purple },
+   412→  ]
+   413→
+   414→  return (
+   415→    <Section id="anatomia" eyebrow="Anatomía del bolso" title="297 espacios publicitarios por bolso" subtitle="Cada bolso de 60×50 cm tiene espacios de 5×5 cm distribuidos en 7 paneles. Los 297 espacios son vendibles.">
+   416→      {/* Visual panels */}
+   417→      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+   418→        {panelInfo.map((p) => (
+   419→          <div
+   420→            key={p.label}
+   421→            className="rounded-xl p-4"
+   422→            style={{
+   423→              background: C.card,
+   424→              border: `1px solid ${C.borderLight}`,
+   425→              gridColumn: p.big ? 'span 2' : undefined,
+   426→            }}
+   427→          >
+   428→            <div className="flex items-center justify-between mb-2">
+   429→              <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{p.label}</span>
+   430→              <span style={{ fontSize: 11, color: C.muted }}>{p.dims}</span>
+   431→            </div>
+   432→            <div
+   433→              className="rounded-md flex items-center justify-center font-bold"
+   434→              style={{
+   435→                background: `${p.color}22`,
+   436→                border: `1px solid ${p.color}55`,
+   437→                color: p.color,
+   438→                minHeight: p.big ? 80 : 56,
+   439→                fontSize: p.big ? 28 : 20,
+   440→              }}
+   441→            >
+   442→              {p.count} espacios
+   443→            </div>
+   444→          </div>
+   445→        ))}
+   446→      </div>
+   447→
+   448→      {/* Stats */}
+   449→      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
+   450→        {stats.map((s) => (
+   451→          <div key={s.label} className="rounded-xl p-4 text-center" style={{ background: C.card, border: `1px solid ${C.border}` }}>
+   452→            <p style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 36, color: s.color }}>{s.value}</p>
+   453→            <p style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>{s.label}</p>
+   454→          </div>
+   455→        ))}
+   456→      </div>
+   457→    </Section>
+   458→  )
+   459→}
+   460→
+   461→// ===================== CÓMO FUNCIONA =====================
+   462→function ComoFunciona() {
+   463→  const steps = [
+   464→    { n: 1, icon: <ShoppingBag className="size-5" />, title: 'Compras tu espacio', desc: 'Eliges un espacio de 5×5 cm en el plano del bolso. Pagas $20 (pago único) y automáticamente te haces SOCIO de la cooperativa.' },
+   465→    { n: 2, icon: <TrendingUp className="size-5" />, title: 'Tu $20 = aporte de capital', desc: 'El $20 se registra como aporte de capital en tu cuenta cooperativa. Genera 5% interés mensual compuesto.' },
+   466→    { n: 3, icon: <Palette className="size-5" />, title: 'Tu marca se imprime + QR', desc: 'Subes tu logo o generas un QR. Se imprime en el bolso junto con 296 marcas más, en 500 bolsas que circulan por toda la ciudad.' },
+   467→    { n: 4, icon: <Users className="size-5" />, title: 'Miles ven tu marca', desc: 'Cada bolso es visto por miles de personas. Tu red de afiliados gana 2% en 3 niveles + 3% cashback en cada compra.' },
+   468→  ]
+   469→  return (
+   470→    <Section id="como-funciona" eyebrow="Cómo funciona" title="De $20 a marca impresa en 4 pasos" subtitle="Un flujo simple que te convierte en socio, genera interés compuesto y pone tu marca en circulación.">
+   471→      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+   472→        {steps.map((s) => (
+   473→          <div key={s.n} className="rounded-xl p-5 relative" style={{ background: C.card, border: `1px solid ${C.borderLight}` }}>
+   474→            <div
+   475→              className="absolute -top-3 -left-3 size-9 rounded-full flex items-center justify-center font-bold text-sm"
+   476→              style={{ background: C.emerald, color: '#062019' }}
+   477→            >
+   478→              {s.n}
+   479→            </div>
+   480→            <div
+   481→              className="size-10 rounded-lg flex items-center justify-center mb-3"
+   482→              style={{ background: `${C.emerald}22`, color: C.emerald }}
+   483→            >
+   484→              {s.icon}
+   485→            </div>
+   486→            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 17, color: C.text, marginBottom: 6 }}>
+   487→              {s.title}
+   488→            </h3>
+   489→            <p style={{ fontSize: 13, color: C.textDim, lineHeight: 1.5 }}>{s.desc}</p>
+   490→          </div>
+   491→        ))}
+   492→      </div>
+   493→    </Section>
+   494→  )
+   495→}
+   496→
+   497→// ===================== PLANO LIVE =====================
+   498→function PlanoLive({ data, loading, onBuy }: { data: BagPlanData | null; loading: boolean; onBuy: () => void }) {
+   499→  const [view, setView] = useState<'current' | 'next'>('current')
+   500→
+   501→  const edition = view === 'current' ? data?.currentEdition : data?.nextEdition
+   502→  const spaces = view === 'current' ? data?.currentSpaces : data?.nextSpaces
+   503→  const stats = view === 'current' ? data?.currentStats : data?.nextStats
+   504→
+   505→  // Para la campaña actual (todos vendidos), agrupamos sponsors para la leyenda
+   506→  const sponsors = useMemo(() => {
+   507→    if (!spaces) return []
+   508→    const map = new Map<string, number>()
+   509→    for (const s of spaces) {
+   510→      if (s.status !== 'SOLD') continue
+   511→      const n = s.buyerName || ''
+   512→      if (!n) continue
+   513→      map.set(n, (map.get(n) || 0) + 1)
+   514→    }
+   515→    return Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, 12)
+   516→  }, [spaces])
+   517→
+   518→  return (
+   519→    <Section
+   520→      id="plano"
+   521→      eyebrow="Plano de corte en vivo"
+   522→      title="Mira los 297 espacios del bolso en tiempo real"
+   523→      subtitle="Esta es la campaña actual (impresa, llena de patrocinadores) y la próxima campaña (compra abierta)."
+   524→    >
+   525→      {/* Toggle */}
+   526→      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+   527→        <div className="inline-flex rounded-lg p-1" style={{ background: C.card, border: `1px solid ${C.border}` }}>
+   528→          <button
+   529→            onClick={() => setView('current')}
+   530→            className="px-4 py-2 rounded-md text-sm font-semibold transition-colors"
+   531→            style={{
+   532→              background: view === 'current' ? C.emerald : 'transparent',
+   533→              color: view === 'current' ? '#062019' : C.textDim,
+   534→            }}
+   535→          >
+   536→            Campaña actual (impresa)
+   537→          </button>
+   538→          <button
+   539→            onClick={() => setView('next')}
+   540→            className="px-4 py-2 rounded-md text-sm font-semibold transition-colors"
+   541→            style={{
+   542→              background: view === 'next' ? C.gold : 'transparent',
+   543→              color: view === 'next' ? '#1a1206' : C.textDim,
+   544→            }}
+   545→          >
+   546→            Próxima campaña (compra abierta)
+   547→          </button>
+   548→        </div>
+   549→        {edition && (
+   550→          <p style={{ fontSize: 13, color: C.muted }}>
+   551→            {edition.monthLabel} · {edition.city} · {edition.printQuantity} bolsas
+   552→          </p>
+   553→        )}
+   554→      </div>
+   555→
+   556→      {/* Stats */}
+   557→      {stats && (
+   558→        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+   559→          <LiveStat label="Total" value={stats.total} color={C.text} />
+   560→          <LiveStat label="Vendidos" value={stats.sold} color={C.rose} />
+   561→          <LiveStat label="Disponibles" value={stats.available} color={C.emerald} />
+   562→          <LiveStat label="Recaudado" value={`$${stats.revenue.toLocaleString()}`} color={C.gold} />
+   563→        </div>
+   564→      )}
+   565→
+   566→      {loading ? (
+   567→        <div
+   568→          className="rounded-xl p-12 text-center"
+   569→          style={{ background: C.card, border: `1px solid ${C.border}` }}
+   570→        >
+   571→          <div className="inline-block size-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: `${C.emerald} transparent transparent transparent` }} />
+   572→          <p style={{ color: C.muted, fontSize: 14, marginTop: 12 }}>Cargando los 297 espacios…</p>
+   573→        </div>
+   574→      ) : !spaces ? (
+   575→        <div className="rounded-xl p-12 text-center" style={{ background: C.card, border: `1px solid ${C.border}` }}>
+   576→          <p style={{ color: C.muted }}>No se pudo cargar el plano.</p>
+   577→        </div>
+   578→      ) : (
+   579→        <>
+   580→          {/* Panels */}
+   581→          <div className="grid md:grid-cols-2 gap-4">
+   582→            {BAG_PANELS.map((panel) => (
+   583→              <LivePanel key={panel.key} panel={panel} spaces={spaces} view={view} />
+   584→            ))}
+   585→          </div>
+   586→
+   587→          {/* Legend for current (sponsors) */}
+   588→          {view === 'current' && sponsors.length > 0 && (
+   589→            <div className="rounded-xl p-4 mt-5" style={{ background: C.card, border: `1px solid ${C.border}` }}>
+   590→              <p style={{ fontSize: 12, color: C.muted, marginBottom: 10, textTransform: 'uppercase', letterSpacing: 1 }}>
+   591→                Top patrocinadores (campaña actual)
+   592→              </p>
+   593→              <div className="flex flex-wrap gap-x-4 gap-y-2">
+   594→                {sponsors.map(([name, count]) => (
+   595→                  <div key={name} className="flex items-center gap-1.5">
+   596→                    <div className="size-3 rounded-sm" style={{ background: sponsorColor(name) }} />
+   597→                    <span style={{ fontSize: 12, color: C.textDim }}>{name} ({count})</span>
+   598→                  </div>
+   599→                ))}
+   600→              </div>
+   601→            </div>
+   602→          )}
+   603→
+   604→          {/* Legend for next (statuses) */}
+   605→          {view === 'next' && (
+   606→            <div className="rounded-xl p-4 mt-5 flex flex-wrap items-center gap-4" style={{ background: C.card, border: `1px solid ${C.border}` }}>
+   607→              <span style={{ fontSize: 12, color: C.muted, textTransform: 'uppercase', letterSpacing: 1 }}>Leyenda:</span>
+   608→              <LegendDot color={C.emerald} label="Disponible" />
+   609→              <LegendDot color={C.amber} label="Reservado" />
+   610→              <LegendDot color={C.rose} label="Vendido" />
+   611→            </div>
+   612→          )}
+   613→
+   614→          {/* Big CTA */}
+   615→          <div
+   616→            className="mt-6 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-4"
+   617→            style={{ background: `linear-gradient(135deg, ${C.emerald}22 0%, ${C.gold}11 100%)`, border: `1px solid ${C.emerald}55` }}
+   618→          >
+   619→            <div>
+   620→              <h3 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 22, color: C.text }}>
+   621→                ¿Listo para imprimir tu marca?
+   622→              </h3>
+   623→              <p style={{ color: C.textDim, fontSize: 14, marginTop: 4 }}>
+   624→                Abre el visualizador completo, elige tu espacio y hazte socio PubliBags por $20.
+   625→              </p>
+   626→            </div>
+   627→            <button
+   628→              onClick={onBuy}
+   629→              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-sm whitespace-nowrap"
+   630→              style={{ background: C.emerald, color: '#062019' }}
+   631→            >
+   632→              Comprar mi espacio <ArrowRight className="size-4" />
+   633→            </button>
+   634→          </div>
+   635→        </>
+   636→      )}
+   637→    </Section>
+   638→  )
+   639→}
+   640→
+   641→function LiveStat({ label, value, color }: { label: string; value: number | string; color: string }) {
+   642→  return (
+   643→    <div className="rounded-xl p-3.5" style={{ background: C.card, border: `1px solid ${C.border}` }}>
+   644→      <p style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color }}>{value}</p>
+   645→      <p style={{ fontSize: 11, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 }}>{label}</p>
+   646→    </div>
+   647→  )
+   648→}
+   649→
+   650→function LegendDot({ color, label }: { color: string; label: string }) {
+   651→  return (
+   652→    <div className="flex items-center gap-1.5">
+   653→      <div className="size-3 rounded-sm" style={{ background: color }} />
+   654→      <span style={{ fontSize: 12, color: C.textDim }}>{label}</span>
+   655→    </div>
+   656→  )
+   657→}
+   658→
+   659→function LivePanel({ panel, spaces, view }: { panel: BagPanel; spaces: BagSpace[]; view: 'current' | 'next' }) {
+   660→  const byPos = useMemo(() => {
+   661→    const m = new Map<number, BagSpace>()
+   662→    for (const s of spaces) m.set(s.position, s)
+   663→    return m
+   664→  }, [spaces])
+   665→
+   666→  const positions: number[] = []
+   667→  for (let i = panel.start; i <= panel.end; i++) positions.push(i)
+   668→
+   669→  return (
+   670→    <div className="rounded-xl p-4" style={{ background: C.card, border: `1px solid ${C.border}` }}>
+   671→      <div className="flex items-center justify-between mb-3">
+   672→        <div>
+   673→          <p style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{panel.label}</p>
+   674→          <p style={{ fontSize: 11, color: C.muted }}>{panel.widthCm}×{panel.heightCm} cm · {panel.cols}×{panel.rows}</p>
+   675→        </div>
+   676→        <span style={{ fontSize: 11, color: C.muted }}>#{panel.start}–{panel.end}</span>
+   677→      </div>
+   678→      <div
+   679→        className="grid"
+   680→        style={{ gridTemplateColumns: `repeat(${panel.cols}, minmax(0, 1fr))`, gap: 2 }}
+   681→      >
+   682→        {positions.map((pos) => {
+   683→          const s = byPos.get(pos)
+   684→          let bg = C.bg
+   685→          let title = `#${pos} · Disponible`
+   686→          if (view === 'current') {
+   687→            // Todos vendidos → color por sponsor
+   688→            const name = s?.buyerName
+   689→            if (name) {
+   690→              bg = sponsorColor(name)
+   691→              title = `#${pos} · ${name}`
+   692→            }
+   693→          } else {
+   694→            // next → color por status
+   695→            if (s?.status === 'SOLD') {
+   696→              const name = s.buyerName
+   697→              bg = name ? sponsorColor(name) : C.rose
+   698→              title = `#${pos} · Vendido${name ? ` · ${name}` : ''}`
+   699→            } else if (s?.status === 'RESERVED') {
+   700→              bg = C.amber
+   701→              title = `#${pos} · Reservado`
+   702→            } else {
+   703→              bg = `${C.emerald}33`
+   704→              title = `#${pos} · Disponible`
+   705→            }
+   706→          }
+   707→          return (
+   708→            <div
+   709→              key={pos}
+   710→              title={title}
+   711→              style={{
+   712→                aspectRatio: '1 / 1',
+   713→                background: bg,
+   714→                borderRadius: 2,
+   715→                minWidth: 6,
+   716→                cursor: 'default',
+   717→              }}
+   718→            />
+   719→          )
+   720→        })}
+   721→      </div>
+   722→    </div>
+   723→  )
+   724→}
+   725→
+   726→// ===================== VENTAJAS =====================
+   727→function Ventajas() {
+   728→  const items = [
+   729→    { icon: <Leaf className="size-5" />, title: '100% Ecológico', desc: 'Bolso reutilizable de tela resistente. Cero plástico de un solo uso.' },
+   730→    { icon: <Eye className="size-5" />, title: 'Medición Real', desc: 'Cada QR se escanea y mide en tiempo real. Sabes cuántas personas vieron tu marca.' },
+   731→    { icon: <Palette className="size-5" />, title: 'Diseño Incluido', desc: 'Te ayudamos a diseñar tu espacio de 5×5 cm. No necesitas diseñador.' },
+   732→    { icon: <Link2 className="size-5" />, title: 'Enlace a tu Web', desc: 'El QR lleva directo a tu sitio web, tienda o perfil de afiliado.' },
+   733→    { icon: <Recycle className="size-5" />, title: 'Reutilización', desc: 'Un bolso se usa cientos de veces. Tu marca se ve una y otra vez.' },
+   734→    { icon: <TrendingUp className="size-5" />, title: 'Alcance Masivo', desc: '500 bolsas circulando × cientos de vistas = miles de impresiones/mes.' },
+   735→  ]
+   736→  return (
+   737→    <Section id="ventajas" eyebrow="Ventajas" title="Por qué PubliBags funciona" subtitle="No es solo publicidad. Es un activo que genera retorno ambiental, social y financiero.">
+   738→      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   739→        {items.map((it) => (
+   740→          <div key={it.title} className="rounded-xl p-5" style={{ background: C.card, border: `1px solid ${C.borderLight}` }}>
+   741→            <div
+   742→              className="size-10 rounded-lg flex items-center justify-center mb-3"
+   743→              style={{ background: `${C.emerald}22`, color: C.emerald }}
+   744→            >
+   745→              {it.icon}
+   746→            </div>
+   747→            <h3 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 16, color: C.text, marginBottom: 4 }}>
+   748→              {it.title}
+   749→            </h3>
+   750→            <p style={{ fontSize: 13, color: C.textDim, lineHeight: 1.5 }}>{it.desc}</p>
+   751→          </div>
+   752→        ))}
+   753→      </div>
+   754→    </Section>
+   755→  )
+   756→}
+   757→
+   758→// ===================== IMPACTO =====================
+   759→function Impacto() {
+   760→  const items = [
+   761→    { value: '100%', label: 'Papel reciclado', color: C.emerald },
+   762→    { value: '3R', label: 'Reducir, Reutilizar, Reciclar', color: C.gold },
+   763→    { value: '0%', label: 'Plástico de un solo uso', color: C.rose },
+   764→    { value: '∞', label: 'Reutilizaciones por bolso', color: C.purple },
+   765→  ]
+   766→  return (
+   767→    <Section id="impacto" eyebrow="Impacto ecológico" title="Publicidad que cuida el planeta" subtitle="Cada bolso PubliBags evita cientos de fundas plásticas. Tu marca promueve un consumo consciente.">
+   768→      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+   769→        {items.map((it) => (
+   770→          <div
+   771→            key={it.label}
+   772→            className="rounded-xl p-6 text-center"
+   773→            style={{ background: `linear-gradient(135deg, ${C.card} 0%, ${C.card2} 100%)`, border: `1px solid ${C.borderLight}` }}
+   774→          >
+   775→            <p style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 900, fontSize: 44, color: it.color, lineHeight: 1 }}>
+   776→              {it.value}
+   777→            </p>
+   778→            <p style={{ fontSize: 12, color: C.textDim, marginTop: 10, lineHeight: 1.4 }}>{it.label}</p>
+   779→          </div>
+   780→        ))}
+   781→      </div>
+   782→    </Section>
+   783→  )
+   784→}
+   785→
+   786→// ===================== PROPUESTA DIMARCLUB =====================
+   787→function Propuesta({ onCta }: { onCta: () => void }) {
+   788→  const benefits = [
+   789→    { icon: '🚑', title: 'Ambulancia Gratis', desc: 'Servicio de ambulancia sin costo para socios.' },
+   790→    { icon: '🔧', title: 'Servicios Técnicos', desc: 'Red de técnicos en electricidad, plomería y más.' },
+   791→    { icon: '🌿', title: 'Medicina Ancestral', desc: 'Acceso a terapias alternativas y naturales.' },
+   792→    { icon: '🚚', title: 'Entrega Gratis', desc: 'Logística de productos sin costo adicional.' },
+   793→    { icon: '💰', title: 'Préstamos con Garantía', desc: 'Crédito respaldado por tu aporte de capital.' },
+   794→    { icon: '📈', title: 'Línea de Crédito 75%', desc: 'Financia hasta el 75% de tu aporte acumulado.' },
+   795→    { icon: '💹', title: 'Inversión 5% Mensual', desc: 'Tu aporte genera 5% interés mensual compuesto.' },
+   796→    { icon: '🎯', title: 'Hub de Tareas CPA', desc: 'Centro de tareas de costo por acción para afiliados.' },
+   797→    { icon: '🛍️', title: 'Fundas con Descuentos', desc: 'Descuentos exclusivos en fundas y productos.' },
+   798→    { icon: '🏢', title: 'Coworking $150/mes', desc: 'Espacio de trabajo compartido a precio de socio.' },
+   799→    { icon: '🎓', title: 'Capacitación', desc: 'Cursos y formación empresarial continua.' },
+   800→    { icon: '📅', title: 'Reuniones Semanales', desc: 'Encuentros de networking y negocios.' },
+   801→  ]
+   802→  return (
+   803→    <Section
+   804→      id="propuesta"
+   805→      eyebrow="Propuesta DimarClub"
+   806→      title="Ser socio PubliBags te abre las puertas de DimarClub"
+   807→      subtitle="No solo publicitarias tu marca. Al comprar un espacio te conviertes en socio de la cooperativa DimarClub con 12 beneficios exclusivos."
+   808→    >
+   809→      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+   810→        {benefits.map((b) => (
+   811→          <div
+   812→            key={b.title}
+   813→            className="rounded-xl p-4 transition-transform hover:scale-[1.02]"
+   814→            style={{ background: C.card, border: `1px solid ${C.borderLight}` }}
+   815→          >
+   816→            <div className="size-9 rounded-lg flex items-center justify-center text-lg mb-2" style={{ background: C.bg }}>
+   817→              {b.icon}
+   818→            </div>
+   819→            <h4 style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 2 }}>{b.title}</h4>
+   820→            <p style={{ fontSize: 12, color: C.textDim, lineHeight: 1.4 }}>{b.desc}</p>
+   821→          </div>
+   822→        ))}
+   823→      </div>
+   824→
+   825→      <div className="flex flex-wrap gap-3 mt-6">
+   826→        <button
+   827→          onClick={onCta}
+   828→          className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-semibold text-sm"
+   829→          style={{ background: C.emerald, color: '#062019' }}
+   830→        >
+   831→          Conocer DimarClub <ChevronRight className="size-4" />
+   832→        </button>
+   833→        <button
+   834→          onClick={onCta}
+   835→          className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-semibold text-sm"
+   836→          style={{ background: 'transparent', color: C.text, border: `1px solid ${C.borderLight}` }}
+   837→        >
+   838→          Ser Proveedor
+   839→        </button>
+   840→      </div>
+   841→    </Section>
+   842→  )
+   843→}
+   844→
+   845→// ===================== RED UNIVERSAL =====================
+   846→function RedUniversal({ onCta }: { onCta: () => void }) {
+   847→  return (
+   848→    <section style={{ padding: '40px 0' }}>
+   849→      <div className="max-w-[1280px] mx-auto px-4">
+   850→        <div
+   851→          className="rounded-2xl p-6 sm:p-10 grid lg:grid-cols-[1fr_auto] gap-6 items-center"
+   852→          style={{
+   853→            background: `linear-gradient(135deg, ${C.purple}22 0%, ${C.emerald}11 100%)`,
+   854→            border: `1px solid ${C.purple}55`,
+   855→          }}
+   856→        >
+   857→          <div>
+   858→            <div
+   859→              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-3"
+   860→              style={{ background: `${C.purple}22`, color: C.purple, border: `1px solid ${C.purple}55` }}
+   861→            >
+   862→              <Users className="size-3.5" /> Red Universal de Afiliados
+   863→            </div>
+   864→            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 'clamp(24px, 3vw, 32px)', color: C.text, lineHeight: 1.15 }}>
+   865→              Construye tu red de 3 niveles y gana comisiones en cada compra
+   866→            </h2>
+   867→            <p style={{ color: C.textDim, fontSize: 15, marginTop: 12, lineHeight: 1.55, maxWidth: 620 }}>
+   868→              Cada socio puede construir su <strong style={{ color: C.text }}>Red Universal de 3 Niveles</strong> y ganar{' '}
+   869→              <strong style={{ color: C.emerald }}>2% de cada nivel</strong> (N1, N2, N3) +{' '}
+   870→              <strong style={{ color: C.gold }}>3% cashback N0</strong> en cada compra de espacio PubliBags.
+   871→            </p>
+   872→            <div className="flex flex-wrap gap-3 mt-6">
+   873→              <div className="rounded-lg px-3 py-2" style={{ background: C.card, border: `1px solid ${C.border}` }}>
+   874→                <p style={{ fontSize: 11, color: C.muted }}>Tú compras</p>
+   875→                <p style={{ fontSize: 18, fontWeight: 700, color: C.gold }}>3% cashback N0</p>
+   876→              </div>
+   877→              <div className="rounded-lg px-3 py-2" style={{ background: C.card, border: `1px solid ${C.border}` }}>
+   878→                <p style={{ fontSize: 11, color: C.muted }}>Tu padrino (N1)</p>
+   879→                <p style={{ fontSize: 18, fontWeight: 700, color: C.emerald }}>2% comisión</p>
+   880→              </div>
+   881→              <div className="rounded-lg px-3 py-2" style={{ background: C.card, border: `1px solid ${C.border}` }}>
+   882→                <p style={{ fontSize: 11, color: C.muted }}>N2 y N3</p>
+   883→                <p style={{ fontSize: 18, fontWeight: 700, color: C.purple }}>+2% cada nivel</p>
+   884→              </div>
+   885→            </div>
+   886→          </div>
+   887→          <button
+   888→            onClick={onCta}
+   889→            className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-bold text-sm whitespace-nowrap justify-self-start lg:justify-self-end"
+   890→            style={{ background: C.purple, color: '#fff' }}
+   891→          >
+   892→            Ver mi red <ArrowRight className="size-4" />
+   893→          </button>
+   894→        </div>
+   895→      </div>
+   896→    </section>
+   897→  )
+   898→}
+   899→
+   900→// ===================== CTA PLANES =====================
+   901→function CtaPlanes({ onCta }: { onCta: () => void }) {
+   902→  return (
+   903→    <section style={{ padding: '60px 0', position: 'relative', overflow: 'hidden' }}>
+   904→      <div
+   905→        style={{
+   906→          position: 'absolute',
+   907→          top: '50%',
+   908→          left: '50%',
+   909→          transform: 'translate(-50%, -50%)',
+   910→          width: 700,
+   911→          height: 400,
+   912→          background: `radial-gradient(ellipse, ${C.emerald}22 0%, transparent 70%)`,
+   913→          pointerEvents: 'none',
+   914→        }}
+   915→      />
+   916→      <div className="max-w-[1280px] mx-auto px-4 relative text-center">
+   917→        <h2 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 'clamp(28px, 4vw, 44px)', color: C.text, lineHeight: 1.1 }}>
+   918→          ¿Listo para ver tu marca <span style={{ color: C.emerald }}>en todas partes</span>?
+   919→        </h2>
+   920→        <p style={{ color: C.textDim, fontSize: 16, marginTop: 14, maxWidth: 580, marginLeft: 'auto', marginRight: 'auto' }}>
+   921→          Únete a los 297 espacios del bolso PubliBags. Inversión $20, retorno ambiental + financiero + publicitario.
+   922→        </p>
+   923→        <button
+   924→          onClick={onCta}
+   925→          className="mt-7 inline-flex items-center gap-2 px-7 py-4 rounded-lg font-bold text-base"
+   926→          style={{ background: C.emerald, color: '#062019' }}
+   927→        >
+   928→          <ShoppingBag className="size-5" /> Comprar mi espacio — $20
+   929→        </button>
+   930→      </div>
+   931→    </section>
+   932→  )
+   933→}
+   934→
+   935→// ===================== CONTACTO =====================
+   936→function Contacto({ onSeePlans }: { onSeePlans: () => void }) {
+   937→  return (
+   938→    <Section id="contacto" eyebrow="Contacto" title="Hablemos de tu marca" subtitle="Escríbenos por WhatsApp y te ayudamos a elegir el mejor espacio para tu negocio.">
+   939→      <div className="grid sm:grid-cols-2 gap-4">
+   940→        <a
+   941→          href={WHATSAPP_URL}
+   942→          target="_blank"
+   943→          rel="noopener noreferrer"
+   944→          className="rounded-xl p-6 flex items-center gap-4 transition-transform hover:scale-[1.02]"
+   945→          style={{ background: `linear-gradient(135deg, ${C.emerald}22 0%, ${C.card} 100%)`, border: `1px solid ${C.emerald}55` }}
+   946→        >
+   947→          <div className="size-12 rounded-full flex items-center justify-center" style={{ background: C.emerald, color: '#062019' }}>
+   948→            <Phone className="size-6" />
+   949→          </div>
+   950→          <div>
+   951→            <p style={{ fontSize: 13, color: C.muted, textTransform: 'uppercase', letterSpacing: 1 }}>WhatsApp</p>
+   952→            <p style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 20, color: C.text }}>{WHATSAPP_DISPLAY}</p>
+   953→          </div>
+   954→        </a>
+   955→        <button
+   956→          onClick={onSeePlans}
+   957→          className="rounded-xl p-6 flex items-center gap-4 text-left transition-transform hover:scale-[1.02]"
+   958→          style={{ background: C.card, border: `1px solid ${C.borderLight}` }}
+   959→        >
+   960→          <div className="size-12 rounded-full flex items-center justify-center" style={{ background: C.gold, color: '#1a1206' }}>
+   961→            <Sparkles className="size-6" />
+   962→          </div>
+   963→          <div>
+   964→            <p style={{ fontSize: 13, color: C.muted, textTransform: 'uppercase', letterSpacing: 1 }}>Marketplace</p>
+   965→            <p style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 20, color: C.text }}>Ver planes y productos</p>
+   966→          </div>
+   967→        </button>
+   968→      </div>
+   969→    </Section>
+   970→  )
+   971→}
+   972→
+   973→// ===================== FOOTER =====================
+   974→function Footer({ onBackToPortal }: { onBackToPortal: () => void }) {
+   975→  const cols = [
+   976→    {
+   977→      title: 'ImpulsePymes360',
+   978→      links: ['Marketplace', 'DimarClub', 'PubliBags', 'Cooperativa', 'Afiliados'],
+   979→    },
+   980→    {
+   981→      title: 'Ecosistema',
+   982→      links: ['Socios', 'Proveedores', 'Mensajería', 'CRM', 'Email Marketing'],
+   983→    },
+   984→    {
+   985→      title: 'Más servicios',
+   986→      links: ['Grid 360', 'Web Express', 'Social Studio', 'Directorio', 'Alertas'],
+   987→    },
+   988→    {
+   989→      title: 'Contacto',
+   990→      links: [WHATSAPP_DISPLAY, 'Guayaquil, Ecuador', 'Lun–Sáb 8am–8pm'],
+   991→    },
+   992→    {
+   993→      title: 'Legal',
+   994→      links: ['Términos', 'Privacidad', 'Política de devoluciones', 'PQRS'],
+   995→    },
+   996→  ]
+   997→  return (
+   998→    <footer style={{ background: '#070C18', borderTop: `1px solid ${C.border}`, padding: '48px 0 24px' }}>
+   999→      <div className="max-w-[1280px] mx-auto px-4">
+  1000→        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+  1001→          {cols.map((col) => (
+  1002→            <div key={col.title}>
+  1003→              <h4 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 13, color: C.text, marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>
+  1004→                {col.title}
+  1005→              </h4>
+  1006→              <ul className="space-y-1.5">
+  1007→                {col.links.map((l) => (
+  1008→                  <li key={l}>
+  1009→                    <span style={{ fontSize: 13, color: C.muted, cursor: 'default' }}>{l}</span>
+  1010→                  </li>
+  1011→                ))}
+  1012→              </ul>
+  1013→            </div>
+  1014→          ))}
+  1015→        </div>
+  1016→
+  1017→        <div className="mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4" style={{ borderTop: `1px solid ${C.border}` }}>
+  1018→          <div className="flex items-center gap-3">
+  1019→            <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 18, color: C.text }}>
+  1020→              Publi<span style={{ color: C.emerald }}>bags</span>
+  1021→            </span>
+  1022→            <span style={{ fontSize: 12, color: C.muted }}>· por ImpulsePymes360</span>
+  1023→          </div>
+  1024→          <div className="flex items-center gap-3">
+  1025→            {['FB', 'IG', 'WA', 'YT'].map((s) => (
+  1026→              <div
+  1027→                key={s}
+  1028→                className="size-8 rounded-full flex items-center justify-center text-[10px] font-bold"
+  1029→                style={{ background: C.card, color: C.textDim, border: `1px solid ${C.border}` }}
+  1030→              >
+  1031→                {s}
+  1032→              </div>
+  1033→            ))}
+  1034→          </div>
+  1035→          <p style={{ fontSize: 12, color: C.muted }}>© 2026 ImpulsePymes360 · Todos los derechos reservados</p>
+  1036→        </div>
+  1037→
+  1038→        <div className="mt-6 text-center">
+  1039→          <button
+  1040→            onClick={onBackToPortal}
+  1041→            className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold"
+  1042→            style={{ background: C.card, color: C.textDim, border: `1px solid ${C.border}` }}
+  1043→          >
+  1044→            <ArrowRight className="size-4 rotate-180" /> Volver al portal
+  1045→          </button>
+  1046→        </div>
+  1047→      </div>
+  1048→    </footer>
+  1049→  )
+  1050→}
+  1051→
+  1052→// ===================== SECTION WRAPPER =====================
+  1053→function Section({
+  1054→  id,
+  1055→  eyebrow,
+  1056→  title,
+  1057→  subtitle,
+  1058→  children,
+  1059→}: {
+  1060→  id: string
+  1061→  eyebrow: string
+  1062→  title: string
+  1063→  subtitle?: string
+  1064→  children: React.ReactNode
+  1065→}) {
+  1066→  return (
+  1067→    <section id={id} style={{ padding: '56px 0' }}>
+  1068→      <div className="max-w-[1280px] mx-auto px-4">
+  1069→        <div style={{ maxWidth: 720, marginBottom: 32 }}>
+  1070→          <p
+  1071→            style={{
+  1072→              fontSize: 12,
+  1073→              color: C.emerald,
+  1074→              textTransform: 'uppercase',
+  1075→              letterSpacing: 2,
+  1076→              fontWeight: 700,
+  1077→              marginBottom: 10,
+  1078→            }}
+  1079→          >
+  1080→            {eyebrow}
+  1081→          </p>
+  1082→          <h2
+  1083→            style={{
+  1084→              fontFamily: "'Outfit', sans-serif",
+  1085→              fontWeight: 800,
+  1086→              fontSize: 'clamp(24px, 3.4vw, 36px)',
+  1087→              color: C.text,
+  1088→              lineHeight: 1.15,
+  1089→              letterSpacing: -0.5,
+  1090→            }}
+  1091→          >
+  1092→            {title}
+  1093→          </h2>
+  1094→          {subtitle && (
+  1095→            <p style={{ color: C.textDim, fontSize: 15, marginTop: 12, lineHeight: 1.55 }}>{subtitle}</p>
+  1096→          )}
+  1097→        </div>
+  1098→        {children}
+  1099→      </div>
+  1100→    </section>
+  1101→  )
+  1102→}
+  1103→
+  1104→// ===================== UTIL =====================
+  1105→function scrollTo(id: string) {
+  1106→  if (typeof document === 'undefined') return
+  1107→  const el = document.getElementById(id)
+  1108→  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  1109→}
+  1110→

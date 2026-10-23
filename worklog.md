@@ -1132,3 +1132,70 @@ Stage Summary:
 - All CTAs navigate to the Planes module (which has the 6 integral plans as marketplace products).
 - The "Fuerza Delta" button in topnav (Truck icon) navigates to this module.
 - Content strategy honored: no duplicated DimarClub/Red Universal sections — each satellite has its unique info only.
+
+---
+Task ID: 14-dimarclub
+Agent: full-stack-developer (dimarclub satellite)
+Task: Build the DimarClub satellite landing page module (comunidad + red de afiliados + incubadora) as a dark-themed React component, following the PubliBags / Fuerza Delta pattern.
+
+Work Log:
+- Read `/home/z/my-project/worklog.md` for prior context (Task 11 PubliBags satellite pattern, Task 13 Fuerza Delta, Task 12 Planes module).
+- Read `src/components/dimar/modules/publibags.tsx` (1110 lines) and `src/components/dimar/modules/fuerza-delta.tsx` (1018 lines) to extract the canonical dark-theme satellite pattern: `C` color palette object (bg #0B1120, card #15203A, border #243352, emerald #00D4AA, gold #F5A623, purple #A855F7…), Google Fonts injection (Outfit + DM Sans) via `useEffect`, `Section` wrapper, `Navbar`/`Footer` structure, `scrollTo` util.
+- Verified the pre-wired integration in main agent's scaffolding: `ModuleId` includes `'dimarclub'`, `permissions.ts` grants `dimarclub` to CLIENT/AFFILIATE/SUPPLIER/PARTNER + added to `PUBLIC_MODULES`, `page.tsx` imports `DimarClubModule` from `@/components/dimar/modules/dimarclub` and routes `case 'dimarclub'`, topnav has a "Dimarclub" button (Users icon) → `setModule('dimarclub')` in both desktop and mobile menus. No integration work needed; only the component file.
+- Created `src/components/dimar/modules/dimarclub.tsx` (~1010 lines, 1 file):
+  - Same `C` palette + Google Fonts injection as siblings.
+  - Added a `Accent` type (`'emerald' | 'gold' | 'purple'`) and extended the `Section` wrapper with an optional `accent` prop, since purple is the DimarClub accent (comunidad/humano element) and some sections need gold eyebrows (Tareas CPA, Beneficios, Rangos).
+  - Navbar: logo "Dimar**Club**" (Club in esmeralda, Users icon in purple) + 7 anchor links (Qué es, Tareas CPA, Red Universal, Beneficios, Rangos, Frascos, Contacto) + WhatsApp button + "Ver planes" gold outline button → `setModule('planes')` + mobile hamburger.
+  - Hero: badge "Comunidad · Red de Afiliados · Incubadora · Ecuador", H1 "Bienvenido a **DimarClub**" (DimarClub in purple), subtitle with consumir/recomendar/emprender/crecer + "3% de cada uno de sus 3 niveles" in esmeralda, 2 CTAs ("Conocer la Red" → scroll #red, "Ver Planes" → setModule('planes')), hero visual card with "1.110" big in esmeralda + 3 chips (3 Niveles, 3% por nivel, $41.700/mes presupuesto).
+  - Section "¿Qué es?" (id="que-es", purple accent): 4 role cards (Comunidad/Users/emerald, Red de Afiliados/Network/purple, Incubadora/Sprout/gold, Mano de Obra/HandHeart/rose) with icon + title + desc.
+  - Section "Hub de Tareas CPA" (id="tareas", gold accent): 2-column layout. Info side: 5-item CheckCircle2 feature list + CTA button "Ver tareas disponibles" (gold) → toast "Próximamente: Hub de Tareas CPA" + setModule('affiliates'). Visual side: mock "Tareas destacadas" panel with $1.45 total CPA + 3 example task rows (📤 Ferretería Pepito +$0.25, ▶️ Reciclarte +$0.15, 🔔 Auki +$0.20).
+  - Section "Red Universal de 3 Niveles" (id="red", emerald accent): grid `lg:grid-cols-[1fr_360px]`. Left: 3 level cards stacked vertically with ArrowDown between (N1: 10 personas · 3%, N2: 100 · 3%, N3: 1.000 · 3%) + gold highlight box "1.110 personas en tu red completa" (Coins icon). Right: 2 note boxes — $41.700/mes calculation note + "Presupuesto de comisiones" box (12% base → 13/14/15% máximo, sobrante a N0).
+  - Section "Beneficios Exclusivos" (id="beneficios", gold accent): 13 benefit cards in `sm:2 lg:3 xl:4` grid. Each: icon + title + desc. The 13th (Hub de Tareas CPA, Target icon) is "destacado" with gold gradient bg, gold border, gold icon and a "Destacado" pill. "Ver Planes" CTA below.
+  - Section "Rangos de Socios Operativos" (id="rangos", gold accent): 5 cards (sm:2 lg:5) — Fénix $300 +0.2%, Delta $600 +0.3%, Omega $900 +0.4%, Sigma $1.200 +0.5%, Alpha $1.500 +0.6%. Each card: emoji badge + name + price big (color-coded) + bono gold pill + desc. Info box below explaining all socios earn 3% red + 3% inversión + bono + CPA.
+  - Section "Sistema de 6 Frascos" (id="frascos", purple accent): 6 cards (grid 2/3/6) with icon + big color-coded percentage + label (50% Necesidades, 10% Libertad Financiera, 10% Ahorro, 10% Educación, 10% Ocio, 10% Donaciones). Note about T. Harv Eker below.
+  - Section "Stats" (id="stats", emerald accent): 6 stat cards (grid 2/3/6) — 1.110 miembros, 3 niveles, 3% por nivel, 3% por inversión, 75% línea de crédito, $0.10+ por tarea CPA.
+  - Section "CTA + Contacto" (id="contacto"): gradient banner (purple→emerald) "¿Listo para ser parte de DimarClub?" + 2 buttons (Ver Planes gold → setModule('planes'), WhatsApp esmeralda → wa.me link).
+  - Footer: same pattern as siblings (5 columns: ImpulsePymes360 / Ecosistema / Más servicios / Contacto / Legal) + social (FB/IG/WA/YT) + copyright "© 2026 ImpulsePymes360" + "Volver al portal" button → setModule('marketplace').
+  - Imports cleaned: removed unused `Store` and `ChevronRight` after initial pass.
+- Lint: `bun run lint` → 0 errors, 0 warnings.
+- Dev log checked: server running normally, no compile errors related to the new module.
+
+Stage Summary:
+- New `DimarClubModule` (`src/components/dimar/modules/dimarclub.tsx`) fully built, ~1010 lines, dark theme matching PubliBags/Fuerza Delta siblings.
+- All 8 content sections present and in Spanish (Ecuador): Hero (1.110 visual), ¿Qué es? (4 roles), Tareas CPA (with mock $1.45 panel), Red Universal (3 levels + 1.110 highlight + budget box), Beneficios (13 cards, the 13th destacado/gold), Rangos (5 cards Fénix→Alpha), Frascos (6 cards), Stats (6 cards), CTA + Contacto, Footer.
+- Purple is used as the DimarClub brand accent (comunidad/humano), complementing the emerald + gold base. Accent-aware `Section` wrapper supports per-section eyebrow color.
+- All "Ver Planes" CTAs navigate to `setModule('planes')`; "Volver al portal" footer button navigates to `setModule('marketplace')`; WhatsApp CTAs open wa.me/593992689844; the Tareas CPA CTA fires a "Próximamente" toast and routes to `affiliates`.
+- 0 lint errors, 0 warnings. No build, no dev-server restart (managed externally). Wiring by main agent confirmed working — module renders when the topnav "Dimarclub" button is clicked.
+
+---
+Task ID: 14-dimarclub (main agent verification)
+Agent: main (Z.ai Code)
+Task: Verify the DimarClub satellite module after subagent completion
+
+Work Log:
+- User provided HTML of Dimarclub (comunidad + red de afiliados + incubadora). Content: ¿Qué es? (4 roles), Hub de Tareas CPA, Red Universal 3 Niveles (1.110 personas, $41.700/mes, 12%-15% presupuesto), 13 Beneficios Exclusivos, 5 Rangos de Socios (Fénix $300 → Alpha $1.500), Sistema 6 Frascos (T. Harv Eker), Stats, CTA.
+- Main agent did wiring before delegating:
+  * src/lib/types.ts: added 'dimarclub' to ModuleId
+  * src/lib/permissions.ts: granted 'dimarclub' to CLIENT, AFFILIATE, SUPPLIER, PARTNER + added to PUBLIC_MODULES
+  * src/app/page.tsx: imported DimarClubModule + added case 'dimarclub'
+  * src/components/dimar/topnav.tsx: added "Dimarclub" button (Users icon) in desktop nav (line 257) + mobile menu (line 323); replaced the external "Dimarclub" link in mobile menu with internal navItem + relabeled external link as "Sitio externo"
+- Delegated Task 14-dimarclub to full-stack-developer subagent: built dimarclub.tsx (~1010 lines) copying the PubliBags/Fuerza Delta dark-theme pattern, with purple as DimarClub's brand accent (comunidad/humano element). 11 sections: Navbar, Hero, ¿Qué es? (4 roles), Tareas CPA (2-col with mock visual), Red Universal (3 levels + 1.110 highlight + budget box), Beneficios (13 cards, 13th destacado), Rangos (5 cards), Frascos (6 cards), Stats (6 cards), CTA+Contacto, Footer.
+
+Verification with Agent Browser:
+- Module renders with dark theme (#0B1120), logo "Dimar Club" (Club in esmeralda)
+- Hero: "Bienvenido a DimarClub" + "1.110" big + chips (3 Niveles · 3% por nivel · $41.700/mes presupuesto) ✅
+- Red Universal: 3 levels each "3% de comisión", "1.110 personas", "$41.700/mes", "12%" "13%" budget box ✅
+- Hub de Tareas CPA heading present ✅
+- Beneficios: "Inversión al 3% Mensual", "Línea de Crédito del 75%" present ✅
+- 5 Rangos present (Fénix, Delta, Omega, Sigma, Alpha) ✅
+- 6 Frascos present (Necesidades, Libertad Financiera, Ahorro, Educación, Ocio, Donaciones) ✅
+- No console errors ✅
+- Lint: 0 errors, 0 warnings ✅
+
+Stage Summary:
+- New module 'dimarclub' fully integrated and verified end-to-end.
+- The DimarClub satellite page (dark themed, purple accent, responsive) showcases the comunidad's unique content: Red Universal 3 Niveles, Hub Tareas CPA, 13 beneficios, 5 rangos, 6 frascos, stats.
+- All "Ver Planes" CTAs navigate to the planes module (which has the 6 integral plans as marketplace products).
+- The "Dimarclub" button in topnav (Users icon) navigates to this module.
+- Content strategy honored: DimarClub is the rightful home of the 13 beneficios + Red Universal sections (which were excluded from PubliBags and Fuerza Delta to avoid duplication).
+- Satellite ecosystem now has 4 sites: PubliBags, Fuerza Delta, DimarClub, + Planes (central).

@@ -23,6 +23,7 @@ export type ModuleId =
   | 'bag-plan'
   | 'planes'
   | 'fuerza-delta'
+  | 'dimarclub'
   | 'directorio'
   | 'fuerza'
   | 'automatizacion'

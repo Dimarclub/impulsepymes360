@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>DimarClub - Comunidad, Red de Afiliados e Incubadora | ImpulsePymes360</title>
+    <meta name="description" content="DimarClub: la comunidad de consumidores, emprendedores y afiliados de ImpulsePymes360. Red Universal de 3 Niveles, Hub de Tareas CPA, incubadora de emprendimientos, préstamos, inversión y beneficios exclusivos.">
+    <meta name="theme-color" content="#0B1120">
+    <link rel="canonical" href="https://www.impulsepymes360.com/dimarclub/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="DimarClub - Comunidad, Red e Incubadora | ImpulsePymes360">
+    <meta property="og:description" content="La comunidad donde todos ganan el 3% de cada uno de sus 3 niveles. Red Universal, Hub de Tareas CPA, incubadora e inversión.">
+    <meta property="og:url" content="https://www.impulsepymes360.com/dimarclub/">
+    <meta property="og:image" content="https://www.impulsepymes360.com/og-image.jpg">
+    <meta property="og:locale" content="es_EC">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230B1120'/%3E%3Ctext x='50' y='68' font-family='Outfit,sans-serif' font-size='56' font-weight='800' text-anchor='middle' fill='%23A855F7'%3EDC%3C/text%3E%3C/svg%3E">
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg: #0B1120;
+            --bg-card: #15203A;
+            --border: #243352;
+            --accent: #00D4AA;
+            --gold: #F5A623;
+            --text: #E8EDF5;
+            --muted: #6B7FA0;
+            --success: #22C55E;
+            --blue: #60A5FA;
+            --purple: #A855F7;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+
+        .bg-glow {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(0, 212, 170, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(168, 85, 247, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .wnavbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(11, 17, 32, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .wnavbar-inner {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 68px;
+            gap: 12px;
+        }
+
+        .wlogo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text);
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .wlogo span { color: var(--accent); }
+
+        .wnav-links {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            list-style: none;
+        }
+
+        .wnav-links > li > a,
+        .wdropdown-btn {
+            color: var(--muted);
+            font-size: 0.88rem;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .wnav-links > li > a:hover,
+        .wdropdown-btn:hover {
+            color: var(--text);
+            background: var(--bg-card);
+        }
+
+        .btn-tienda {
+            background: var(--accent) !important;
+            color: var(--bg) !important;
+            font-weight: 600 !important;
+        }
+
+        .btn-tienda:hover { background: #00F0C0 !important; }
+
+        .btn-secondary-nav {
+            background: var(--bg-card) !important;
+            color: var(--text) !important;
+            border: 1px solid var(--border) !important;
+        }
+
+        /* Botón Tareas unificado con el de index.html */
+        .btn-tareas {
+            background: linear-gradient(135deg, var(--accent), var(--gold)) !important;
+            color: var(--bg) !important;
+            font-weight: 700 !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+        }
+
+        .btn-tareas:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .badge-tareas {
+            background: var(--bg);
+            color: var(--gold);
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+            margin-left: 4px;
+            line-height: 1;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .wdropdown-wrap { position: relative; }
+
+        .wdropdown-menu {
+            position: absolute;
+            top: 100%; left: 0;
+            margin-top: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 8px;
+            min-width: 240px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px);
+            transition: all 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        }
+
+        .wdropdown-wrap.open .wdropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .wdropdown-menu a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            color: var(--muted);
+            font-size: 0.85rem;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .wdropdown-menu a:hover {
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .wdropdown-menu a i {
+            width: 20px;
+            text-align: center;
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .whamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .whamburger span {
+            width: 24px;
+            height: 2px;
+            background: var(--text);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hero {
+            position: relative;
+            z-index: 1;
+            padding: 90px 24px 60px;
+            text-align: center;
+        }
+
+        .hero-content { max-width: 900px; margin: 0 auto; }
+
+        .badge-hero {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(168, 85, 247, 0.15);
+            color: var(--purple);
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            margin-bottom: 20px;
+            color: var(--text);
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .highlight { color: var(--gold); }
+        .highlight-accent { color: var(--accent); }
+        .highlight-purple { color: var(--purple); }
+
+        .hero p {
+            font-size: 1.15rem;
+            color: var(--muted);
+            margin-bottom: 32px;
+            line-height: 1.7;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-gold { background: var(--gold); color: var(--bg); }
+        .btn-gold:hover { background: #FFB849; transform: translateY(-2px); }
+        .btn-primary { background: var(--accent); color: var(--bg); }
+        .btn-primary:hover { background: #00F0C0; transform: translateY(-2px); }
+        .btn-purple { background: var(--purple); color: white; }
+        .btn-purple:hover { background: #9333EA; transform: translateY(-2px); }
+        .btn-outline {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-outline:hover { background: var(--bg-card); border-color: var(--accent); }
+
+        .section {
+            position: relative;
+            z-index: 1;
+            padding: 70px 24px;
+        }
+
+        .section-container { max-width: 1300px; margin: 0 auto; }
+
+        .section-label {
+            color: var(--accent);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .section-label.gold { color: var(--gold); }
+        .section-label.purple { color: var(--purple); }
+
+        .section-title {
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            margin-bottom: 16px;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .section-subtitle {
+            color: var(--muted);
+            font-size: 1rem;
+            margin-bottom: 40px;
+            max-width: 750px;
+        }
+
+        .text-center { text-align: center; }
+        .text-center .section-subtitle { margin-left: auto; margin-right: auto; }
+
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+        }
+
+        .role-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .role-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .role-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(0, 212, 170, 0.12);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 16px;
+            transition: all 0.3s ease;
+        }
+
+        .role-card:hover .role-icon {
+            background: var(--accent);
+            color: var(--bg);
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        .role-card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .role-card p {
+            color: var(--muted);
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        /* HUB DE TAREAS CPA */
+        .tareas-section {
+            padding: 70px 24px;
+            background: linear-gradient(160deg, rgba(0,212,170,0.06) 0%, rgba(245,166,35,0.03) 100%);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            z-index: 1;
+        }
+
+        .tareas-content {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            align-items: center;
+        }
+
+        .tareas-info h2 {
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .tareas-info h2 span { color: var(--gold); }
+
+        .tareas-info p {
+            color: var(--muted);
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+
+        .tareas-lista {
+            list-style: none;
+            margin-bottom: 28px;
+        }
+
+        .tareas-lista li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            font-size: 0.92rem;
+            color: var(--text);
+        }
+
+        .tareas-lista li i {
+            color: var(--gold);
+            font-size: 1rem;
+            width: 24px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .tareas-visual {
+            background: var(--bg-card);
+            border: 2px solid var(--gold);
+            border-radius: 20px;
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(245, 166, 35, 0.15);
+        }
+
+        .tareas-visual::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--accent) 100%);
+        }
+
+        .tareas-visual-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tareas-visual-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            color: var(--text);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tareas-visual-title i { color: var(--gold); }
+
+        .tareas-visual-cpa {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--success);
+        }
+
+        .tarea-ejemplo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            background: var(--bg);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .tarea-ejemplo:hover {
+            transform: translateX(4px);
+            background: rgba(0,212,170,0.05);
+        }
+
+        .tarea-ejemplo:last-child { margin-bottom: 0; }
+
+        .tarea-ejemplo-icono {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .tarea-ejemplo-icono.compartir { background: rgba(96,165,250,0.15); color: var(--blue); }
+        .tarea-ejemplo-icono.video { background: rgba(236,72,153,0.15); color: #EC4899; }
+        .tarea-ejemplo-icono.suscripcion { background: rgba(168,85,247,0.15); color: var(--purple); }
+
+        .tarea-ejemplo-info { flex: 1; min-width: 0; }
+
+        .tarea-ejemplo-titulo {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tarea-ejemplo-desc {
+            font-size: 0.72rem;
+            color: var(--muted);
+        }
+
+        .tarea-ejemplo-recompensa {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            color: var(--success);
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+
+        .red-section {
+            padding: 70px 24px;
+            background: linear-gradient(160deg, rgba(0,212,170,0.05) 0%, transparent 100%);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .red-visual {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .red-nivel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 32px;
+            text-align: center;
+            min-width: 200px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .red-nivel:hover {
+            border-color: var(--accent);
+            transform: scale(1.05);
+        }
+
+        .red-nivel .nivel-label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .red-nivel .nivel-numero {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1;
+            margin: 6px 0;
+        }
+
+        .red-nivel .nivel-desc {
+            font-size: 0.85rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .red-flecha {
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+
+        /* Bloque presupuesto 12%-15% */
+        .budget-box {
+            margin-top: 32px;
+            max-width: 640px;
+            margin-left: auto;
+            margin-right: auto;
+            background: rgba(0,212,170,0.06);
+            border: 1px solid rgba(0,212,170,0.25);
+            border-radius: 12px;
+            padding: 18px 22px;
+            text-align: left;
+        }
+
+        .budget-box .budget-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .budget-box p {
+            color: var(--text);
+            font-size: 0.88rem;
+            margin: 0;
+            line-height: 1.65;
+        }
+
+        .budget-box strong { color: var(--gold); }
+
+        .beneficios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .beneficio-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            transition: all 0.3s ease;
+        }
+
+        .beneficio-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        .beneficio-card.destacado {
+            border-color: var(--gold);
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(245,166,35,0.05) 100%);
+        }
+
+        .beneficio-card i {
+            font-size: 1.5rem;
+            color: var(--accent);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .beneficio-card.destacado i { color: var(--gold); }
+
+        .beneficio-card h4 {
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+
+        .beneficio-card p {
+            font-size: 0.82rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .rangos-section {
+            padding: 70px 24px;
+            background: rgba(21, 32, 58, 0.4);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .rangos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .rango-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rango-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent) 0%, var(--gold) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .rango-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--gold);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+
+        .rango-card:hover::before { opacity: 1; }
+
+        .rango-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .rango-card h3 {
+            font-size: 1.1rem;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .rango-card .rango-precio {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .rango-card .rango-bono {
+            font-size: 0.8rem;
+            color: var(--gold);
+            font-weight: 700;
+            margin-top: 6px;
+        }
+
+        .rango-card .rango-desc {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 12px;
+            line-height: 1.5;
+        }
+
+        .stats-section { padding: 70px 24px; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            max-width: 1100px;
+            margin: 40px auto 0;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+
+        .stat-card i {
+            font-size: 1.8rem;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+
+        .stat-card .stat-numero {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .frascos-section {
+            padding: 70px 24px;
+            background: linear-gradient(160deg, rgba(168, 85, 247, 0.05) 0%, transparent 100%);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .frascos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-top: 40px;
+        }
+
+        .frasco-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .frasco-card:hover {
+            border-color: var(--purple);
+            transform: translateY(-3px);
+        }
+
+        .frasco-card i {
+            font-size: 1.6rem;
+            color: var(--purple);
+            margin-bottom: 12px;
+        }
+
+        .frasco-card .frasco-pct {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1;
+        }
+
+        .frasco-card .frasco-label {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .cta-section {
+            padding: 70px 24px;
+            text-align: center;
+            background: linear-gradient(160deg, rgba(0,212,170,0.05) 0%, transparent 100%);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cta-section h2 {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .cta-section h2 span { color: var(--accent); }
+
+        .cta-section p {
+            color: var(--muted);
+            max-width: 700px;
+            margin: 0 auto 32px;
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .contact-section {
+            text-align: center;
+            padding: 60px 24px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+        }
+
+        .contact-section h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+        }
+
+        .contact-section p {
+            color: var(--muted);
+            margin-bottom: 24px;
+        }
+
+        .whatsapp-btn {
+            background: #25D366;
+            color: white;
+            font-size: 1rem;
+            padding: 14px 28px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .whatsapp-btn:hover {
+            box-shadow: 0 8px 30px rgba(37, 211, 102, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .volver-section {
+            text-align: center;
+            padding: 30px 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .volver-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 10px 20px;
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .volver-btn:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .wfooter {
+            position: relative;
+            z-index: 1;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            padding: 48px 24px 24px;
+        }
+
+        .footer-grid {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+
+        .footer-grid h4 {
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .footer-grid a {
+            display: block;
+            color: var(--muted);
+            font-size: 0.85rem;
+            padding: 5px 0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-grid a:hover { color: var(--accent); }
+
+        .footer-social {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .footer-social a {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            transition: all 0.3s ease;
+        }
+
+        .footer-social a:hover {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            padding-top: 24px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 900px) {
+            .whamburger { display: flex; }
+            
+            .wnav-links {
+                position: absolute;
+                top: 68px;
+                left: 0; right: 0;
+                background: var(--bg-card);
+                border-bottom: 1px solid var(--border);
+                flex-direction: column;
+                padding: 16px 24px;
+                gap: 4px;
+                display: none;
+                max-height: calc(100vh - 68px);
+                overflow-y: auto;
+                align-items: stretch;
+            }
+            
+            .wnav-links.open { display: flex; }
+            
+            .wnav-links > li > a,
+            .wdropdown-btn {
+                width: 100%;
+                justify-content: space-between;
+                padding: 12px 14px;
+            }
+            
+            .wdropdown-menu {
+                position: static;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+                background: var(--bg);
+                border: none;
+                padding: 0;
+                margin-top: 4px;
+                box-shadow: none;
+                display: none;
+            }
+            
+            .wdropdown-wrap.open .wdropdown-menu { display: block; }
+            
+            .tareas-content { grid-template-columns: 1fr; gap: 32px; }
+            .hero-actions { flex-direction: column; align-items: stretch; }
+            .hero-actions .btn { width: 100%; justify-content: center; }
+            .cta-buttons { flex-direction: column; align-items: stretch; }
+            .cta-buttons .btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+
+<!-- ==================== NAVBAR ==================== -->
+<nav class="wnavbar">
+    <div class="wnavbar-inner">
+        <a class="wlogo" href="/">Impulse<span>Pymes360</span></a>
+        
+        <ul class="wnav-links" id="wnavLinks">
+            <li class="wdropdown-wrap">
+                <button class="wdropdown-btn" type="button">
+                    <i class="fas fa-th"></i> Ecosistema <i class="fas fa-caret-down" style="font-size:0.7rem;"></i>
+                </button>
+                <div class="wdropdown-menu">
+                    <a href="/dimarclub/"><i class="fas fa-users"></i> DimarClub</a>
+                    <a href="/incubadora/"><i class="fas fa-seedling"></i> Incubadora</a>
+                    <a href="/webexpress/"><i class="fas fa-globe"></i> WebExpress</a>
+                    <a href="/impulso360/"><i class="fas fa-shopping-cart"></i> Impulso360</a>
+                    <a href="/enlaceexpress/"><i class="fas fa-headset"></i> Enlace Express</a>
+                    <a href="/publibags/"><i class="fas fa-recycle"></i> Publibags</a>
+                    <a href="/fuerzadelta/"><i class="fas fa-motorcycle"></i> Fuerza Delta</a>
+                    <a href="/dimarpost/"><i class="fas fa-bolt"></i> DimarPost</a>
+                </div>
+            </li>
+            
+            <li><a href="/impulso360/" class="btn-tienda"><i class="fas fa-store"></i> Tienda</a></li>
+            <li><a href="/impulso360/#clasificados" class="btn-secondary-nav"><i class="fas fa-newspaper"></i> Clasificados</a></li>
+            <li><a href="/planes.html"><i class="fas fa-tags"></i> Planes</a></li>
+            <li>
+                <a href="/tareas.html" class="btn-tareas">
+                    <i class="fas fa-tasks"></i> Tareas
+                    <span class="badge-tareas" id="badgeTareas">0</span>
+                </a>
+            </li>
+            
+            <li class="wdropdown-wrap">
+                <button class="wdropdown-btn" type="button">
+                    <i class="fas fa-store-alt"></i> Proveedores <i class="fas fa-caret-down" style="font-size:0.7rem;"></i>
+                </button>
+                <div class="wdropdown-menu">
+                    <a href="/registro-proveedores/"><i class="fas fa-rocket"></i> Quiero ser Proveedor</a>
+                    <a href="/backoffice-proveedor/"><i class="fas fa-globe"></i> Mi Backoffice</a>
+                    <a href="/login.html"><i class="fas fa-sign-in-alt"></i> Mi Cuenta</a>
+                </div>
+            </li>
+            
+            <li class="wdropdown-wrap">
+                <button class="wdropdown-btn" type="button">
+                    <i class="fas fa-users"></i> Miembros <i class="fas fa-caret-down" style="font-size:0.7rem;"></i>
+                </button>
+                <div class="wdropdown-menu">
+                    <a href="/registro-socios/"><i class="fas fa-user-tie"></i> Ser Socio</a>
+                    <a href="/backoffice-miembro/"><i class="fas fa-network-wired"></i> Mi Red</a>
+                    <a href="/registro-clientes/"><i class="fas fa-user"></i> Ser Cliente</a>
+                </div>
+            </li>
+            
+            <li><a href="/login.html" class="btn-secondary-nav"><i class="fas fa-sign-in-alt"></i> Acceso</a></li>
+        </ul>
+        
+        <button class="whamburger" id="whamburger" aria-label="Abrir menú">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</nav>
+
+<main>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-content">
+            <span class="badge-hero"><i class="fas fa-users"></i> Comunidad · Red · Incubadora</span>
+            <h1>Bienvenido a <span class="highlight-purple">DimarClub</span></h1>
+            <p>La comunidad donde cada persona puede <span class="highlight-accent">consumir</span>, <span class="highlight-accent">recomendar</span>, <span class="highlight-accent">emprender</span> y <span class="highlight-accent">crecer</span>. Una Red Universal de 3 Niveles donde todos ganan <strong style="color:var(--accent);">el 3% de cada uno de sus 3 niveles</strong> y todos pueden llegar lejos.</p>
+            <div class="hero-actions">
+                <a href="/registro-socios/" class="btn btn-purple"><i class="fas fa-rocket"></i> Quiero ser Socio</a>
+                <a href="#que-es" class="btn btn-outline"><i class="fas fa-arrow-down"></i> Conocer más</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ¿QUÉ ES? -->
+    <section class="section" id="que-es">
+        <div class="section-container text-center">
+            <p class="section-label purple">¿Qué es DimarClub?</p>
+            <h2 class="section-title">Mucho más que una comunidad</h2>
+            <p class="section-subtitle">
+                DimarClub es el corazón humano de ImpulsePymes360. Es donde las personas se conectan, 
+                consumen, producen, recomiendan y construyen patrimonio juntas. 
+                No es solo una red de afiliados: es un ecosistema donde todos crecen.
+            </p>
+
+            <div class="roles-grid">
+
+                <div class="role-card">
+                    <div class="role-icon"><i class="fas fa-users"></i></div>
+                    <h3>Comunidad</h3>
+                    <p>Personas que consumen productos y servicios de calidad, con beneficios exclusivos y precios preferenciales.</p>
+                </div>
+
+                <div class="role-card">
+                    <div class="role-icon"><i class="fas fa-network-wired"></i></div>
+                    <h3>Red de Afiliados</h3>
+                    <p>Cada miembro puede construir su propia Red Universal de 3 Niveles y ganar comisiones por el consumo de su red.</p>
+                </div>
+
+                <div class="role-card">
+                    <div class="role-icon"><i class="fas fa-seedling"></i></div>
+                    <h3>Incubadora</h3>
+                    <p>Capital semilla, capacitación y asesoramiento para que los miembros conviertan sus ideas en emprendimientos reales.</p>
+                </div>
+
+                <div class="role-card">
+                    <div class="role-icon"><i class="fas fa-hands-helping"></i></div>
+                    <h3>Mano de Obra</h3>
+                    <p>Los miembros participan en la producción de los emprendimientos propios: fundas, chocolate, artesanías y más.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- HUB DE TAREAS CPA -->
+    <section class="tareas-section" id="tareas">
+        <div class="tareas-content">
+            <div class="tareas-info">
+                <p class="section-label gold">Nuevo · Gana dinero por tareas simples</p>
+                <h2>Hub de <span>Tareas CPA</span></h2>
+                <p>
+                    Completa tareas simples desde tu celular y gana CPA real por cada acción. 
+                    Comparte promociones, mira videos de proveedores, suscríbete a sus canales, 
+                    lee noticias y visita productos. Cada tarea genera valor para ti y para la comunidad.
+                </p>
+
+                <ul class="tareas-lista">
+                    <li><i class="fas fa-check-circle"></i> Gana de $0.10 a $0.25 por cada tarea completada</li>
+                    <li><i class="fas fa-check-circle"></i> También ganas CPA por las tareas de tu red</li>
+                    <li><i class="fas fa-check-circle"></i> Verificación automática — sin trámites</li>
+                    <li><i class="fas fa-check-circle"></i> Se acredita en tu billetera al cierre del mes</li>
+                    <li><i class="fas fa-check-circle"></i> Sistema de 3 strikes contra el fraude</li>
+                </ul>
+
+                <a href="/tareas.html" class="btn btn-gold">
+                    <i class="fas fa-tasks"></i> Ver tareas disponibles
+                </a>
+            </div>
+
+            <div class="tareas-visual">
+                <div class="tareas-visual-header">
+                    <div class="tareas-visual-title">
+                        <i class="fas fa-bolt"></i> Tareas destacadas
+                    </div>
+                    <div class="tareas-visual-cpa">$1.45</div>
+                </div>
+
+                <div class="tarea-ejemplo">
+                    <div class="tarea-ejemplo-icono compartir"><i class="fas fa-share-alt"></i></div>
+                    <div class="tarea-ejemplo-info">
+                        <div class="tarea-ejemplo-titulo">Comparte la promoción 2x1</div>
+                        <div class="tarea-ejemplo-desc">Ferretería Pepito</div>
+                    </div>
+                    <div class="tarea-ejemplo-recompensa">+$0.25</div>
+                </div>
+
+                <div class="tarea-ejemplo">
+                    <div class="tarea-ejemplo-icono video"><i class="fas fa-play-circle"></i></div>
+                    <div class="tarea-ejemplo-info">
+                        <div class="tarea-ejemplo-titulo">Mira el video de Reciclarte</div>
+                        <div class="tarea-ejemplo-desc">Reciclarte</div>
+                    </div>
+                    <div class="tarea-ejemplo-recompensa">+$0.15</div>
+                </div>
+
+                <div class="tarea-ejemplo">
+                    <div class="tarea-ejemplo-icono suscripcion"><i class="fas fa-bell"></i></div>
+                    <div class="tarea-ejemplo-info">
+                        <div class="tarea-ejemplo-titulo">Suscríbete al canal de Auki</div>
+                        <div class="tarea-ejemplo-desc">Auki</div>
+                    </div>
+                    <div class="tarea-ejemplo-recompensa">+$0.20</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RED UNIVERSAL -->
+    <section class="red-section">
+        <div class="section-container text-center">
+            <p class="section-label">Red Universal de 3 Niveles</p>
+            <h2 class="section-title">Todos ganan igual. Todos pueden llegar lejos.</h2>
+            <p class="section-subtitle">
+                No importa cuándo entras ni cuánto inviertes. Todos ganan el 3% de cada uno de sus 3 niveles. 
+                La misma oportunidad para todos.
+            </p>
+
+            <div class="red-visual">
+                <div class="red-nivel">
+                    <div class="nivel-label">Tu Primer Nivel</div>
+                    <div class="nivel-numero">10</div>
+                    <div class="nivel-desc">personas · 3% de comisión</div>
+                </div>
+                <div class="red-flecha"><i class="fas fa-arrow-down"></i></div>
+                <div class="red-nivel">
+                    <div class="nivel-label">Tu Segundo Nivel</div>
+                    <div class="nivel-numero">100</div>
+                    <div class="nivel-desc">personas · 3% de comisión</div>
+                </div>
+                <div class="red-flecha"><i class="fas fa-arrow-down"></i></div>
+                <div class="red-nivel">
+                    <div class="nivel-label">Tu Tercer Nivel</div>
+                    <div class="nivel-numero">1.000</div>
+                    <div class="nivel-desc">personas · 3% de comisión</div>
+                </div>
+            </div>
+
+            <div style="margin-top:40px;">
+                <div style="display:inline-flex;align-items:center;gap:16px;background:var(--bg-card);border:1px solid var(--accent);border-radius:14px;padding:20px 32px;">
+                    <i class="fas fa-coins" style="font-size:1.8rem;color:var(--gold);"></i>
+                    <div style="text-align:left;">
+                        <div style="font-family:'Outfit';font-size:1.8rem;font-weight:800;color:var(--accent);line-height:1;">1.110</div>
+                        <div style="font-size:0.85rem;color:var(--muted);">personas en tu red completa</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:32px;">
+                <p style="color:var(--muted);font-size:0.9rem;max-width:600px;margin:0 auto;">
+                    Con una red completa y un consumo promedio de $250 por persona, 
+                    el presupuesto de tu red sería <strong style="color:var(--accent);">$41.700/mes</strong>.
+                    De ahí sale el 3% para cada nivel.
+                </p>
+            </div>
+
+            <div class="budget-box">
+                <div class="budget-title">Presupuesto de comisiones</div>
+                <p>
+                    Base <strong>12%</strong> de las ventas de cada red · sube a <strong>13%</strong>, <strong>14%</strong> o hasta <strong>15% máximo</strong> si el fondo no alcanza. El sobrante va a la cartera del fundador (N0).
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- BENEFICIOS -->
+    <section class="section">
+        <div class="section-container">
+            <div class="text-center">
+                <p class="section-label gold">Beneficios Exclusivos</p>
+                <h2 class="section-title">¿Qué ganas siendo parte de DimarClub?</h2>
+                <p class="section-subtitle">
+                    Beneficios reales, no promesas. Cada miembro accede a un ecosistema completo de servicios.
+                </p>
+            </div>
+
+            <div class="beneficios-grid">
+
+                <div class="beneficio-card">
+                    <i class="fas fa-hand-holding-usd"></i>
+                    <div>
+                        <h4>Préstamos con Fondo de Garantía</h4>
+                        <p>Sin importar tu buró de crédito. Capital semilla desde $5.000 con garantía de DimarClub.</p>
+                    </div>
+                </div>
+
+                <div class="beneficio-card">
+                    <i class="fas fa-chart-line"></i>
+                    <div>
+                        <h4>Inversión al 3% Mensual</h4>
+                        <p>Tu capital se acumula y genera utilidad mensual. Retiro después de 5 años.</p>
+                    </div>
+                </div>
+
+                <div class="beneficio-card">
+                    <i class="fas fa-credit-card"></i>
+                    <div>
+                        <h4>Línea de Crédito del 75%</h4>
+                        <p>Sobre tus haberes por cobrar. Compra mercancía al por mayor y monta tu propio negocio.</p>
+                    </div>
+                </div>
+
+                <div class="beneficio-card">
+                    <i class="fas fa-truck"></i>
+                    <div>
+                        <h4>Entrega a Domicilio Gratis</h4>
+                        <p>En todas tus compras del marketplace. Fuerza Delta entrega por ti.</p>
+                    </div>
+                </div>
+
+                <div class="beneficio-card">
+                    <i class="fas fa-tools"></i>
+                    <div>
+                        <h4>Servicios Técnicos Gratis</h4>
+                        <p>Electricidad, mecánica, sanitarios, computadoras. Solo mano de obra, tú pones los materiales.</p>
+                    </div>
+                </div>
+
+                <div class="beneficio-card">
+                    <i class="fas fa-ambulance"></i>
+                    <div>
+                        <h4>Ambulancia Gratis</h4>
+                        <p>Emergencias dentro de la ciudad. También auxilio mecánico y grúa para tu auto.</p>
+                    </div>
+                </div>
+
+                <div class="beneficio-card">
+                    <i class="fas fa-leaf"></i>
+                    <div>
+                        <h4>Medicina Ancestral</h4>
+                        <p>Consultas gratuitas con terapeutas de medicina ancestral. Sin químicos, con enfoque natural.</p>
+                    </div>
+                </div>
+
+                <div class="beneficio-card">
+                    <i class="fas fa-graduation-cap"></i>
+                    <div>
+                        <h4>Capacitación Ser-Hacer-Tener</h4>
+                        <p>Reingeniería interior y formación técnica. Aprende a gestionar tu dinero y tu vida.</p>
+                    </div>
+                </div>
+
+                <div class="beneficio-card">
+                    <i class="fas fa-briefcase"></i>
+                    <div>
+                        <h4>Oportunidades de Trabajo</h4>
+                        <p>Cargos administrativos y operativos según tu preparación y experiencia.</p>
+                    </div>
+                </div>
+
+                <div class="beneficio-card">
+                    <i class="fas fa-gift"></i>
+                    <div>
+                        <h4>Fundas Numeradas con Descuentos</h4>
+                        <p>Las fundas Publibags van numeradas y reemplazan a los cupones tradicionales. Descuentos exclusivos para miembros.</p>
+                    </div>
+                </div>
+
+                <div class="beneficio-card">
+                    <i class="fas fa-users-cog"></i>
+                    <div>
+                        <h4>Reuniones Semanales</h4>
+                        <p>Sábados 10 AM. Presentaciones de negocio, capacitación y comunidad.</p>
+                    </div>
+                </div>
+
+                <div class="beneficio-card">
+                    <i class="fas fa-building"></i>
+                    <div>
+                        <h4>Coworking</h4>
+                        <p>$150/mes con salón de eventos incluido. Servicios básicos, café y 10 horas de salón.</p>
+                    </div>
+                </div>
+
+                <div class="beneficio-card destacado">
+                    <i class="fas fa-tasks"></i>
+                    <div>
+                        <h4>Hub de Tareas CPA</h4>
+                        <p>Gana CPA real completando tareas simples: comparte, mira videos, suscríbete, visita productos. También ganas por las tareas de tu red.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- RANGOS -->
+    <section class="rangos-section">
+        <div class="section-container text-center">
+            <p class="section-label gold">Rangos de Socios Operativos</p>
+            <h2 class="section-title">5 rangos. Una sola meta: crecer juntos.</h2>
+            <p class="section-subtitle">
+                Los socios operativos invierten desde $300 y ganan un bono adicional sobre las ventas de su red.
+                A mayor rango, mayor bono. Todos ganan además el 3% de su red de 3 niveles.
+            </p>
+
+            <div class="rangos-grid">
+
+                <div class="rango-card">
+                    <div class="rango-icon">🔥</div>
+                    <h3>Fénix</h3>
+                    <div class="rango-precio">$300</div>
+                    <div class="rango-bono">+0.2% de bono</div>
+                    <div class="rango-desc">El punto de entrada. Inversión mínima, misma oportunidad.</div>
+                </div>
+
+                <div class="rango-card">
+                    <div class="rango-icon">⚡</div>
+                    <h3>Delta</h3>
+                    <div class="rango-precio">$600</div>
+                    <div class="rango-bono">+0.3% de bono</div>
+                    <div class="rango-desc">Para quienes quieren crecer más rápido.</div>
+                </div>
+
+                <div class="rango-card">
+                    <div class="rango-icon">💎</div>
+                    <h3>Omega</h3>
+                    <div class="rango-precio">$900</div>
+                    <div class="rango-bono">+0.4% de bono</div>
+                    <div class="rango-desc">Mayor inversión, mayor retorno mensual.</div>
+                </div>
+
+                <div class="rango-card">
+                    <div class="rango-icon">👑</div>
+                    <h3>Sigma</h3>
+                    <div class="rango-precio">$1.200</div>
+                    <div class="rango-bono">+0.5% de bono</div>
+                    <div class="rango-desc">Para líderes que quieren construir patrimonio.</div>
+                </div>
+
+                <div class="rango-card">
+                    <div class="rango-icon">🏆</div>
+                    <h3>Alpha</h3>
+                    <div class="rango-precio">$1.500</div>
+                    <div class="rango-bono">+0.6% de bono</div>
+                    <div class="rango-desc">El rango más alto. Máximo retorno y liderazgo.</div>
+                </div>
+
+            </div>
+
+            <div style="margin-top:40px;padding:24px;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;max-width:700px;margin-left:auto;margin-right:auto;">
+                <p style="color:var(--muted);font-size:0.9rem;margin:0;">
+                    <i class="fas fa-info-circle" style="color:var(--accent);"></i>
+                    <strong style="color:var(--text);">Todos los socios</strong> ganan el 3% de su Red Universal de 3 Niveles, 
+                    más el 3% de su inversión mensual, más el bono según su rango, más el CPA de las tareas completadas.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FRASCOS -->
+    <section class="frascos-section">
+        <div class="section-container text-center">
+            <p class="section-label purple">Sistema de 6 Frascos</p>
+            <h2 class="section-title">Tu dinero, organizado y trabajando para ti</h2>
+            <p class="section-subtitle">
+                Cada vez que cobras, tu dinero se divide automáticamente en 6 frascos. 
+                Tú decides los porcentajes. Nosotros te ayudamos a organizarte.
+            </p>
+
+            <div class="frascos-grid">
+
+                <div class="frasco-card">
+                    <i class="fas fa-home"></i>
+                    <div class="frasco-pct">50%</div>
+                    <div class="frasco-label">Necesidades</div>
+                </div>
+
+                <div class="frasco-card">
+                    <i class="fas fa-chart-line"></i>
+                    <div class="frasco-pct">10%</div>
+                    <div class="frasco-label">Libertad Financiera</div>
+                </div>
+
+                <div class="frasco-card">
+                    <i class="fas fa-piggy-bank"></i>
+                    <div class="frasco-pct">10%</div>
+                    <div class="frasco-label">Ahorro</div>
+                </div>
+
+                <div class="frasco-card">
+                    <i class="fas fa-graduation-cap"></i>
+                    <div class="frasco-pct">10%</div>
+                    <div class="frasco-label">Educación</div>
+                </div>
+
+                <div class="frasco-card">
+                    <i class="fas fa-smile"></i>
+                    <div class="frasco-pct">10%</div>
+                    <div class="frasco-label">Ocio</div>
+                </div>
+
+                <div class="frasco-card">
+                    <i class="fas fa-heart"></i>
+                    <div class="frasco-pct">10%</div>
+                    <div class="frasco-label">Donaciones</div>
+                </div>
+
+            </div>
+
+            <p style="color:var(--muted);font-size:0.9rem;margin-top:40px;max-width:600px;margin-left:auto;margin-right:auto;">
+                <i class="fas fa-lightbulb" style="color:var(--gold);"></i>
+                Basado en el sistema de frascos de T. Harv Eker. Educación financiera real para todos nuestros miembros.
+            </p>
+        </div>
+    </section>
+
+    <!-- STATS -->
+    <section class="stats-section">
+        <div class="section-container text-center">
+            <p class="section-label">DimarClub en números</p>
+            <h2 class="section-title">Lo que estamos construyendo juntos</h2>
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+                    <i class="fas fa-users"></i>
+                    <div class="stat-numero">1.110</div>
+                    <div class="stat-label">Miembros por red completa</div>
+                </div>
+
+                <div class="stat-card">
+                    <i class="fas fa-layer-group"></i>
+                    <div class="stat-numero">3</div>
+                    <div class="stat-label">Niveles de red</div>
+                </div>
+
+                <div class="stat-card">
+                    <i class="fas fa-percentage"></i>
+                    <div class="stat-numero">3%</div>
+                    <div class="stat-label">Por nivel</div>
+                </div>
+
+                <div class="stat-card">
+                    <i class="fas fa-coins"></i>
+                    <div class="stat-numero">3%</div>
+                    <div class="stat-label">Por inversión mensual</div>
+                </div>
+
+                <div class="stat-card">
+                    <i class="fas fa-hand-holding-usd"></i>
+                    <div class="stat-numero">75%</div>
+                    <div class="stat-label">Línea de crédito</div>
+                </div>
+
+                <div class="stat-card">
+                    <i class="fas fa-tasks"></i>
+                    <div class="stat-numero">$0.10+</div>
+                    <div class="stat-label">Por tarea CPA</div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <div class="section-container">
+            <h2>¿Listo para ser parte de <span>DimarClub</span>?</h2>
+            <p>
+                Únete a la comunidad donde todos ganan igual. Sin importar cuándo entras 
+                ni cuánto inviertes, todos tenemos la misma oportunidad de crecer.
+            </p>
+
+            <div class="cta-buttons">
+                <a href="/registro-socios/" class="btn btn-purple">
+                    <i class="fas fa-user-tie"></i> Quiero ser Socio
+                </a>
+                <a href="/registro-clientes/" class="btn btn-outline">
+                    <i class="fas fa-user"></i> Quiero ser Cliente
+                </a>
+                <a href="/planes.html" class="btn btn-gold">
+                    <i class="fas fa-tags"></i> Ver Planes
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACTO -->
+    <section class="contact-section">
+        <h3><i class="fas fa-comments" style="color:var(--accent);"></i> ¿Tienes dudas?</h3>
+        <p>Habla con nosotros por WhatsApp. Te respondemos en minutos.</p>
+
+        <a href="https://wa.me/593992689844?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20DimarClub" 
+           target="_blank" 
+           rel="noopener"
+           class="whatsapp-btn">
+            <i class="fab fa-whatsapp"></i> Hablar por WhatsApp
+        </a>
+    </section>
+
+    <!-- VOLVER -->
+    <section class="volver-section">
+        <a href="/" class="volver-btn">
+            <i class="fas fa-arrow-left"></i> Volver al Portal Principal
+        </a>
+    </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="wfooter">
+    <div class="footer-grid">
+        <div>
+            <h4>ImpulsePymes360</h4>
+            <a href="/">Inicio</a>
+            <a href="/planes.html">Planes</a>
+            <a href="/tareas.html">Tareas</a>
+            <a href="/login.html">Acceso</a>
+        </div>
+        <div>
+            <h4>Ecosistema</h4>
+            <a href="/dimarclub/">DimarClub</a>
+            <a href="/incubadora/">Incubadora</a>
+            <a href="/webexpress/">WebExpress</a>
+            <a href="/impulso360/">Impulso360</a>
+            <a href="/enlaceexpress/">Enlace Express</a>
+        </div>
+        <div>
+            <h4>Más Servicios</h4>
+            <a href="/publibags/">Publibags</a>
+            <a href="/fuerzadelta/">Fuerza Delta</a>
+            <a href="/dimarpost/">DimarPost</a>
+            <a href="/impulso360/#clasificados">Clasificados</a>
+            <a href="/tareas.html">Hub de Tareas</a>
+        </div>
+        <div>
+            <h4>Contacto</h4>
+            <a href="mailto:info@impulsepymes360.com"><i class="fas fa-envelope"></i> info@impulsepymes360.com</a>
+            <a href="https://wa.me/593992689844" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> +593 99 268 9844</a>
+            <a href="#"><i class="fas fa-map-marker-alt"></i> Ecuador</a>
+        </div>
+        <div>
+            <h4>Legal</h4>
+            <a href="/terminos.html">Términos y condiciones</a>
+            <a href="/privacidad.html">Política de privacidad</a>
+            <a href="/cookies.html">Política de cookies</a>
+        </div>
+    </div>
+    <div class="footer-social">
+        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+        <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+        <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2026 ImpulsePymes360. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+<script>
+    var dropdowns = document.querySelectorAll('.wdropdown-wrap');
+    
+    dropdowns.forEach(function(dropdown) {
+        var btn = dropdown.querySelector('.wdropdown-btn');
+        if (btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropdowns.forEach(function(other) {
+                    if (other !== dropdown) other.classList.remove('open');
+                });
+                dropdown.classList.toggle('open');
+            });
+        }
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.wdropdown-wrap')) {
+            dropdowns.forEach(function(d) { d.classList.remove('open'); });
+        }
+    });
+
+    // Cerrar dropdown al hacer clic en un enlace interno
+    document.querySelectorAll('.wdropdown-menu a').forEach(function(link) {
+        link.addEventListener('click', function() {
+            dropdowns.forEach(function(d) { d.classList.remove('open'); });
+        });
+    });
+    
+    var hamburger = document.getElementById('whamburger');
+    var navLinks = document.getElementById('wnavLinks');
+    
+    if (hamburger && navLinks) {
+        hamburger.addEventListener('click', function() {
+            this.classList.toggle('active');
+            navLinks.classList.toggle('open');
+        });
+    }
+    
+    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+        anchor.addEventListener('click', function(e) {
+            var href = this.getAttribute('href');
+            if (href === '#') return;
+            var target = document.querySelector(href);
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    /* Badge de tareas pendientes — placeholder hasta integrar backend */
+    (function cargarBadgeTareas() {
+        var badge = document.getElementById('badgeTareas');
+        if (!badge) return;
+        // TODO: reemplazar por fetch('/api/tareas/pendientes')
+        badge.textContent = '0';
+    })();
+</script>
+</body>
+</html>
