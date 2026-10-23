@@ -259,6 +259,9 @@ export function TopNav() {
             {displayUser?.role === 'PARTNER' && (
               <button onClick={() => setModule('partner-backoffice')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors', activeModule === 'partner-backoffice' ? 'text-primary bg-primary/10' : 'text-primary hover:bg-primary/5')}><HandCoins className="size-4" />Mi Backoffice</button>
             )}
+            {(displayUser?.role === 'CLIENT' || displayUser?.role === 'AFFILIATE' || displayUser?.role === 'PARTNER' || displayUser?.role === 'ADMIN' || displayUser?.role === 'SUPPLIER') && (
+              <button onClick={() => setModule('directorio')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'directorio' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><MapPin className="size-4" />Directorio</button>
+            )}
             {(displayUser?.role === 'CLIENT' || displayUser?.role === 'AFFILIATE' || displayUser?.role === 'PARTNER' || displayUser?.role === 'ADMIN') && (
               <button onClick={() => setModule('cooperativa')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'cooperativa' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><PiggyBank className="size-4" />Cooperativa</button>
             )}

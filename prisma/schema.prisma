@@ -47,6 +47,8 @@ model User {
   gridSpacesOwned GridSpace[]
   gridCommissions GridCommission[]
   taskProgress TaskProgress?
+  albumProgress AlbumProgress[]
+  raffleEntries RaffleEntry[]
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -481,6 +483,7 @@ model Provider {
   website       WebsiteExpress?
   qrCodes       QRCode[]
   adSpaces      AdSpace[]
+  directoryEntry DirectoryEntry?
 }
 
 model Subscription {
@@ -790,4 +793,72 @@ model TaskProgress {
   commentText   String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+// ---------- Directorio360 + Álbum de Stickers ----------
+
+model DirectoryEntry {
+  id            String   @id @default(cuid())
+  providerId    String   @unique
+  provider      Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  category      String
+  tags          String?
+  shortDesc     String?
+  featured      Boolean  @default(false)
+  rating        Float    @default(0)
+  reviewCount   Int      @default(0)
+  viewCount     Int      @default(0)
+  visitCount    Int      @default(0)
+  status        String   @default("ACTIVE")
+  stickers      Sticker[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Sticker {
+  id            String   @id @default(cuid())
+  directoryEntryId String
+  directoryEntry DirectoryEntry @relation(fields: [directoryEntryId], references: [id], onDelete: Cascade)
+  name          String
+  imageUrl      String
+  code          String   @unique
+  rarity        String   @default("COMMON")
+  albumProgress  AlbumProgress[]
+  createdAt     DateTime @default(now())
+}
+
+model AlbumProgress {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stickerId     String
+  sticker       Sticker  @relation(fields: [stickerId], references: [id], onDelete: Cascade)
+  source        String   @default("QR_SCAN")
+  collectedAt   DateTime @default(now())
+  @@unique([userId, stickerId])
+}
+
+model Raffle {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  prize         String
+  prizeImageUrl String?
+  drawDate      DateTime
+  status        String   @default("ACTIVE")
+  minStickers   Int      @default(10)
+  entries       RaffleEntry[]
+  createdAt     DateTime @default(now())
+}
+
+model RaffleEntry {
+  id            String   @id @default(cuid())
+  raffleId      String
+  raffle        Raffle   @relation(fields: [raffleId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entries       Int      @default(1)
+  winner        Boolean  @default(false)
+  enteredAt     DateTime @default(now())
+  @@unique([raffleId, userId])
 }
