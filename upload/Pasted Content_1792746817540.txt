@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plano de Corte e Inventario Publicitario - Bolso QR (270 Espacios)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #f1f5f9;
+        }
+
+        /* Canvas Pattern */
+        .canvas-bg {
+            background-image: radial-gradient(circle, #1e293b 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* SVG Pattern Custom Styles */
+        .seam-line {
+            stroke: #ef4444;
+            stroke-dasharray: 6, 4;
+            stroke-width: 1.5;
+        }
+        .fold-line {
+            stroke: #3b82f6;
+            stroke-dasharray: 5, 3;
+            stroke-width: 2;
+        }
+        .margin-line {
+            stroke: #64748b;
+            stroke-dasharray: 2, 2;
+            stroke-width: 1;
+        }
+        .panel-bg {
+            fill: #1e293b;
+            stroke: #334155;
+            stroke-width: 1.5;
+        }
+
+        /* Modes */
+        .mode-technical .slot-item {
+            fill: #0f172a;
+            stroke: #475569;
+            stroke-width: 1;
+        }
+        
+        .slot-available {
+            fill: #0284c7;
+            fill-opacity: 0.18;
+            stroke: #38bdf8;
+            stroke-width: 1;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .slot-available:hover {
+            fill: #38bdf8;
+            fill-opacity: 0.45;
+            stroke: #7dd3fc;
+            stroke-width: 1.5;
+        }
+
+        .slot-reserved {
+            fill: #d97706;
+            fill-opacity: 0.85;
+            stroke: #fbbf24;
+            stroke-width: 1;
+            cursor: pointer;
+        }
+        .slot-reserved:hover {
+            fill-opacity: 1;
+        }
+
+        .slot-sold {
+            fill: #059669;
+            fill-opacity: 0.9;
+            stroke: #34d399;
+            stroke-width: 1;
+            cursor: pointer;
+        }
+        .slot-sold:hover {
+            fill-opacity: 1;
+        }
+
+        .slot-selected {
+            stroke: #f43f5e !important;
+            stroke-width: 2.5 !important;
+            filter: drop-shadow(0 0 6px rgba(244, 63, 94, 0.8));
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; color: black !important; }
+            .canvas-bg { background: white !important; }
+            .panel-bg { fill: #ffffff !important; stroke: #000000 !important; }
+            .slot-available { fill: #f8fafc !important; stroke: #cbd5e1 !important; }
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- Header / Navbar -->
+    <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-5 py-2.5 flex items-center justify-between no-print z-20">
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-600/30">
+                <i class="fa-solid fa-bag-shopping text-xl"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-base font-extrabold text-white leading-tight">Gestor de Espacios & Plano de Corte Bolso QR</h1>
+                    <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-bold px-2 py-0.5 rounded-full">Base Comercial Incluida</span>
+                </div>
+                <p class="text-xs text-slate-400">Plano Unificado 109x129 cm • 270 Módulos Publicitarios (5x5 cm)</p>
+            </div>
+        </div>
+
+        <!-- Quick Metrics Header -->
+        <div class="hidden lg:flex items-center space-x-4 text-xs">
+            <div class="bg-slate-800/80 border border-slate-700/60 px-3 py-1.5 rounded-xl">
+                <span class="text-slate-400">Inventario:</span>
+                <span class="font-bold text-white ml-1">270 Espacios</span>
+            </div>
+            <div class="bg-sky-950/40 border border-sky-800/50 px-3 py-1.5 rounded-xl">
+                <span class="text-sky-300">Libres:</span>
+                <span class="font-bold text-sky-400 ml-1" id="hdr-available">270</span>
+            </div>
+            <div class="bg-amber-950/40 border border-amber-800/50 px-3 py-1.5 rounded-xl">
+                <span class="text-amber-300">Reservados:</span>
+                <span class="font-bold text-amber-400 ml-1" id="hdr-reserved">0</span>
+            </div>
+            <div class="bg-emerald-950/40 border border-emerald-800/50 px-3 py-1.5 rounded-xl">
+                <span class="text-emerald-300">Vendidos:</span>
+                <span class="font-bold text-emerald-400 ml-1" id="hdr-sold">0</span>
+            </div>
+            <div class="bg-indigo-950/50 border border-indigo-800/60 px-3 py-1.5 rounded-xl text-indigo-300">
+                <span>Recaudación:</span>
+                <span class="font-bold text-emerald-400 ml-1" id="hdr-revenue">$0 USD</span>
+            </div>
+        </div>
+
+        <!-- Global Action Buttons -->
+        <div class="flex items-center space-x-2">
+            <button id="btn-export-svg" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-file-svg text-indigo-400"></i> <span>Exportar SVG</span>
+            </button>
+            <button id="btn-export-csv" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-file-csv text-emerald-400"></i> <span>CSV</span>
+            </button>
+            <div class="h-4 w-px bg-slate-700 my-auto"></div>
+            <button id="btn-export-json" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1.5 rounded-lg text-xs border border-slate-700" title="Guardar estado (JSON)">
+                <i class="fa-solid fa-download"></i>
+            </button>
+            <label class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1.5 rounded-lg text-xs border border-slate-700 cursor-pointer" title="Cargar estado (JSON)">
+                <i class="fa-solid fa-upload"></i>
+                <input type="file" id="file-import-json" accept=".json" class="hidden">
+            </label>
+            <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-md shadow-indigo-600/20 flex items-center gap-1.5">
+                <i class="fa-solid fa-print"></i> <span>Imprimir</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="flex-1 flex overflow-hidden">
+
+        <!-- Left Toolbar / Viewport Settings -->
+        <main class="flex-1 flex flex-col relative overflow-hidden bg-slate-950">
+
+            <!-- Floating Mode Control Toolbar -->
+            <div class="absolute top-4 left-4 z-10 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-1.5 shadow-2xl flex items-center space-x-2 no-print">
+                <!-- Mode Switcher -->
+                <div class="bg-slate-950 p-1 rounded-lg flex space-x-1 border border-slate-800">
+                    <button id="view-mode-commercial" class="px-3 py-1.5 rounded-md text-xs font-semibold transition bg-indigo-600 text-white shadow">
+                        <i class="fa-solid fa-chart-pie mr-1"></i> Mapa Comercial
+                    </button>
+                    <button id="view-mode-technical" class="px-3 py-1.5 rounded-md text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
+                        <i class="fa-solid fa-ruler-combined mr-1"></i> Plano de Corte
+                    </button>
+                </div>
+
+                <div class="h-5 w-px bg-slate-800"></div>
+
+                <!-- Zooming -->
+                <button id="btn-zoom-in" class="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition" title="Acercar">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                </button>
+                <button id="btn-zoom-out" class="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition" title="Alejar">
+                    <i class="fa-solid fa-minus text-xs"></i>
+                </button>
+                <button id="btn-zoom-reset" class="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition text-xs font-mono font-semibold" title="Reset Zoom">
+                    100%
+                </button>
+
+                <div class="h-5 w-px bg-slate-800"></div>
+
+                <!-- Zone Focus -->
+                <select id="select-zone-filter" class="bg-slate-950 border border-slate-800 text-xs text-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-indigo-500 font-medium">
+                    <option value="ALL">🔍 Ver Plano Completo (270 QRs)</option>
+                    <option value="FRENTE">Frente (81 QRs • 45x45 cm)</option>
+                    <option value="POSTERIOR">Posterior (81 QRs • 45x45 cm)</option>
+                    <option value="BASE">⭐ BASE COMERCIAL (27 QRs • 45x15 cm)</option>
+                    <option value="IZQ">Lateral Izquierdo (27 QRs • 15x45 cm)</option>
+                    <option value="DER">Lateral Derecho (27 QRs • 15x45 cm)</option>
+                    <option value="TAPA">Tapa Posterior (27 QRs • 45x15 cm)</option>
+                    <option value="SOLAPA">Solapa Frontal (27 QRs • 45x15 cm)</option>
+                </select>
+            </div>
+
+            <!-- Legend Overlay -->
+            <div class="absolute bottom-4 left-4 z-10 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl px-4 py-2.5 shadow-2xl text-xs flex flex-wrap items-center gap-4 no-print">
+                <div class="flex items-center space-x-1.5">
+                    <span class="w-3.5 h-3.5 rounded bg-sky-500/20 border border-sky-400"></span>
+                    <span class="text-slate-300">Disponible</span>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                    <span class="w-3.5 h-3.5 rounded bg-amber-500/80 border border-amber-400"></span>
+                    <span class="text-slate-300">Reservado</span>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                    <span class="w-3.5 h-3.5 rounded bg-emerald-500/90 border border-emerald-400"></span>
+                    <span class="text-slate-300">Vendido</span>
+                </div>
+                <div class="h-3 w-px bg-slate-700"></div>
+                <div class="flex items-center space-x-1.5">
+                    <span class="w-3.5 h-3.5 rounded border border-red-500 border-dashed bg-red-500/10"></span>
+                    <span class="text-slate-400">Corte (+1cm costura)</span>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                    <span class="w-3.5 h-3.5 rounded border border-blue-500 border-dashed"></span>
+                    <span class="text-slate-400">Línea Doblez</span>
+                </div>
+            </div>
+
+            <!-- SVG Container -->
+            <div id="canvas-container" class="w-full h-full canvas-bg overflow-auto flex items-center justify-center p-8 cursor-grab active:cursor-grabbing">
+                <svg id="svg-blueprint" viewBox="0 0 1380 1620" class="max-w-none transition-transform duration-150 ease-out origin-center">
+                    <!-- SVG Elements dynamically generated -->
+                </svg>
+            </div>
+        </main>
+
+        <!-- Right Side Panel: Management & Financial Inspector -->
+        <aside class="w-96 bg-slate-900 border-l border-slate-800 flex flex-col z-20 no-print">
+
+            <!-- Sidebar Navigation Tabs -->
+            <div class="flex border-b border-slate-800 text-xs font-bold text-slate-400">
+                <button id="tab-btn-editor" class="flex-1 py-3 px-3 border-b-2 border-indigo-500 text-indigo-400 flex items-center justify-center gap-1.5 transition">
+                    <i class="fa-solid fa-pen-to-square"></i> Espacio
+                </button>
+                <button id="tab-btn-batch" class="flex-1 py-3 px-3 border-b-2 border-transparent hover:text-slate-200 flex items-center justify-center gap-1.5 transition">
+                    <i class="fa-solid fa-layer-group"></i> Lotes / Zonas
+                </button>
+                <button id="tab-btn-finances" class="flex-1 py-3 px-3 border-b-2 border-transparent hover:text-slate-200 flex items-center justify-center gap-1.5 transition">
+                    <i class="fa-solid fa-calculator"></i> Finanzas
+                </button>
+                <button id="tab-btn-list" class="flex-1 py-3 px-3 border-b-2 border-transparent hover:text-slate-200 flex items-center justify-center gap-1.5 transition">
+                    <i class="fa-solid fa-list-check"></i> Listado
+                </button>
+            </div>
+
+            <!-- Tab Contents -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4">
+
+                <!-- TAB 1: Single Slot Inspector -->
+                <div id="tab-content-editor" class="space-y-4">
+                    <div id="no-slot-selected" class="text-center py-10 text-slate-500 space-y-2">
+                        <i class="fa-solid fa-arrow-pointer text-3xl opacity-30"></i>
+                        <p class="text-xs">Selecciona cualquier espacio de 5x5 cm en el plano para editar su patrocinador y código QR.</p>
+                    </div>
+
+                    <div id="slot-editor" class="hidden space-y-4">
+                        <!-- Card Header -->
+                        <div class="bg-slate-800/80 rounded-xl p-3.5 border border-slate-700/80">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-[11px] uppercase font-bold tracking-wider text-indigo-400" id="editor-zone-name">FRENTE</span>
+                                <span class="text-xs px-2 py-0.5 rounded font-mono font-bold bg-slate-700 text-slate-100" id="editor-slot-id">FRENTE-1-1</span>
+                            </div>
+                            <div class="text-xs text-slate-400 flex justify-between">
+                                <span>Módulo: <strong class="text-slate-200" id="editor-coords">Fila 1, Col 1</strong></span>
+                                <span>Medida: <strong class="text-slate-200">5 x 5 cm</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- Status Selection Buttons -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Estado de Comercialización</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button type="button" data-status="AVAILABLE" class="status-btn px-2 py-2 rounded-lg text-xs font-medium border border-sky-800 bg-sky-950/40 text-sky-300 hover:bg-sky-900/50 flex flex-col items-center gap-1">
+                                    <i class="fa-regular fa-circle"></i> Libre
+                                </button>
+                                <button type="button" data-status="RESERVED" class="status-btn px-2 py-2 rounded-lg text-xs font-medium border border-amber-800 bg-amber-950/40 text-amber-300 hover:bg-amber-900/50 flex flex-col items-center gap-1">
+                                    <i class="fa-solid fa-clock"></i> Reservado
+                                </button>
+                                <button type="button" data-status="SOLD" class="status-btn px-2 py-2 rounded-lg text-xs font-medium border border-emerald-800 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-900/50 flex flex-col items-center gap-1">
+                                    <i class="fa-solid fa-circle-check"></i> Vendido
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Single Inputs -->
+                        <div class="space-y-2.5">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-300 mb-1">Empresa / Patrocinador</label>
+                                <input type="text" id="input-company" placeholder="Ej: Banco Nacional / Marca X" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-300 mb-1">Link de Escaneo del QR</label>
+                                <input type="url" id="input-url" placeholder="https://marca.com/oferta" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Valor Venta ($)</label>
+                                    <input type="number" id="input-price" value="25" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Contacto</label>
+                                    <input type="text" id="input-contact" placeholder="Email / Tel" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic QR Preview -->
+                        <div class="pt-1">
+                            <label class="block text-[11px] font-semibold text-slate-300 mb-1.5">Previsualización QR (Módulo 5x5 cm)</label>
+                            <div class="bg-white p-3 rounded-xl flex items-center justify-center border border-slate-700 shadow-inner">
+                                <div id="qrcode-single-preview"></div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex gap-2 pt-2">
+                            <button id="btn-save-single" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-lg text-xs transition shadow-lg shadow-indigo-600/30">
+                                Guardar Espacio
+                            </button>
+                            <button id="btn-clear-single" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg text-xs font-semibold">
+                                Liberar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: Batch & Zone Operations (Venta por Bloques / Patrocinadores Grandes) -->
+                <div id="tab-content-batch" class="hidden space-y-4">
+                    <div class="bg-indigo-950/40 border border-indigo-800/50 p-3 rounded-xl text-xs space-y-1">
+                        <span class="font-bold text-indigo-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-bullseye"></i> Venta por Zonas Completas
+                        </span>
+                        <p class="text-slate-400 text-[11px]">Asigna múltiples módulos o zonas enteras (ej. la Base comercial completa) a uno o varios patrocinadores principales.</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Seleccionar Zona de Destino</label>
+                            <select id="batch-zone-select" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 font-medium">
+                                <option value="BASE">⭐ BASE COMERCIAL (27 Espacios completos)</option>
+                                <option value="FRENTE">FRENTE (81 Espacios)</option>
+                                <option value="POSTERIOR">POSTERIOR (81 Espacios)</option>
+                                <option value="IZQ">LATERAL IZQUIERDO (27 Espacios)</option>
+                                <option value="DER">LATERAL DERECHO (27 Espacios)</option>
+                                <option value="TAPA">TAPA POSTERIOR (27 Espacios)</option>
+                                <option value="SOLAPA">SOLAPA FRONTAL (27 Espacios)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Estado Masivo</label>
+                            <select id="batch-status-select" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 font-medium">
+                                <option value="SOLD">Vendido (Pagado)</option>
+                                <option value="RESERVED">Reservado (Apartado)</option>
+                                <option value="AVAILABLE">Liberar Zona (Disponible)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre Patrocinador / Marca</label>
+                            <input type="text" id="batch-company-input" placeholder="Ej: Patrocinador Oro Base" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Enlace / URL Principal del QR</label>
+                            <input type="url" id="batch-url-input" placeholder="https://patrocinador.com" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Precio Acordado por Espacio ($)</label>
+                            <input type="number" id="batch-price-input" value="25" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+                        </div>
+
+                        <button id="btn-apply-batch" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-xs transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-check-double"></i> Asignar Zona Seleccionada
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 3: Financial Dashboard & Config -->
+                <div id="tab-content-finances" class="hidden space-y-4 text-xs">
+                    <div class="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-2">
+                        <h3 class="font-bold text-slate-200 border-b border-slate-700 pb-1.5 flex justify-between">
+                            <span>Resumen de Ingresos Proyectados</span>
+                            <i class="fa-solid fa-coins text-amber-400"></i>
+                        </h3>
+
+                        <div class="space-y-1.5 pt-1">
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Total Recaudado (Vendidos):</span>
+                                <strong class="text-emerald-400" id="fin-total-sold">$0 USD</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Por Cobrar (Reservados):</span>
+                                <strong class="text-amber-400" id="fin-total-reserved">$0 USD</strong>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Potencial Libres:</span>
+                                <strong class="text-sky-400" id="fin-total-potential">$0 USD</strong>
+                            </div>
+                            <div class="border-t border-slate-700 pt-1.5 flex justify-between text-sm">
+                                <span class="font-bold text-slate-200">VALOR TOTAL BOLSO:</span>
+                                <strong class="font-bold text-indigo-400" id="fin-grand-total">$0 USD</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Config Standard Rate -->
+                    <div class="bg-slate-800/40 p-3 rounded-xl border border-slate-700 space-y-2">
+                        <label class="block font-semibold text-slate-300">Precio Estándar por Módulo (5x5cm)</label>
+                        <div class="flex gap-2">
+                            <input type="number" id="global-rate-input" value="25" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white w-full">
+                            <button id="btn-update-rate" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap">
+                                Recalcular
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Breakdown by Zones -->
+                    <div class="bg-slate-800/40 p-3 rounded-xl border border-slate-700 space-y-2">
+                        <h4 class="font-bold text-slate-300 mb-1">Ocupación Comercial por Zona</h4>
+                        <div id="fin-zones-breakdown" class="space-y-1.5">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: Active List -->
+                <div id="tab-content-list" class="hidden space-y-3">
+                    <div class="flex justify-between items-center text-xs text-slate-400">
+                        <span>Espacios Activos</span>
+                        <button id="btn-reset-all" class="text-red-400 hover:text-red-300 font-semibold">Vaciar Todo</button>
+                    </div>
+
+                    <div id="active-sponsors-list" class="space-y-2 text-xs">
+                        <!-- Dynamic Sponsor Cards -->
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+    </div>
+
+    <!-- Print Only Header -->
+    <div class="hidden print-only p-8">
+        <h1 class="text-2xl font-bold">PLANO TÉCNICO Y COMERCIAL - BOLSO DE ALGODÓN UNIFICADO</h1>
+        <p class="text-sm text-gray-600 mb-4">Patrón de Corte en Tela Única (109 cm x 129 cm) • Incluye Base Comercial • Margen 1cm • Costura 1cm</p>
+    </div>
+
+    <!-- Application Script -->
+    <script>
+        /**
+         * Core Geometric & Scale Settings
+         * Scale: 1 cm = 10 units in SVG space
+         */
+        const SCALE = 10;
+        const SLOT_SIZE = 5 * SCALE; // 5 cm = 50px
+        const MARGIN = 1 * SCALE;    // 1 cm = 10px
+        const SEAM = 1 * SCALE;      // 1 cm = 10px
+
+        // Panel Array Architecture
+        const PANELS = [
+            {
+                id: 'IZQ',
+                name: 'Lateral Izquierdo',
+                cols: 3, rows: 9,
+                width: 15 * SCALE, height: 45 * SCALE,
+                relX: 0, relY: 15 * SCALE
+            },
+            {
+                id: 'FRENTE',
+                name: 'Panel Frontal',
+                cols: 9, rows: 9,
+                width: 45 * SCALE, height: 45 * SCALE,
+                relX: 17 * SCALE, relY: 15 * SCALE
+            },
+            {
+                id: 'BASE',
+                name: 'Base del Bolso (Comercial)',
+                cols: 9, rows: 3, // NOW ACTIVE WITH 27 QRs!
+                width: 45 * SCALE, height: 15 * SCALE,
+                relX: 17 * SCALE, relY: 62 * SCALE
+            },
+            {
+                id: 'DER',
+                name: 'Lateral Derecho',
+                cols: 3, rows: 9,
+                width: 15 * SCALE, height: 45 * SCALE,
+                relX: 64 * SCALE, relY: 15 * SCALE
+            },
+            {
+                id: 'POSTERIOR',
+                name: 'Panel Posterior',
+                cols: 9, rows: 9,
+                width: 45 * SCALE, height: 45 * SCALE,
+                relX: 17 * SCALE, relY: 79 * SCALE
+            },
+            {
+                id: 'TAPA',
+                name: 'Tapa Posterior',
+                cols: 9, rows: 3,
+                width: 45 * SCALE, height: 15 * SCALE,
+                relX: 17 * SCALE, relY: 126 * SCALE
+            },
+            {
+                id: 'SOLAPA',
+                name: 'Solapa Frontal',
+                cols: 9, rows: 3,
+                width: 45 * SCALE, height: 15 * SCALE,
+                relX: 17 * SCALE, relY: 143 * SCALE
+            }
+        ];
+
+        // Global State
+        let slotsData = {};
+        let selectedSlotId = null;
+        let currentZoom = 1;
+        let activeViewMode = 'COMMERCIAL'; // 'COMMERCIAL' or 'TECHNICAL'
+        let standardPrice = 25;
+
+        // Initialize Application
+        window.addEventListener('DOMContentLoaded', () => {
+            initStore();
+            renderSVGBlueprint();
+            bindEvents();
+            recalculateMetrics();
+        });
+
+        /**
+         * Initialize State Store for 270 Slots
+         */
+        function initStore() {
+            PANELS.forEach(panel => {
+                for (let r = 0; r < panel.rows; r++) {
+                    for (let c = 0; c < panel.cols; c++) {
+                        const id = `${panel.id}-${r + 1}-${c + 1}`;
+                        slotsData[id] = {
+                            id: id,
+                            zoneId: panel.id,
+                            zoneName: panel.name,
+                            row: r + 1,
+                            col: c + 1,
+                            status: 'AVAILABLE', // AVAILABLE, RESERVED, SOLD
+                            company: '',
+                            url: '',
+                            price: standardPrice,
+                            contact: ''
+                        };
+                    }
+                }
+            });
+        }
+
+        /**
+         * Render Main SVG Pattern Canvas
+         */
+        function renderSVGBlueprint() {
+            const svg = document.getElementById('svg-blueprint');
+            svg.innerHTML = '';
+
+            const rootGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            rootGroup.setAttribute('id', 'pattern-root');
+            if (activeViewMode === 'TECHNICAL') {
+                rootGroup.classList.add('mode-technical');
+            }
+
+            const startX = 40;
+            const startY = 40;
+
+            PANELS.forEach(panel => {
+                const px = startX + panel.relX;
+                const py = startY + panel.relY;
+
+                const panelGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                panelGroup.setAttribute('class', 'panel-group');
+                panelGroup.setAttribute('data-zone', panel.id);
+
+                // Fabric Outline
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', px);
+                rect.setAttribute('y', py);
+                rect.setAttribute('width', panel.width);
+                rect.setAttribute('height', panel.height);
+                rect.setAttribute('class', 'panel-bg');
+                panelGroup.appendChild(rect);
+
+                // Seam Outer Line (1cm seam allowance)
+                const seamRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                seamRect.setAttribute('x', px - SEAM);
+                seamRect.setAttribute('y', py - SEAM);
+                seamRect.setAttribute('width', panel.width + (SEAM * 2));
+                seamRect.setAttribute('height', panel.height + (SEAM * 2));
+                seamRect.setAttribute('class', 'seam-line');
+                seamRect.setAttribute('fill', 'none');
+                panelGroup.appendChild(seamRect);
+
+                // Inner Protection Margin Line (1cm inside boundary)
+                const marginRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                marginRect.setAttribute('x', px + MARGIN);
+                marginRect.setAttribute('y', py + MARGIN);
+                marginRect.setAttribute('width', panel.width - (MARGIN * 2));
+                marginRect.setAttribute('height', panel.height - (MARGIN * 2));
+                marginRect.setAttribute('class', 'margin-line');
+                marginRect.setAttribute('fill', 'none');
+                panelGroup.appendChild(marginRect);
+
+                // Panel Title Label
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', px + (panel.width / 2));
+                label.setAttribute('y', py - 12);
+                label.setAttribute('fill', panel.id === 'BASE' ? '#38bdf8' : '#94a3b8');
+                label.setAttribute('font-size', '13');
+                label.setAttribute('font-weight', 'bold');
+                label.setAttribute('text-anchor', 'middle');
+                label.textContent = `${panel.name.toUpperCase()} (${panel.width/SCALE}x${panel.height/SCALE} cm)`;
+                panelGroup.appendChild(label);
+
+                // Render Slot Grids
+                const gridStartX = px + MARGIN;
+                const gridStartY = py + MARGIN;
+
+                for (let r = 0; r < panel.rows; r++) {
+                    for (let c = 0; c < panel.cols; c++) {
+                        const slotX = gridStartX + (c * SLOT_SIZE);
+                        const slotY = gridStartY + (r * SLOT_SIZE);
+                        const slotId = `${panel.id}-${r + 1}-${c + 1}`;
+                        const data = slotsData[slotId];
+
+                        const slotGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                        slotGroup.setAttribute('class', 'slot-item');
+                        slotGroup.setAttribute('data-id', slotId);
+
+                        const slotRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                        slotRect.setAttribute('x', slotX);
+                        slotRect.setAttribute('y', slotY);
+                        slotRect.setAttribute('width', SLOT_SIZE);
+                        slotRect.setAttribute('height', SLOT_SIZE);
+                        slotRect.setAttribute('rx', '3');
+                        slotRect.setAttribute('id', `rect-${slotId}`);
+
+                        applySlotClass(slotRect, data.status);
+
+                        // Slot Text Label / Brand Name
+                        const slotText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                        slotText.setAttribute('x', slotX + (SLOT_SIZE / 2));
+                        slotText.setAttribute('y', slotY + (SLOT_SIZE / 2) + 3);
+                        slotText.setAttribute('fill', '#ffffff');
+                        slotText.setAttribute('font-size', '8.5');
+                        slotText.setAttribute('font-weight', '700');
+                        slotText.setAttribute('text-anchor', 'middle');
+                        slotText.setAttribute('pointer-events', 'none');
+                        slotText.setAttribute('id', `text-${slotId}`);
+                        slotText.textContent = data.company ? data.company.substring(0, 6) : `${r + 1}-${c + 1}`;
+
+                        slotGroup.appendChild(slotRect);
+                        slotGroup.appendChild(slotText);
+
+                        slotGroup.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            selectSlot(slotId);
+                        });
+
+                        panelGroup.appendChild(slotGroup);
+                    }
+                }
+
+                // Folding Lines Indicators
+                if (['BASE', 'POSTERIOR', 'TAPA', 'SOLAPA'].includes(panel.id)) {
+                    const fold = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    fold.setAttribute('x1', px);
+                    fold.setAttribute('y1', py);
+                    fold.setAttribute('x2', px + panel.width);
+                    fold.setAttribute('y2', py);
+                    fold.setAttribute('class', 'fold-line');
+                    panelGroup.appendChild(fold);
+                }
+
+                rootGroup.appendChild(panelGroup);
+            });
+
+            svg.appendChild(rootGroup);
+        }
+
+        /**
+         * Update Slot Color Styling
+         */
+        function applySlotClass(rectElem, status) {
+            rectElem.setAttribute('class', '');
+            if (activeViewMode === 'COMMERCIAL') {
+                if (status === 'AVAILABLE') rectElem.classList.add('slot-available');
+                else if (status === 'RESERVED') rectElem.classList.add('slot-reserved');
+                else if (status === 'SOLD') rectElem.classList.add('slot-sold');
+            } else {
+                rectElem.classList.add('slot-available');
+            }
+
+            if (rectElem.getAttribute('id') === `rect-${selectedSlotId}`) {
+                rectElem.classList.add('slot-selected');
+            }
+        }
+
+        /**
+         * Select Slot and Populate Inspector Form
+         */
+        function selectSlot(slotId) {
+            if (selectedSlotId) {
+                const prev = document.getElementById(`rect-${selectedSlotId}`);
+                if (prev) prev.classList.remove('slot-selected');
+            }
+
+            selectedSlotId = slotId;
+            const data = slotsData[slotId];
+            if (!data) return;
+
+            const curr = document.getElementById(`rect-${slotId}`);
+            if (curr) curr.classList.add('slot-selected');
+
+            document.getElementById('no-slot-selected').classList.add('hidden');
+            document.getElementById('slot-editor').classList.remove('hidden');
+
+            document.getElementById('editor-zone-name').textContent = data.zoneName;
+            document.getElementById('editor-slot-id').textContent = data.id;
+            document.getElementById('editor-coords').textContent = `Fila ${data.row}, Col ${data.col}`;
+            document.getElementById('input-company').value = data.company || '';
+            document.getElementById('input-url').value = data.url || '';
+            document.getElementById('input-price').value = data.price || standardPrice;
+            document.getElementById('input-contact').value = data.contact || '';
+
+            updateStatusButtonsUI(data.status);
+            generateSingleQR(data.url || `https://bolso-qr.com/slot/${data.id}`);
+        }
+
+        function updateStatusButtonsUI(status) {
+            document.querySelectorAll('.status-btn').forEach(btn => {
+                if (btn.getAttribute('data-status') === status) {
+                    btn.classList.add('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-slate-900');
+                } else {
+                    btn.classList.remove('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-slate-900');
+                }
+            });
+        }
+
+        function generateSingleQR(text) {
+            const container = document.getElementById('qrcode-single-preview');
+            container.innerHTML = '';
+            new QRCode(container, {
+                text: text,
+                width: 100,
+                height: 100,
+                colorDark: "#0f172a",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        /**
+         * Recalculate Financial Metrics & Breakdown
+         */
+        function recalculateMetrics() {
+            let availableCount = 0;
+            let reservedCount = 0;
+            let soldCount = 0;
+
+            let soldRevenue = 0;
+            let reservedRevenue = 0;
+            let potentialRevenue = 0;
+
+            const zoneStats = {};
+
+            Object.values(slotsData).forEach(s => {
+                if (!zoneStats[s.zoneId]) {
+                    zoneStats[s.zoneId] = { name: s.zoneName, total: 0, sold: 0, reserved: 0 };
+                }
+                zoneStats[s.zoneId].total++;
+
+                const slotVal = parseFloat(s.price) || standardPrice;
+
+                if (s.status === 'AVAILABLE') {
+                    availableCount++;
+                    potentialRevenue += slotVal;
+                } else if (s.status === 'RESERVED') {
+                    reservedCount++;
+                    reservedRevenue += slotVal;
+                    zoneStats[s.zoneId].reserved++;
+                } else if (s.status === 'SOLD') {
+                    soldCount++;
+                    soldRevenue += slotVal;
+                    zoneStats[s.zoneId].sold++;
+                }
+            });
+
+            // Update Header Stats
+            document.getElementById('hdr-available').textContent = availableCount;
+            document.getElementById('hdr-reserved').textContent = reservedCount;
+            document.getElementById('hdr-sold').textContent = soldCount;
+            document.getElementById('hdr-revenue').textContent = `$${soldRevenue} USD`;
+
+            // Update Financial Tab Stats
+            document.getElementById('fin-total-sold').textContent = `$${soldRevenue} USD`;
+            document.getElementById('fin-total-reserved').textContent = `$${reservedRevenue} USD`;
+            document.getElementById('fin-total-potential').textContent = `$${potentialRevenue} USD`;
+            document.getElementById('fin-grand-total').textContent = `$${soldRevenue + reservedRevenue + potentialRevenue} USD`;
+
+            // Zone Breakdown Render
+            const bdContainer = document.getElementById('fin-zones-breakdown');
+            bdContainer.innerHTML = '';
+            Object.keys(zoneStats).forEach(zKey => {
+                const z = zoneStats[zKey];
+                const soldPct = Math.round(((z.sold + z.reserved) / z.total) * 100);
+
+                const row = document.createElement('div');
+                row.className = 'flex flex-col gap-1 border-b border-slate-700/50 pb-1.5';
+                row.innerHTML = `
+                    <div class="flex justify-between font-semibold">
+                        <span class="${zKey === 'BASE' ? 'text-sky-400' : 'text-slate-300'}">${z.name}</span>
+                        <span class="text-slate-200">${z.sold + z.reserved}/${z.total} (${soldPct}%)</span>
+                    </div>
+                    <div class="w-full bg-slate-950 h-1.5 rounded-full overflow-hidden flex">
+                        <div class="bg-emerald-500 h-full" style="width: ${(z.sold/z.total)*100}%"></div>
+                        <div class="bg-amber-500 h-full" style="width: ${(z.reserved/z.total)*100}%"></div>
+                    </div>
+                `;
+                bdContainer.appendChild(row);
+            });
+
+            renderActiveSponsorList();
+        }
+
+        /**
+         * Render Active Sponsor Cards List
+         */
+        function renderActiveSponsorList() {
+            const container = document.getElementById('active-sponsors-list');
+            container.innerHTML = '';
+
+            const activeSlots = Object.values(slotsData).filter(s => s.status !== 'AVAILABLE');
+
+            if (activeSlots.length === 0) {
+                container.innerHTML = `<p class="text-slate-500 text-center py-6">No hay reservas activas.</p>`;
+                return;
+            }
+
+            activeSlots.forEach(s => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 p-2.5 rounded-lg space-y-1 cursor-pointer transition';
+                card.onclick = () => selectSlot(s.id);
+
+                const isSold = s.status === 'SOLD';
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-200">${s.company || 'Sin nombre'}</span>
+                        <span class="px-1.5 py-0.5 text-[9px] font-bold rounded border ${isSold ? 'bg-emerald-950 border-emerald-800 text-emerald-400' : 'bg-amber-950 border-amber-800 text-amber-400'}">${isSold ? 'Vendido' : 'Reservado'}</span>
+                    </div>
+                    <div class="flex justify-between text-[10px] text-slate-400">
+                        <span>${s.zoneName}</span>
+                        <span class="font-mono text-indigo-300">${s.id}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        /**
+         * Event Bindings
+         */
+        function bindEvents() {
+            // Save Single Slot
+            document.getElementById('btn-save-single').addEventListener('click', () => {
+                if (!selectedSlotId) return;
+                const d = slotsData[selectedSlotId];
+                d.company = document.getElementById('input-company').value.trim();
+                d.url = document.getElementById('input-url').value.trim();
+                d.price = parseFloat(document.getElementById('input-price').value) || standardPrice;
+                d.contact = document.getElementById('input-contact').value.trim();
+
+                const textElem = document.getElementById(`text-${selectedSlotId}`);
+                if (textElem) textElem.textContent = d.company ? d.company.substring(0, 6) : `${d.row}-${d.col}`;
+
+                recalculateMetrics();
+            });
+
+            // Clear Single
+            document.getElementById('btn-clear-single').addEventListener('click', () => {
+                if (!selectedSlotId) return;
+                const d = slotsData[selectedSlotId];
+                d.status = 'AVAILABLE';
+                d.company = '';
+                d.url = '';
+                d.contact = '';
+
+                const rect = document.getElementById(`rect-${selectedSlotId}`);
+                if (rect) applySlotClass(rect, 'AVAILABLE');
+
+                selectSlot(selectedSlotId);
+                recalculateMetrics();
+            });
+
+            // Status Buttons
+            document.querySelectorAll('.status-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (!selectedSlotId) return;
+                    const st = btn.getAttribute('data-status');
+                    slotsData[selectedSlotId].status = st;
+                    updateStatusButtonsUI(st);
+
+                    const rect = document.getElementById(`rect-${selectedSlotId}`);
+                    if (rect) applySlotClass(rect, st);
+
+                    recalculateMetrics();
+                });
+            });
+
+            // Batch / Zone Assignment Operation
+            document.getElementById('btn-apply-batch').addEventListener('click', () => {
+                const zoneId = document.getElementById('batch-zone-select').value;
+                const newStatus = document.getElementById('batch-status-select').value;
+                const company = document.getElementById('batch-company-input').value.trim();
+                const url = document.getElementById('batch-url-input').value.trim();
+                const price = parseFloat(document.getElementById('batch-price-input').value) || standardPrice;
+
+                Object.values(slotsData).forEach(s => {
+                    if (s.zoneId === zoneId) {
+                        s.status = newStatus;
+                        if (newStatus !== 'AVAILABLE') {
+                            s.company = company || s.company;
+                            s.url = url || s.url;
+                            s.price = price;
+                        } else {
+                            s.company = '';
+                            s.url = '';
+                        }
+
+                        const rect = document.getElementById(`rect-${s.id}`);
+                        if (rect) applySlotClass(rect, s.status);
+
+                        const textElem = document.getElementById(`text-${s.id}`);
+                        if (textElem) textElem.textContent = s.company ? s.company.substring(0, 6) : `${s.row}-${s.col}`;
+                    }
+                });
+
+                recalculateMetrics();
+                alert(`¡Zona ${zoneId} actualizada correctamente!`);
+            });
+
+            // Global Price Recalculation
+            document.getElementById('btn-update-rate').addEventListener('click', () => {
+                standardPrice = parseFloat(document.getElementById('global-rate-input').value) || 25;
+                Object.values(slotsData).forEach(s => {
+                    if (s.status === 'AVAILABLE') s.price = standardPrice;
+                });
+                recalculateMetrics();
+            });
+
+            // Tabs Switcher
+            const tabs = [
+                { btn: 'tab-btn-editor', content: 'tab-content-editor' },
+                { btn: 'tab-btn-batch', content: 'tab-content-batch' },
+                { btn: 'tab-btn-finances', content: 'tab-content-finances' },
+                { btn: 'tab-btn-list', content: 'tab-content-list' }
+            ];
+
+            tabs.forEach(t => {
+                document.getElementById(t.btn).addEventListener('click', () => {
+                    tabs.forEach(x => {
+                        document.getElementById(x.btn).classList.remove('border-indigo-500', 'text-indigo-400');
+                        document.getElementById(x.btn).classList.add('border-transparent');
+                        document.getElementById(x.content).classList.add('hidden');
+                    });
+                    document.getElementById(t.btn).classList.add('border-indigo-500', 'text-indigo-400');
+                    document.getElementById(t.content).classList.remove('hidden');
+                });
+            });
+
+            // View Modes Switcher
+            document.getElementById('view-mode-commercial').addEventListener('click', () => {
+                activeViewMode = 'COMMERCIAL';
+                document.getElementById('view-mode-commercial').className = 'px-3 py-1.5 rounded-md text-xs font-semibold transition bg-indigo-600 text-white shadow';
+                document.getElementById('view-mode-technical').className = 'px-3 py-1.5 rounded-md text-xs font-semibold text-slate-400 hover:text-slate-200 transition';
+                renderSVGBlueprint();
+            });
+
+            document.getElementById('view-mode-technical').addEventListener('click', () => {
+                activeViewMode = 'TECHNICAL';
+                document.getElementById('view-mode-technical').className = 'px-3 py-1.5 rounded-md text-xs font-semibold transition bg-indigo-600 text-white shadow';
+                document.getElementById('view-mode-commercial').className = 'px-3 py-1.5 rounded-md text-xs font-semibold text-slate-400 hover:text-slate-200 transition';
+                renderSVGBlueprint();
+            });
+
+            // Filter Zone Visibility
+            document.getElementById('select-zone-filter').addEventListener('change', (e) => {
+                const zVal = e.target.value;
+                document.querySelectorAll('.panel-group').forEach(group => {
+                    const zid = group.getAttribute('data-zone');
+                    group.style.display = (zVal === 'ALL' || zid === zVal) ? 'block' : 'none';
+                });
+            });
+
+            // Zoom Controls
+            const svgElem = document.getElementById('svg-blueprint');
+            document.getElementById('btn-zoom-in').addEventListener('click', () => {
+                currentZoom = Math.min(currentZoom + 0.15, 2.5);
+                svgElem.style.transform = `scale(${currentZoom})`;
+            });
+            document.getElementById('btn-zoom-out').addEventListener('click', () => {
+                currentZoom = Math.max(currentZoom - 0.15, 0.4);
+                svgElem.style.transform = `scale(${currentZoom})`;
+            });
+            document.getElementById('btn-zoom-reset').addEventListener('click', () => {
+                currentZoom = 1;
+                svgElem.style.transform = `scale(1)`;
+            });
+
+            // Export SVG File
+            document.getElementById('btn-export-svg').addEventListener('click', () => {
+                const svgContent = document.getElementById('svg-blueprint').outerHTML;
+                const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `plano_corte_bolso_qr_unificado.svg`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            });
+
+            // Export CSV Report
+            document.getElementById('btn-export-csv').addEventListener('click', () => {
+                let csv = 'ID,Zona,Fila,Columna,Estado,Empresa,URL,Precio,Contacto\n';
+                Object.values(slotsData).forEach(s => {
+                    csv += `"${s.id}","${s.zoneName}",${s.row},${s.col},"${s.status}","${s.company || ''}","${s.url || ''}",${s.price || 0},"${s.contact || ''}"\n`;
+                });
+
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `reporte_ventas_bolso_qr.csv`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            });
+
+            // Reset All
+            document.getElementById('btn-reset-all').addEventListener('click', () => {
+                if (confirm('¿Vaciar todos los datos de reservas?')) {
+                    initStore();
+                    renderSVGBlueprint();
+                    recalculateMetrics();
+                }
+            });
+
+            // Export JSON
+            document.getElementById('btn-export-json').addEventListener('click', () => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(slotsData, null, 2));
+                const a = document.createElement('a');
+                a.href = dataStr;
+                a.download = `bolso_qr_data.json`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            });
+
+            // Import JSON
+            document.getElementById('file-import-json').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    try {
+                        slotsData = JSON.parse(evt.target.result);
+                        renderSVGBlueprint();
+                        recalculateMetrics();
+                        alert('¡Datos cargados exitosamente!');
+                    } catch (err) {
+                        alert('Error al importar archivo JSON');
+                    }
+                };
+                reader.readText(file);
+            });
+        }
+    </script>
+</body>
+</html>
