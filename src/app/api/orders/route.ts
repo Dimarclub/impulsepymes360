@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // 2. Notificar a todos los ADMIN (gestión de pedidos)
+    // 2. Notificar a todos los ADMIN (gestión de pedidos + logística)
     const admins = await db.user.findMany({ where: { role: 'ADMIN' }, select: { id: true } })
     if (admins.length > 0) {
       await db.notification.createMany({
@@ -95,8 +95,8 @@ export async function POST(req: NextRequest) {
           userId: a.id,
           type: 'ORDER_RECEIVED',
           title: `Nuevo pedido ${orderNumber}`,
-          message: `Pedido de ${buyer?.name || 'cliente'} por $${total.toFixed(2)} (${items.length} items). Requiere gestión.`,
-          link: '/?module=alertas',
+          message: `Pedido de ${buyer?.name || 'cliente'} por $${total.toFixed(2)} (${items.length} items). Requiere asignar mensajero en Logística.`,
+          link: '/?module=logistics',
         })),
       })
     }
@@ -126,6 +126,22 @@ export async function POST(req: NextRequest) {
     }
   } catch (notifErr) {
     console.error('[orders POST] notif error:', notifErr)
+  }
+
+  // ===== Auto-crear Delivery (status PENDING, sin courier) para logística =====
+  try {
+    await db.delivery.create({
+      data: {
+        orderId: order.id,
+        status: 'PENDING',
+        taskType: 'SOBRE',
+        pickupAddress: shippingAddress || null,
+        deliveryAddress: shippingAddress || null,
+        notes: `Pedido ${orderNumber} — ${items.length} items — ${buyer?.name || 'cliente'} — ${city || 'N/A'}`,
+      },
+    })
+  } catch (delivErr) {
+    console.error('[orders POST] delivery create error:', delivErr)
   }
 
   return NextResponse.json(order, { status: 201 })

@@ -202,12 +202,19 @@ model Delivery {
   order           Order    @relation(fields: [orderId], references: [id])
   courierId       String?
   courier         Courier? @relation(fields: [courierId], references: [id])
-  status          String   @default("ASSIGNED") // ASSIGNED, PICKED_UP, IN_TRANSIT, DELIVERED
+  status          String   @default("PENDING") // PENDING, ASSIGNED, PICKED_UP, IN_TRANSIT, DELIVERED, FAILED
+  taskType        String   @default("SOBRE") // SOBRE, EXPRESS, MICRODISTRIBUCION
+  amountToCollect Float    @default(0) // monto a cobrar contra entrega (si aplica)
   pickupAddress   String?
   deliveryAddress String?
   distance        Float?
   estimatedMinutes Int?
   notes           String?
+  // Firma e incidencias
+  signatureName   String?  // nombre del receptor al firmar
+  incidentType    String?  // DIRECCION_INCORRECTA, CLIENTE_AUSENTE, DAÑO, OTRO
+  incidentDesc    String?  // descripción de la incidencia
+  deliveredAt     DateTime? // cuándo se completó la entrega
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }

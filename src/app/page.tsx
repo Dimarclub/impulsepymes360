@@ -31,6 +31,7 @@ import { BagPlanModule } from '@/components/dimar/modules/bag-plan'
 import { PlanesModule } from '@/components/dimar/modules/planes'
 import { FuerzaDeltaModule } from '@/components/dimar/modules/fuerza-delta'
 import { DimarClubModule } from '@/components/dimar/modules/dimarclub'
+import { CourierAppModule } from '@/components/dimar/modules/courier-app'
 import { PubliBagsModule } from '@/components/dimar/modules/publibags'
 import { CooperativaModule } from '@/components/dimar/modules/cooperativa'
 import { SupplierBackofficeModule } from '@/components/dimar/modules/supplier-backoffice'
@@ -107,6 +108,7 @@ function HomeContent() {
       case 'planes': return <PlanesModule />
       case 'fuerza-delta': return <FuerzaDeltaModule />
       case 'dimarclub': return <DimarClubModule />
+      case 'courier-app': return <CourierAppModule />
       case 'publibags': return <PubliBagsModule />
       case 'cooperativa': return <CooperativaModule />
       case 'supplier-backoffice': return <SupplierBackofficeModule />

@@ -23,66 +23,131 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { useAppStore } from '@/lib/store'
-import type { Courier, Delivery } from '@/lib/types'
+import type { Courier } from '@/lib/types'
 import { VEHICLE_ICONS, VEHICLE_LABELS } from '@/lib/types'
 import {
   Bike,
   Car,
   CheckCircle2,
+  ChevronDown,
   Clock,
   Loader2,
   MapPin,
-  Package,
   Plus,
+  RefreshCw,
   Route,
   Star,
   Truck,
   User,
   Users,
+  AlertTriangle,
+  Eye,
+  Hand,
+  Inbox,
 } from 'lucide-react'
 
-// Mapa de iconos de vehículo (string → componente Lucide)
+// ---------- Tipos locales ----------
+interface DeliveryOrder {
+  orderNumber: string
+  city?: string | null
+  total?: number
+  items?: { id: string; quantity: number }[]
+  user?: { name: string } | null
+}
+interface DeliveryCourier {
+  user: { name: string }
+  vehicleType: string
+}
+interface Delivery {
+  id: string
+  orderId: string
+  courierId?: string | null
+  status: string
+  taskType?: string
+  amountToCollect?: number
+  pickupAddress?: string | null
+  deliveryAddress?: string | null
+  distance?: number | null
+  estimatedMinutes?: number | null
+  notes?: string | null
+  signatureName?: string | null
+  incidentType?: string | null
+  incidentDesc?: string | null
+  deliveredAt?: string | null
+  createdAt: string
+  updatedAt?: string
+  order?: DeliveryOrder | null
+  courier?: DeliveryCourier | null
+}
+
+// ---------- Mapas de iconos de vehículo ----------
 const VEHICLE_ICON_COMPONENTS: Record<string, React.ComponentType<{ className?: string }>> = {
   Bike,
   Truck,
   Car,
 }
 
-// Etiquetas de estados de entrega
-const DELIVERY_STATUSES = ['ASSIGNED', 'PICKED_UP', 'IN_TRANSIT', 'DELIVERED'] as const
-type DeliveryStatus = (typeof DELIVERY_STATUSES)[number]
-
-const STATUS_LABELS: Record<DeliveryStatus, string> = {
+// ---------- Estado + estilos ----------
+const STATUS_LABELS: Record<string, string> = {
+  PENDING: 'Por asignar',
   ASSIGNED: 'Asignado',
   PICKED_UP: 'Recogido',
   IN_TRANSIT: 'En camino',
   DELIVERED: 'Entregado',
+  FAILED: 'Fallido',
 }
 
-const STATUS_NEXT: Record<DeliveryStatus, DeliveryStatus | null> = {
-  ASSIGNED: 'PICKED_UP',
-  PICKED_UP: 'IN_TRANSIT',
-  IN_TRANSIT: 'DELIVERED',
-  DELIVERED: null,
+const STATUS_BADGES: Record<string, string> = {
+  PENDING: 'bg-amber-100 text-amber-700 border-amber-300',
+  ASSIGNED: 'bg-sky-100 text-sky-700 border-sky-300',
+  PICKED_UP: 'bg-violet-100 text-violet-700 border-violet-300',
+  IN_TRANSIT: 'bg-orange-100 text-orange-700 border-orange-300',
+  DELIVERED: 'bg-emerald-100 text-emerald-700 border-emerald-300',
+  FAILED: 'bg-red-100 text-red-700 border-red-300',
 }
 
-const STATUS_ACCENT: Record<DeliveryStatus, string> = {
-  ASSIGNED: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-  PICKED_UP: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
-  IN_TRANSIT: 'bg-emerald-200/60 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
-  DELIVERED: 'bg-emerald-600 text-white',
+const TASK_TYPE_LABELS: Record<string, string> = {
+  SOBRE: 'Sobre',
+  EXPRESS: 'Express',
+  MICRODISTRIBUCION: 'Microdist.',
 }
 
-// El API devuelve updatedAt (include sin select)
-interface DeliveryWithUpdated extends Delivery {
-  updatedAt?: string
+const INCIDENT_LABELS: Record<string, string> = {
+  DIRECCION_INCORRECTA: 'Dirección incorrecta',
+  CLIENTE_AUSENTE: 'Cliente ausente',
+  DAÑO: 'Daño',
+  OTRO: 'Otro',
 }
 
 function isSameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
 }
 
+function timeSince(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const min = Math.floor(diff / 60000)
+  if (min < 1) return 'recién'
+  if (min < 60) return `hace ${min} min`
+  const h = Math.floor(min / 60)
+  if (h < 24) return `hace ${h}h`
+  const d = Math.floor(h / 24)
+  return `hace ${d}d`
+}
+
+function fmtDate(iso?: string | null): string {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  return d.toLocaleDateString('es-EC', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+}
+
+// ---------- Componentes auxiliares ----------
 function RatingStars({ value }: { value: number }) {
   const v = Math.max(0, Math.min(5, value || 0))
   return (
@@ -90,15 +155,15 @@ function RatingStars({ value }: { value: number }) {
       {Array.from({ length: 5 }).map((_, i) => (
         <Star
           key={i}
-          className={`size-3.5 ${i < Math.round(v) ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'}`}
+          className={`size-3 ${i < Math.round(v) ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'}`}
         />
       ))}
-      <span className="text-xs text-muted-foreground ml-1">{v.toFixed(1)}</span>
+      <span className="text-[10px] text-muted-foreground ml-1">{v.toFixed(1)}</span>
     </div>
   )
 }
 
-function StatPill({
+function StatCard({
   label,
   value,
   icon: Icon,
@@ -107,22 +172,28 @@ function StatPill({
   label: string
   value: string | number
   icon: React.ComponentType<{ className?: string }>
-  accent: 'emerald' | 'amber'
+  accent: 'emerald' | 'amber' | 'rose' | 'sky'
 }) {
   const ring =
     accent === 'emerald'
       ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-      : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+      : accent === 'amber'
+      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+      : accent === 'rose'
+      ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+      : 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300'
   return (
-    <div className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3 flex-1 min-w-[180px]">
-      <div className={`p-2 rounded-lg shrink-0 ${ring}`}>
-        <Icon className="size-4" />
-      </div>
-      <div className="min-w-0">
-        <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
-        <p className="text-lg font-bold leading-tight">{value}</p>
-      </div>
-    </div>
+    <Card className="flex-1 min-w-[150px]">
+      <CardContent className="p-4 flex items-center gap-3">
+        <div className={`p-2.5 rounded-lg shrink-0 ${ring}`}>
+          <Icon className="size-4" />
+        </div>
+        <div className="min-w-0">
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+          <p className="text-xl font-bold leading-tight">{value}</p>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -233,193 +304,268 @@ function NewCourierDialog({ onCreated }: { onCreated: () => void }) {
   )
 }
 
-function CourierCard({
-  courier,
-  onToggle,
-}: {
-  courier: Courier
-  onToggle: (id: string, available: boolean) => void
-}) {
-  const iconName = VEHICLE_ICONS[courier.vehicleType] || 'Truck'
-  const Icon = VEHICLE_ICON_COMPONENTS[iconName] || Truck
-  return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="p-2.5 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 shrink-0">
-              <Icon className="size-5" />
-            </div>
-            <div className="min-w-0">
-              <p className="font-semibold truncate">{courier.user.name}</p>
-              <p className="text-xs text-muted-foreground truncate">{courier.user.email}</p>
-            </div>
-          </div>
-          <Badge variant="outline" className="shrink-0">
-            {VEHICLE_LABELS[courier.vehicleType] || courier.vehicleType}
-          </Badge>
-        </div>
-
-        <div className="mt-3 space-y-1.5 text-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground flex items-center gap-1.5">
-              <MapPin className="size-3.5" /> Zona
-            </span>
-            <span className="font-medium truncate ml-2">{courier.zone || '—'}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground flex items-center gap-1.5">
-              <Route className="size-3.5" /> Placa
-            </span>
-            <span className="font-medium font-mono uppercase">{courier.licensePlate || '—'}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground flex items-center gap-1.5">
-              <User className="size-3.5" /> Teléfono
-            </span>
-            <span className="font-medium">{courier.user.phone || '—'}</span>
-          </div>
-        </div>
-
-        <div className="mt-3 pt-3 border-t flex items-center justify-between gap-2">
-          <RatingStars value={courier.rating} />
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">
-              {courier.available ? 'Disponible' : 'No disponible'}
-            </span>
-            <Switch
-              checked={courier.available}
-              onCheckedChange={(v) => onToggle(courier.id, v)}
-              aria-label="Toggle disponibilidad"
-            />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function DeliveryKanbanCard({
+// ---------- Tarjeta "Por asignar" (draggable) ----------
+function PendingDeliveryCard({
   delivery,
-  couriers,
   onAssign,
-  onAdvance,
+  busy,
 }: {
-  delivery: DeliveryWithUpdated
-  couriers: Courier[]
-  onAssign: (id: string, courierId: string) => void
-  onAdvance: (id: string, next: DeliveryStatus) => void
+  delivery: Delivery
+  onAssign: (deliveryId: string, courierId: string) => void
+  busy: boolean
 }) {
-  const [assigning, setAssigning] = useState(false)
-  const [advancing, setAdvancing] = useState(false)
-  const courierName = delivery.courier?.user?.name || null
-  const next = STATUS_NEXT[delivery.status as DeliveryStatus]
-  const availableCouriers = couriers.filter((c) => c.available)
+  const [assignOpen, setAssignOpen] = useState(false)
+  const [localBusy, setLocalBusy] = useState(false)
+  const isBusy = busy || localBusy
+  const orderItems = delivery.order?.items?.length || 0
+  const totalQty = delivery.order?.items?.reduce((s, it) => s + (it.quantity || 0), 0) || 0
 
-  const handleAssign = async (courierId: string) => {
-    setAssigning(true)
-    try {
-      await onAssign(delivery.id, courierId)
-    } finally {
-      setAssigning(false)
-    }
-  }
-
-  const handleAdvance = async () => {
-    if (!next) return
-    setAdvancing(true)
-    try {
-      await onAdvance(delivery.id, next)
-    } finally {
-      setAdvancing(false)
-    }
+  const onDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData('text/plain', delivery.id)
+    e.dataTransfer.effectAllowed = 'move'
   }
 
   return (
-    <div className="rounded-lg border bg-card p-3 shadow-sm hover:shadow-md transition-shadow space-y-2">
+    <div
+      draggable={!isBusy}
+      onDragStart={onDragStart}
+      className={`group rounded-lg border border-amber-200 bg-amber-50/60 dark:bg-amber-900/10 p-3 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing ${isBusy ? 'opacity-60' : ''}`}
+    >
       <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+        <span className="font-mono text-xs font-bold text-amber-700 dark:text-amber-300">
           #{delivery.order?.orderNumber || '—'}
         </span>
-        {delivery.estimatedMinutes ? (
-          <Badge variant="outline" className="text-amber-700 border-amber-300 font-normal">
-            <Clock className="size-3 mr-1" />
-            ETA {delivery.estimatedMinutes} min
-          </Badge>
-        ) : null}
+        <Badge variant="outline" className="text-[10px] border-amber-300 text-amber-700 bg-amber-50">
+          {TASK_TYPE_LABELS[delivery.taskType || 'SOBRE'] || 'Sobre'}
+        </Badge>
       </div>
 
-      <div className="text-sm font-medium truncate">
+      <div className="mt-2 text-sm font-semibold truncate">
         {delivery.order?.user?.name || 'Cliente'}
       </div>
 
-      <div className="flex items-start gap-1.5 text-xs text-muted-foreground">
+      <div className="mt-1 flex items-start gap-1.5 text-xs text-muted-foreground">
         <MapPin className="size-3.5 shrink-0 mt-0.5" />
-        <span className="line-clamp-2">{delivery.deliveryAddress || delivery.order?.city || 'Dirección no registrada'}</span>
+        <span className="line-clamp-2">{delivery.deliveryAddress || delivery.order?.city || 'Dirección pendiente'}</span>
       </div>
 
-      <div className="flex items-center justify-between text-xs pt-1">
-        <span className="text-muted-foreground">Mensajero</span>
-        {courierName ? (
-          <span className="font-medium truncate ml-2">{courierName}</span>
-        ) : (
-          <span className="text-muted-foreground italic">Sin asignar</span>
+      <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+        <div className="flex items-center justify-between">
+          <span className="text-muted-foreground">Items</span>
+          <span className="font-medium">{orderItems} ({totalQty}u)</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-muted-foreground">Total</span>
+          <span className="font-medium">${(delivery.order?.total || 0).toFixed(2)}</span>
+        </div>
+        {delivery.amountToCollect > 0 && (
+          <div className="col-span-2 flex items-center justify-between text-amber-700 dark:text-amber-300 font-medium">
+            <span className="flex items-center gap-1"><AlertTriangle className="size-3" /> A cobrar contra entrega</span>
+            <span>${delivery.amountToCollect.toFixed(2)}</span>
+          </div>
         )}
       </div>
 
-      {typeof delivery.distance === 'number' && delivery.distance > 0 ? (
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">Distancia</span>
-          <span className="font-medium">{delivery.distance.toFixed(1)} km</span>
-        </div>
-      ) : null}
-
-      {/* Asignar mensajero */}
-      {!courierName && delivery.status !== 'DELIVERED' ? (
-        <Select onValueChange={handleAssign} disabled={assigning || availableCouriers.length === 0}>
-          <SelectTrigger className="h-8 w-full text-xs" size="sm">
-            <SelectValue placeholder={availableCouriers.length === 0 ? 'Sin disponibles' : 'Asignar mensajero'} />
-          </SelectTrigger>
-          <SelectContent>
-            {availableCouriers.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.user.name} · {VEHICLE_LABELS[c.vehicleType] || c.vehicleType}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      ) : null}
-
-      {/* Avanzar estado */}
-      {next ? (
+      <div className="mt-2 pt-2 border-t border-amber-200 dark:border-amber-900/50 flex items-center justify-between gap-2">
+        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+          <Clock className="size-3" />
+          {timeSince(delivery.createdAt)}
+        </span>
         <Button
-          onClick={handleAdvance}
-          disabled={advancing}
           size="sm"
           variant="outline"
-          className="w-full h-8 text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+          className="h-7 text-xs border-amber-400 text-amber-700 hover:bg-amber-100 dark:text-amber-300 dark:hover:bg-amber-900/30 lg:hidden"
+          onClick={() => setAssignOpen(true)}
+          disabled={isBusy}
         >
-          {advancing && <Loader2 className="size-3 animate-spin" />}
-          Avanzar a {STATUS_LABELS[next]}
+          {localBusy && <Loader2 className="size-3 animate-spin" />} Asignar
         </Button>
-      ) : (
-        <div className="flex items-center justify-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400 py-1 font-medium">
-          <CheckCircle2 className="size-4" />
-          Entrega completada
-        </div>
-      )}
+      </div>
+
+      <AssignDialog
+        open={assignOpen}
+        onOpenChange={setAssignOpen}
+        deliveryId={delivery.id}
+        onAssign={onAssign}
+        onBusyChange={setLocalBusy}
+      />
     </div>
   )
 }
 
-export function LogisticsModule() {
+function AssignDialog({
+  open,
+  onOpenChange,
+  deliveryId,
+  onAssign,
+  onBusyChange,
+}: {
+  open: boolean
+  onOpenChange: (v: boolean) => void
+  deliveryId: string
+  onAssign: (deliveryId: string, courierId: string) => void
+  onBusyChange: (b: boolean) => void
+}) {
   const [couriers, setCouriers] = useState<Courier[]>([])
-  const [deliveries, setDeliveries] = useState<DeliveryWithUpdated[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const toast = useAppStore((s) => s.toast)
 
-  const load = useCallback(async () => {
+  useEffect(() => {
+    if (!open) return
+    fetch('/api/couriers')
+      .then((r) => (r.ok ? r.json() : []))
+      .then((c: Courier[]) => setCouriers(c.filter((x) => x.available)))
+      .catch(() => setCouriers([]))
+  }, [open])
+
+  const submit = async (courierId: string) => {
+    if (!courierId) return
     setLoading(true)
+    onBusyChange(true)
+    try {
+      await onAssign(deliveryId, courierId)
+      onOpenChange(false)
+    } finally {
+      setLoading(false)
+      onBusyChange(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Asignar mensajero</DialogTitle>
+          <DialogDescription>Selecciona un mensajero disponible para esta entrega.</DialogDescription>
+        </DialogHeader>
+        {couriers.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">No hay mensajeros disponibles.</p>
+        ) : (
+          <Select onValueChange={submit} disabled={loading}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecciona un mensajero" />
+            </SelectTrigger>
+            <SelectContent>
+              {couriers.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.user.name} · {VEHICLE_LABELS[c.vehicleType] || c.vehicleType}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>Cancelar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ---------- Tarjeta de mensajero (drop target) ----------
+function CourierDropCard({
+  courier,
+  activeCount,
+  onDrop,
+  dragOver,
+  onDragOver,
+  onDragLeave,
+  onToggle,
+}: {
+  courier: Courier
+  activeCount: number
+  onDrop: (courierId: string, deliveryId: string) => void
+  dragOver: boolean
+  onDragOver: (e: React.DragEvent) => void
+  onDragLeave: () => void
+  onToggle: (id: string, available: boolean) => void
+}) {
+  const iconName = VEHICLE_ICONS[courier.vehicleType] || 'Truck'
+  const Icon = VEHICLE_ICON_COMPONENTS[iconName] || Truck
+
+  return (
+    <div
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={(e) => {
+        const deliveryId = e.dataTransfer.getData('text/plain')
+        if (deliveryId) onDrop(courier.id, deliveryId)
+      }}
+      className={`rounded-lg border-2 p-4 transition-all ${
+        dragOver
+          ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 scale-[1.02]'
+          : 'border-emerald-200 dark:border-emerald-900/50 bg-card hover:border-emerald-400'
+      }`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="p-2.5 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 shrink-0">
+            <Icon className="size-5" />
+          </div>
+          <div className="min-w-0">
+            <p className="font-semibold truncate">{courier.user.name}</p>
+            <p className="text-xs text-muted-foreground truncate">{VEHICLE_LABELS[courier.vehicleType] || courier.vehicleType}</p>
+          </div>
+        </div>
+        <Badge variant="outline" className="shrink-0 border-emerald-300 text-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-300">
+          {activeCount} activo{activeCount === 1 ? '' : 's'}
+        </Badge>
+      </div>
+
+      <div className="mt-3 space-y-1.5 text-sm">
+        <div className="flex items-center justify-between">
+          <span className="text-muted-foreground flex items-center gap-1.5">
+            <MapPin className="size-3.5" /> Zona
+          </span>
+          <span className="font-medium truncate ml-2">{courier.zone || '—'}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-muted-foreground flex items-center gap-1.5">
+            <Route className="size-3.5" /> Placa
+          </span>
+          <span className="font-medium font-mono uppercase">{courier.licensePlate || '—'}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-muted-foreground flex items-center gap-1.5">
+            <User className="size-3.5" /> Teléfono
+          </span>
+          <span className="font-medium">{courier.user.phone || '—'}</span>
+        </div>
+      </div>
+
+      <div className="mt-3 pt-3 border-t border-emerald-200 dark:border-emerald-900/50 flex items-center justify-between gap-2">
+        <RatingStars value={courier.rating} />
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">{courier.available ? 'Disponible' : 'No disponible'}</span>
+          <Switch
+            checked={courier.available}
+            onCheckedChange={(v) => onToggle(courier.id, v)}
+            aria-label="Toggle disponibilidad"
+          />
+        </div>
+      </div>
+
+      <div className="mt-2 text-center text-[11px] text-emerald-700 dark:text-emerald-300 hidden lg:flex items-center justify-center gap-1">
+        <Hand className="size-3" /> Arrastra aquí un sobre para asignar
+      </div>
+    </div>
+  )
+}
+
+// ---------- Componente principal ----------
+export function LogisticsModule() {
+  const [couriers, setCouriers] = useState<Courier[]>([])
+  const [deliveries, setDeliveries] = useState<Delivery[]>([])
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [busyIds, setBusyIds] = useState<Set<string>>(new Set())
+  const [dragOverCourier, setDragOverCourier] = useState<string | null>(null)
+  const [managingOpen, setManagingOpen] = useState(false)
+  const toast = useAppStore((s) => s.toast)
+
+  const load = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true)
+    setRefreshing(true)
     try {
       const [c, d] = await Promise.all([
         fetch('/api/couriers').then((r) => (r.ok ? r.json() : [])),
@@ -431,15 +577,18 @@ export function LogisticsModule() {
       toast('Error al cargar datos de logística', 'error')
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
   }, [toast])
 
   useEffect(() => {
     load()
+    // Refrescar cada 30s en silencio
+    const t = setInterval(() => load(true), 30000)
+    return () => clearInterval(t)
   }, [load])
 
   const toggleAvailable = async (id: string, available: boolean) => {
-    // Optimistic update
     setCouriers((prev) => prev.map((c) => (c.id === id ? { ...c, available } : c)))
     try {
       const r = await fetch(`/api/couriers/${id}`, {
@@ -450,167 +599,461 @@ export function LogisticsModule() {
       if (!r.ok) throw new Error('request failed')
       toast(`Mensajero ${available ? 'disponible' : 'no disponible'}`, 'info')
     } catch {
-      // Revert
       setCouriers((prev) => prev.map((c) => (c.id === id ? { ...c, available: !available } : c)))
       toast('No se pudo actualizar el mensajero', 'error')
     }
   }
 
-  const assignCourier = async (id: string, courierId: string) => {
+  const assignCourier = async (deliveryId: string, courierId: string) => {
+    setBusyIds((p) => new Set(p).add(deliveryId))
     try {
-      const r = await fetch(`/api/deliveries/${id}`, {
+      const courier = couriers.find((c) => c.id === courierId)
+      const r = await fetch(`/api/deliveries/${deliveryId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ courierId }),
+        body: JSON.stringify({ action: 'assign', courierId }),
       })
       if (!r.ok) throw new Error('request failed')
-      toast('Mensajero asignado con éxito')
-      load()
+      toast(`Sobre asignado a ${courier?.user?.name || 'mensajero'}`)
+      await load(true)
     } catch {
       toast('No se pudo asignar el mensajero', 'error')
+    } finally {
+      setBusyIds((p) => {
+        const n = new Set(p)
+        n.delete(deliveryId)
+        return n
+      })
     }
   }
 
-  const advanceStatus = async (id: string, status: DeliveryStatus) => {
+  const releaseCourier = async (deliveryId: string) => {
     try {
-      const r = await fetch(`/api/deliveries/${id}`, {
+      const r = await fetch(`/api/deliveries/${deliveryId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ action: 'release' }),
       })
       if (!r.ok) throw new Error('request failed')
-      toast(`Estado actualizado a ${STATUS_LABELS[status]}`)
-      load()
+      toast('Mensajero liberado', 'info')
+      await load(true)
     } catch {
-      toast('No se pudo actualizar el estado', 'error')
+      toast('No se pudo liberar el mensajero', 'error')
     }
   }
 
+  // ---------- Estadísticas ----------
   const stats = useMemo(() => {
     const today = new Date()
-    const inTransit = deliveries.filter((d) => d.status === 'IN_TRANSIT' || d.status === 'PICKED_UP').length
+    const pending = deliveries.filter((d) => d.status === 'PENDING').length
+    const inRoute = deliveries.filter((d) => d.status === 'ASSIGNED' || d.status === 'PICKED_UP' || d.status === 'IN_TRANSIT').length
     const deliveredToday = deliveries.filter((d) => {
       if (d.status !== 'DELIVERED') return false
-      const ref = d.updatedAt ? new Date(d.updatedAt) : new Date(d.createdAt)
+      const ref = d.deliveredAt ? new Date(d.deliveredAt) : d.updatedAt ? new Date(d.updatedAt) : new Date(d.createdAt)
       return isSameDay(ref, today)
     }).length
-    const availableCouriers = couriers.filter((c) => c.available).length
-    return {
-      total: deliveries.length,
-      inTransit,
-      deliveredToday,
-      availableCouriers,
-    }
-  }, [deliveries, couriers])
-
-  const columns = useMemo(() => {
-    return DELIVERY_STATUSES.map((status) => ({
-      status,
-      label: STATUS_LABELS[status],
-      items: deliveries.filter((d) => (d.status || 'ASSIGNED') === status),
-    }))
+    const incidents = deliveries.filter((d) => d.status === 'FAILED' || d.incidentType).length
+    return { pending, inRoute, deliveredToday, incidents }
   }, [deliveries])
 
+  const pendingDeliveries = useMemo(
+    () => deliveries.filter((d) => d.status === 'PENDING'),
+    [deliveries]
+  )
+  const availableCouriers = useMemo(
+    () => couriers.filter((c) => c.available),
+    [couriers]
+  )
+  const inProgress = useMemo(
+    () => deliveries.filter((d) => d.status === 'ASSIGNED' || d.status === 'PICKED_UP' || d.status === 'IN_TRANSIT'),
+    [deliveries]
+  )
+  const recentHistory = useMemo(
+    () => deliveries
+      .filter((d) => d.status === 'DELIVERED' || d.status === 'FAILED')
+      .slice(0, 20),
+    [deliveries]
+  )
+
+  const activeCountByCourier = useMemo(() => {
+    const map = new Map<string, number>()
+    for (const d of deliveries) {
+      if (!d.courierId) continue
+      if (d.status === 'ASSIGNED' || d.status === 'PICKED_UP' || d.status === 'IN_TRANSIT') {
+        map.set(d.courierId, (map.get(d.courierId) || 0) + 1)
+      }
+    }
+    return map
+  }, [deliveries])
+
+  const handleDrop = async (courierId: string, deliveryId: string) => {
+    setDragOverCourier(null)
+    await assignCourier(deliveryId, courierId)
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-6 lg:p-8 max-w-[1320px] mx-auto">
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gradient">Mensajería &amp; Logística</h1>
-          <p className="text-muted-foreground text-sm mt-1">Flota de mensajeros y seguimiento de entregas en tiempo real</p>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gradient">Logística Fuerza Delta</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Arrastra los sobres a un mensajero disponible para asignar la entrega.
+          </p>
         </div>
-        <NewCourierDialog onCreated={load} />
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => load(true)} disabled={refreshing}>
+            {refreshing ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
+            Actualizar
+          </Button>
+          <NewCourierDialog onCreated={() => load(true)} />
+        </div>
       </div>
 
-      {/* Stats bar */}
+      {/* Stats */}
       <div className="flex flex-wrap gap-3">
-        <StatPill label="Total entregas" value={stats.total} icon={Package} accent="emerald" />
-        <StatPill label="En tránsito" value={stats.inTransit} icon={Route} accent="amber" />
-        <StatPill label="Entregados hoy" value={stats.deliveredToday} icon={CheckCircle2} accent="emerald" />
-        <StatPill label="Mensajeros disponibles" value={stats.availableCouriers} icon={Users} accent="amber" />
+        <StatCard label="Por asignar" value={stats.pending} icon={Inbox} accent="amber" />
+        <StatCard label="En ruta" value={stats.inRoute} icon={Route} accent="sky" />
+        <StatCard label="Entregados hoy" value={stats.deliveredToday} icon={CheckCircle2} accent="emerald" />
+        <StatCard label="Incidencias" value={stats.incidents} icon={AlertTriangle} accent="rose" />
       </div>
 
-      {/* Flota de mensajeros */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <CardTitle>Flota de mensajeros</CardTitle>
-              <CardDescription>{couriers.length} mensajeros registrados</CardDescription>
+      {/* Tablero drag-and-drop */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Columna izquierda: Por asignar */}
+        <Card className="border-amber-200 dark:border-amber-900/40">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="size-2.5 rounded-full bg-amber-500" />
+                <CardTitle className="text-base">Por asignar</CardTitle>
+              </div>
+              <Badge variant="outline" className="border-amber-300 text-amber-700 dark:text-amber-300">
+                {pendingDeliveries.length}
+              </Badge>
             </div>
+            <CardDescription className="text-xs">
+              Arrastra cada sobre a un mensajero disponible
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-32 w-full rounded-lg" />
+                ))}
+              </div>
+            ) : pendingDeliveries.length === 0 ? (
+              <div className="text-center py-10 text-sm text-muted-foreground">
+                <Inbox className="size-10 mx-auto mb-2 opacity-30" />
+                No hay sobres pendientes. ¡Todo al día!
+              </div>
+            ) : (
+              <ScrollArea className="max-h-[640px] pr-3">
+                <div className="space-y-3">
+                  {pendingDeliveries.map((d) => (
+                    <PendingDeliveryCard
+                      key={d.id}
+                      delivery={d}
+                      onAssign={assignCourier}
+                      busy={busyIds.has(d.id)}
+                    />
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Columna derecha: Mensajeros disponibles */}
+        <Card className="border-emerald-200 dark:border-emerald-900/40">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="size-2.5 rounded-full bg-emerald-500" />
+                <CardTitle className="text-base">Mensajeros disponibles</CardTitle>
+              </div>
+              <Badge variant="outline" className="border-emerald-300 text-emerald-700 dark:text-emerald-300">
+                {availableCouriers.length}
+              </Badge>
+            </div>
+            <CardDescription className="text-xs">
+              Suelta aquí el sobre para asignarlo
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-40 w-full rounded-lg" />
+                ))}
+              </div>
+            ) : availableCouriers.length === 0 ? (
+              <div className="text-center py-10 text-sm text-muted-foreground">
+                <Users className="size-10 mx-auto mb-2 opacity-30" />
+                No hay mensajeros disponibles en este momento.
+              </div>
+            ) : (
+              <ScrollArea className="max-h-[640px] pr-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {availableCouriers.map((c) => (
+                    <CourierDropCard
+                      key={c.id}
+                      courier={c}
+                      activeCount={activeCountByCourier.get(c.id) || 0}
+                      onDrop={handleDrop}
+                      dragOver={dragOverCourier === c.id}
+                      onDragOver={(e) => {
+                        e.preventDefault()
+                        e.dataTransfer.dropEffect = 'move'
+                        setDragOverCourier(c.id)
+                      }}
+                      onDragLeave={() => setDragOverCourier((cur) => (cur === c.id ? null : cur))}
+                      onToggle={toggleAvailable}
+                    />
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Entregas en curso */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Truck className="size-4 text-sky-600" />
+              <CardTitle className="text-base">Entregas en curso</CardTitle>
+            </div>
+            <Badge variant="secondary">{inProgress.length}</Badge>
           </div>
+          <CardDescription className="text-xs">
+            Pedidos ya asignados o en tránsito
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-44 w-full rounded-lg" />
-              ))}
-            </div>
-          ) : couriers.length === 0 ? (
-            <div className="text-center py-10 text-muted-foreground text-sm">
-              No hay mensajeros registrados. Crea el primero con el botón <strong>Registrar mensajero</strong>.
+          {inProgress.length === 0 ? (
+            <div className="text-center py-8 text-sm text-muted-foreground">
+              No hay entregas en curso.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {couriers.map((c) => (
-                <CourierCard key={c.id} courier={c} onToggle={toggleAvailable} />
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-muted-foreground border-b">
+                    <th className="py-2 pr-3 font-medium">Pedido</th>
+                    <th className="py-2 pr-3 font-medium">Cliente</th>
+                    <th className="py-2 pr-3 font-medium">Mensajero</th>
+                    <th className="py-2 pr-3 font-medium">Estado</th>
+                    <th className="py-2 pr-3 font-medium hidden md:table-cell">Tiempo</th>
+                    <th className="py-2 pr-3 font-medium text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inProgress.map((d) => (
+                    <tr key={d.id} className="border-b last:border-0 hover:bg-muted/40">
+                      <td className="py-2.5 pr-3 font-mono text-xs font-semibold">
+                        #{d.order?.orderNumber || '—'}
+                      </td>
+                      <td className="py-2.5 pr-3 truncate max-w-[140px]">
+                        {d.order?.user?.name || '—'}
+                      </td>
+                      <td className="py-2.5 pr-3 truncate max-w-[140px]">
+                        {d.courier?.user?.name || '—'}
+                      </td>
+                      <td className="py-2.5 pr-3">
+                        <Badge variant="outline" className={STATUS_BADGES[d.status] || 'bg-muted'}>
+                          {STATUS_LABELS[d.status] || d.status}
+                        </Badge>
+                      </td>
+                      <td className="py-2.5 pr-3 hidden md:table-cell text-xs text-muted-foreground">
+                        {timeSince(d.createdAt)}
+                      </td>
+                      <td className="py-2.5 pr-3 text-right">
+                        <div className="flex items-center gap-1 justify-end">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs"
+                            onClick={() => toast(`Pedido ${d.order?.orderNumber} — ${STATUS_LABELS[d.status]}`, 'info')}
+                          >
+                            <Eye className="size-3.5" /> Ver
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs text-red-600 hover:text-red-700"
+                            onClick={() => releaseCourier(d.id)}
+                          >
+                            Liberar
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Kanban de entregas */}
+      {/* Historial reciente */}
       <Card>
-        <CardHeader>
-          <CardTitle>Tablero de entregas</CardTitle>
-          <CardDescription>Arrastra el scroll horizontal para ver todas las columnas</CardDescription>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="size-4 text-emerald-600" />
+              <CardTitle className="text-base">Historial reciente</CardTitle>
+            </div>
+            <Badge variant="secondary">{recentHistory.length}</Badge>
+          </div>
+          <CardDescription className="text-xs">
+            Últimas {recentHistory.length} entregas completadas o fallidas
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="flex gap-4 overflow-x-auto scroll-thin pb-2">
-              {DELIVERY_STATUSES.map((_, i) => (
-                <Skeleton key={i} className="h-64 min-w-64 flex-1 rounded-lg" />
-              ))}
-            </div>
-          ) : deliveries.length === 0 ? (
-            <div className="text-center py-10 text-muted-foreground text-sm">
-              No hay entregas registradas todavía.
+          {recentHistory.length === 0 ? (
+            <div className="text-center py-8 text-sm text-muted-foreground">
+              Aún no hay entregas completadas.
             </div>
           ) : (
-            <div className="flex gap-4 overflow-x-auto scroll-thin pb-2">
-              {columns.map((col) => (
-                <div key={col.status} className="min-w-64 max-w-72 flex-1 shrink-0">
-                  <div className="flex items-center justify-between gap-2 mb-3 sticky top-0">
-                    <div className="flex items-center gap-2">
-                      <span className={`inline-block size-2.5 rounded-full ${col.status === 'DELIVERED' ? 'bg-emerald-600' : col.status === 'IN_TRANSIT' ? 'bg-emerald-400' : col.status === 'PICKED_UP' ? 'bg-emerald-300' : 'bg-amber-400'}`} />
-                      <h3 className="font-semibold text-sm">{col.label}</h3>
-                    </div>
-                    <Badge variant="secondary" className="font-mono">{col.items.length}</Badge>
-                  </div>
-                  <div className="space-y-3">
-                    {col.items.length === 0 ? (
-                      <div className="rounded-lg border border-dashed p-4 text-center text-xs text-muted-foreground">
-                        Sin entregas
+            <ScrollArea className="max-h-[420px]">
+              <div className="space-y-2">
+                {recentHistory.map((d) => (
+                  <div key={d.id} className="flex items-center justify-between gap-3 rounded-lg border p-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className={`size-9 rounded-full flex items-center justify-center shrink-0 ${
+                          d.status === 'DELIVERED'
+                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                            : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                        }`}
+                      >
+                        {d.status === 'DELIVERED' ? <CheckCircle2 className="size-4" /> : <AlertTriangle className="size-4" />}
                       </div>
-                    ) : (
-                      col.items.map((d) => (
-                        <DeliveryKanbanCard
-                          key={d.id}
-                          delivery={d}
-                          couriers={couriers}
-                          onAssign={assignCourier}
-                          onAdvance={advanceStatus}
-                        />
-                      ))
-                    )}
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">
+                          #{d.order?.orderNumber || '—'} · {d.order?.user?.name || 'Cliente'}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {d.courier?.user?.name ? `Mensajero: ${d.courier.user.name}` : 'Sin mensajero'}
+                          {d.signatureName && ` · Firmado por ${d.signatureName}`}
+                          {d.incidentType && ` · ${INCIDENT_LABELS[d.incidentType] || d.incidentType}`}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <Badge variant="outline" className={STATUS_BADGES[d.status]}>
+                        {STATUS_LABELS[d.status]}
+                      </Badge>
+                      <span className="text-[10px] text-muted-foreground">{fmtDate(d.deliveredAt || d.updatedAt || d.createdAt)}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </ScrollArea>
           )}
         </CardContent>
       </Card>
+
+      {/* Gestionar mensajeros (colapsable) */}
+      <Collapsible open={managingOpen} onOpenChange={setManagingOpen}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <button className="w-full text-left">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users className="size-4 text-emerald-600" />
+                    <CardTitle className="text-base">Gestionar mensajeros</CardTitle>
+                    <Badge variant="secondary">{couriers.length}</Badge>
+                  </div>
+                  <ChevronDown
+                    className={`size-5 text-muted-foreground transition-transform ${managingOpen ? 'rotate-180' : ''}`}
+                  />
+                </div>
+                <CardDescription className="text-xs">
+                  Ver y administrar toda la flota de mensajeros
+                </CardDescription>
+              </CardHeader>
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent>
+              {loading ? (
+                <Skeleton className="h-32 w-full rounded-lg" />
+              ) : couriers.length === 0 ? (
+                <div className="text-center py-10 text-muted-foreground text-sm">
+                  No hay mensajeros registrados. Crea el primero con el botón <strong>Registrar mensajero</strong>.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-xs text-muted-foreground border-b">
+                        <th className="py-2 pr-3 font-medium">Mensajero</th>
+                        <th className="py-2 pr-3 font-medium">Vehículo</th>
+                        <th className="py-2 pr-3 font-medium hidden md:table-cell">Zona</th>
+                        <th className="py-2 pr-3 font-medium hidden md:table-cell">Placa</th>
+                        <th className="py-2 pr-3 font-medium hidden lg:table-cell">Rating</th>
+                        <th className="py-2 pr-3 font-medium text-right">Disponible</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {couriers.map((c) => {
+                        const iconName = VEHICLE_ICONS[c.vehicleType] || 'Truck'
+                        const Icon = VEHICLE_ICON_COMPONENTS[iconName] || Truck
+                        return (
+                          <tr key={c.id} className="border-b last:border-0 hover:bg-muted/40">
+                            <td className="py-2.5 pr-3">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <div className="p-1.5 rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 shrink-0">
+                                  <Icon className="size-3.5" />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="font-medium truncate">{c.user.name}</p>
+                                  <p className="text-[11px] text-muted-foreground truncate">{c.user.email}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-2.5 pr-3 text-xs">
+                              {VEHICLE_LABELS[c.vehicleType] || c.vehicleType}
+                            </td>
+                            <td className="py-2.5 pr-3 hidden md:table-cell text-xs">
+                              {c.zone || '—'}
+                            </td>
+                            <td className="py-2.5 pr-3 hidden md:table-cell text-xs font-mono uppercase">
+                              {c.licensePlate || '—'}
+                            </td>
+                            <td className="py-2.5 pr-3 hidden lg:table-cell">
+                              <RatingStars value={c.rating} />
+                            </td>
+                            <td className="py-2.5 pr-3 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <span className="text-xs text-muted-foreground hidden sm:inline">
+                                  {c.available ? 'Sí' : 'No'}
+                                </span>
+                                <Switch
+                                  checked={c.available}
+                                  onCheckedChange={(v) => toggleAvailable(c.id, v)}
+                                  aria-label="Toggle disponibilidad"
+                                />
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
     </div>
   )
 }

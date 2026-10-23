@@ -7,11 +7,16 @@ export async function GET() {
   if (auth instanceof NextResponse) return auth
   const deliveries = await db.delivery.findMany({
     include: {
-      order: { include: { user: { select: { name: true } } } },
+      order: {
+        include: {
+          user: { select: { name: true } },
+          items: { select: { id: true, quantity: true } },
+        },
+      },
       courier: { include: { user: { select: { name: true } } } },
     },
     orderBy: { createdAt: 'desc' },
-    take: 100,
+    take: 200,
   })
   return NextResponse.json(deliveries)
 }

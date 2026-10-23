@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react'
 import {
   Search, ShoppingCart, ChevronDown, User, LogIn, UserPlus, LogOut, Menu, X,
   Home, Users, Store, Building2, Phone, Sparkles, Loader2, Settings,
-  LayoutDashboard, Truck, Mail, Megaphone, ClipboardList, Rocket, Zap, Globe, MapPin, Grid3x3, PiggyBank, Network, HandCoins, Bell, DollarSign, Package, ShoppingBag, CreditCard,
+  LayoutDashboard, Truck, Mail, Megaphone, ClipboardList, Rocket, Zap, Globe, MapPin, Grid3x3, PiggyBank, Network, HandCoins, Bell, DollarSign, Package, ShoppingBag, CreditCard, Bike,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -263,6 +263,9 @@ export function TopNav() {
             )}
             {displayUser?.role === 'PARTNER' && (
               <button onClick={() => setModule('partner-backoffice')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors', activeModule === 'partner-backoffice' ? 'text-primary bg-primary/10' : 'text-primary hover:bg-primary/5')}><HandCoins className="size-4" />Mi Backoffice</button>
+            )}
+            {displayUser?.role === 'COURIER' && (
+              <button onClick={() => setModule('courier-app')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors', activeModule === 'courier-app' ? 'text-primary bg-primary/10' : 'text-primary hover:bg-primary/5')}><Bike className="size-4" />Mi App Delta</button>
             )}
             {(displayUser?.role === 'CLIENT' || displayUser?.role === 'AFFILIATE' || displayUser?.role === 'PARTNER' || displayUser?.role === 'ADMIN' || displayUser?.role === 'SUPPLIER') && (
               <button onClick={() => setModule('directorio')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'directorio' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><MapPin className="size-4" />Directorio</button>
