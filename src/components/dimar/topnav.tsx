@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react'
 import {
   Search, ShoppingCart, ChevronDown, User, LogIn, UserPlus, LogOut, Menu, X,
   Home, Users, Store, Building2, Phone, Sparkles, Loader2, Settings,
-  LayoutDashboard, Truck, Mail, Megaphone, ClipboardList, Rocket, Zap, Globe, MapPin, Grid3x3, PiggyBank, Network, HandCoins, Bell, DollarSign, Package, ShoppingBag,
+  LayoutDashboard, Truck, Mail, Megaphone, ClipboardList, Rocket, Zap, Globe, MapPin, Grid3x3, PiggyBank, Network, HandCoins, Bell, DollarSign, Package, ShoppingBag, CreditCard,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -252,6 +252,7 @@ export function TopNav() {
             <button onClick={() => setModule('grid')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'grid' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><Grid3x3 className="size-4" />Grid 360</button>
             <button onClick={() => setModule('bag-plan')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'bag-plan' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><Package className="size-4" />Plano Bolso</button>
             <button onClick={() => setModule('publibags')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'publibags' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><ShoppingBag className="size-4" />PubliBags</button>
+            <button onClick={() => setModule('planes')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300', activeModule === 'planes' && 'ring-2 ring-amber-400')}><CreditCard className="size-4" />Planes</button>
             {displayUser?.role === 'SUPPLIER' && (
               <button onClick={() => setModule('supplier-backoffice')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors', activeModule === 'supplier-backoffice' ? 'text-primary bg-primary/10' : 'text-primary hover:bg-primary/5')}><Store className="size-4" />Mi Backoffice</button>
             )}
@@ -315,6 +316,7 @@ export function TopNav() {
               {navItem('Grid 360', 'grid', Grid3x3)}
               {navItem('Plano Bolso', 'bag-plan', Package)}
               {navItem('PubliBags', 'publibags', ShoppingBag)}
+              {navItem('Planes', 'planes', CreditCard)}
               <a href="https://dimarclub.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md hover:bg-muted"><Sparkles className="size-4" /> Dimarclub</a>
               {navItem('Proveedor', 'suppliers', Store)}
               <button onClick={() => toast('Próximamente', 'info')} className="w-full flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md hover:bg-muted text-left"><Building2 className="size-4" /> Alquiler</button>

@@ -986,3 +986,85 @@ Stage Summary:
 - PubliBags satellite landing page live: dark-themed marketing page with embedded live QR grid (297 spaces, 7 panels) showing both current (printed) and next (open) editions.
 - Both modules verified end-to-end via Agent Browser with no console errors.
 - The satellite page CTA "Comprar mi espacio →" navigates to the full bag-plan visualizer for interactive purchasing.
+
+---
+Task ID: 12-planes
+Agent: full-stack-developer (planes module + marketplace seed)
+Task: Construir el módulo Planes (satellite landing page con los 6 planes integrales + 3 add-ons) y sembrar esos planes como productos del marketplace para que las compras fluyan por el pipeline order/commission/finance existente (sin APIs externas).
+
+Work Log:
+- Leído worklog.md (Task 11: PubliBags satellite pattern) y `src/components/dimar/modules/publibags.tsx` para copiar el patrón de dark theme: paleta `C` (#0B1120 bg, #15203A card, #00D4AA emerald, #F5A623 gold, etc.), inyección de Google Fonts (Outfit + DM Sans) vía `useEffect`, wrapper `min-h-screen` con fontFamily DM Sans, secciones con `max-w-[1280px] mx-auto px-4`.
+- Verificado wiring previo hecho por el main agent: `ModuleId` incluye `'planes'`, `permissions.ts` lo agrega a CLIENT/AFFILIATE/SUPPLIER/PARTNER + PUBLIC_MODULES, `page.tsx` ya tiene `case 'planes': return <PlanesModule />`, `topnav.tsx` ya tiene botón Planes (CreditCard, amber) en desktop (línea 255) y mobile (línea 319). No se rehizo nada de esto.
+- Creado `src/components/dimar/modules/planes.tsx` (~900 líneas, 'use client'):
+  * Datos: `PLANS` (6 planes: Básico $122, Emprendedor $253, Comercial $363 ⭐popular, Premium $478, Élite $592, Corporativo $736) con páginas/emails/productos/sobres/qr/qrProd, y `ADDONS` (Sobre individual $2.25/unidad, Entrega Express $4.00/unidad, Solo PubliBags QR $57.00/mes).
+  * Navbar sticky: logo "IMPULSEPYMES360" (con PYMES en gold), badge "Soluciones para crecer", anchors (Planes, Incluido, Add-ons, Contacto), WhatsApp button (esmeralda), "Volver al portal" (gold outline → setModule('marketplace')), hamburger mobile.
+  * Hero: H1 "Planes para impulsar tu negocio" (impulsar en gold) + subtitle + 4 métricas (6 planes, 3 add-ons, $122 desde, 5×5cm QR PubliBags) + 2 CTAs (Ver planes, WhatsApp).
+  * ComparisonTable (desktop, lg+): grid 220px + 6 columnas. Fila header con nombre + precio grande. 6 filas de características (sitio web, emails, productos marketplace, sobres, QR, prod PubliBags). Columna Comercial con badge "★ Popular" arriba y fondo gold sutil. Fila final con botón "Elegir" por plan (gold si popular, emerald si no). Arriba del todo, un panel destacado de los 3 add-ons con precio en gold + botón "Agregar".
+  * PlanCards (mobile, <lg): grid sm:2 de 6 tarjetas, cada una con nombre + precio + lista de features (FeatureRow con icono esmeralda) + botón "Elegir plan". Comercial con badge Popular + borde gold.
+  * IncludedAll: 3 cards (Dominio propio, Comunidad de consumidores, Directorio + álbum) + lista de checks.
+  * AddonsSection: 3 cards con icono gold, nombre, precio grande gold, botón "Agregar".
+  * CtaSection: "¿Listo para crecer?" con WhatsApp + email + Ir al marketplace.
+  * Footer: brand, contacto (email/phone/web), botones "Volver al portal" (gold) + WhatsApp (esmeralda), copyright.
+  * CTAs de plan/add-on: toast "Plan {name} agregado al carrito — ${price}/mes" + setModule('marketplace') tras 400ms. Add-on: toast "{name} — ${price}{unit}" + navigate.
+  * Imports de iconos Lucide: CreditCard, Check, Phone, Mail, Globe, Sparkles, ArrowRight, Star, Package, Truck, ShoppingBag, MapPin, Users, Palette, ChevronRight, Menu, X.
+- Creado `scripts/seed-plans.cjs` (CommonJS, idempotente):
+  * Conecta a DB vía `require('@prisma/client').PrismaClient` con path absoluto.
+  * Find-or-create User `info@impulsepymes360.com` (role SUPPLIER, password dummy hash, city Guayaquil, phone +593992689844, affiliateCode IMPUL-360).
+  * Find-or-create Supplier `ImpulsePymes360` (verified true, category Servicios, rating 5).
+  * Find-or-create Category `planes-integrales` (name "Planes Integrales", icon CreditCard, color #F5A623).
+  * Find-or-create 6 plan products (slug `plan-{id}`, sku `PLAN-{ID}` uppercase, price, stock 999999, tags ["plan","impulsepymes360","suscripcion"], featured true solo Comercial, rating 5 solo Comercial) + 3 add-on products (slug `addon-{id}`, sku `ADDON-{ID}`, tags ["addon","servicio"], featured false).
+  * Cada producto tiene `description` corta + `longDescription` en markdown con todos los detalles.
+  * Print de resumen + IDs al final.
+- Ejecutado `node scripts/seed-plans.cjs`:
+  * Primera corrida: 9 created (6 planes + 3 add-ons).
+  * Segunda corrida (idempotencia): 9 updated, 0 created. ✓
+- Verificación con query directa a la DB:
+  * 6 plan products: Básico $122, Emprendedor $253, Comercial $363 (featured:true, rating:5), Premium $478, Élite $592, Corporativo $736 — todos status ACTIVE.
+  * 3 addon products: Sobre individual $2.25, Entrega Express $4.00, Solo PubliBags QR $57.00.
+  * Category: `planes-integrales`, name "Planes Integrales", icon CreditCard, color #F5A623, parentId null.
+  * Supplier: ImpulsePymes360, verified true, category Servicios, rating 5.
+- Modificado `eslint.config.mjs` para añadir `scripts/**` a la lista de ignores (porque el script CJS usa `require()` que dispara `@typescript-eslint/no-require-imports`).
+- `bun run lint` → 0 errors, 0 warnings. ✓
+- No se ejecutó `bun run build` ni se reinició el dev server (lo gestiona el sistema).
+- Dev log: tras la creación de planes.tsx, recompiló exitosamente ("✓ Compiled in 200ms", "✓ Compiled in 641ms", "GET / 200 in 80ms").
+
+Stage Summary:
+- Módulo Planes (satellite landing page) creado con dark theme idéntico al de PubliBags: navy #0B1120 + esmeralda + gold, fonts Outfit + DM Sans, totalmente responsive (tabla en desktop lg+, tarjetas en mobile).
+- 6 planes integrales + 3 add-ons renderizados con datos exactos del HTML del usuario. Plan Comercial destacado como "★ Popular" (badge gold, fondo sutil, botón gold).
+- Botones "Elegir plan" / "Agregar" hacen toast + navegan al marketplace (`setModule('marketplace')`), donde el usuario encontrará el producto correspondiente (sembrado) para agregarlo al carrito y fluir por el pipeline order/commission/finance existente.
+- 9 productos sembrados en la DB (6 planes + 3 add-ons) bajo supplier ImpulsePymes360 y categoría Planes Integrales. El plan Comercial está marcado como `featured:true` y `rating:5`. Todos con stock 999999 (servicio), status ACTIVE, slugs `plan-*` y `addon-*`.
+- Script `seed-plans.cjs` idempotente: safe re-run (find-or-create + update de precio/stock en products existentes).
+- Marketplace automáticamente mostrará los 9 productos nuevos (la API `/api/products` filtra solo por `status:ACTIVE`).
+- Calidad: lint 0/0, sin reiniciar dev server, sin build.
+
+---
+Task ID: 12-planes (main agent verification)
+Agent: main (Z.ai Code)
+Task: Verify the Planes module + marketplace seed after subagent completion
+
+Work Log:
+- User provided HTML of 6 integral plans (Básico $122, Emprendedor $253, Comercial $363 ★Popular, Premium $478, Élite $592, Corporativo $736) + 3 add-ons (Sobre individual $2.25, Entrega Express $4.00, Solo PubliBags QR $57/mes). All monthly, dark A5-landscape print design.
+- Main agent did wiring before delegating:
+  * src/lib/types.ts: added 'planes' to ModuleId union
+  * src/lib/permissions.ts: granted 'planes' to CLIENT, AFFILIATE, SUPPLIER, PARTNER roles + added to PUBLIC_MODULES (so logged-out visitors can view)
+  * src/app/page.tsx: imported PlanesModule + added case 'planes': return <PlanesModule />
+  * src/components/dimar/topnav.tsx: added CreditCard icon import + "Planes" button (amber-styled, prominent) in desktop nav (line 255) + mobile menu (line 319)
+- Delegated Task 12-planes to full-stack-developer subagent: built planes.tsx (~900 lines, dark theme matching PubliBags pattern, comparison table desktop + plan cards mobile, "Comercial" highlighted as Popular, CTA buttons toast + navigate to marketplace) + scripts/seed-plans.cjs (idempotent seed of 9 products: 6 plans + 3 add-ons under supplier "ImpulsePymes360" + category "planes-integrales").
+- Restored .env (NEXTAUTH_SECRET was missing again — recurring issue).
+
+Verification with Agent Browser (server + browser in one bash command):
+- Marketplace API /api/products now returns 63 total products including:
+  * 6 plan products: Plan Básico $122, Emprendedor $253, Comercial $363 (featured ★), Premium $478, Élite $592, Corporativo $736
+  * 3 add-on products: Sobre individual $2.25, Entrega Express $4.00, Solo PubliBags QR $57
+- Planes module renders with dark theme (#0B1120), all 6 plans visible (Básico, Emprendedor, Comercial with ★ POPULAR badge, Premium, Élite, Corporativo), all 3 add-ons visible (Sobre individual, Entrega Express, Solo espacio PubliBags con QR), all 9 prices present ($122, $253, $363, $478, $592, $736, $2.25, $4, $57).
+- No console errors.
+- Lint: 0 errors, 0 warnings.
+- Seed script is idempotent (verified by subagent: second run updates instead of duplicating).
+
+Stage Summary:
+- New module 'planes' fully integrated and verified end-to-end.
+- The 6 integral plans + 3 add-ons are now MARKETPLACE PRODUCTS (supplier ImpulsePymes360, category Planes Integrales) — purchases flow through the existing order/commission/finance pipeline with NO external APIs.
+- The Planes satellite page (dark themed, responsive) showcases all plans with a comparison table (desktop) / cards (mobile), "Comercial" highlighted as Popular, and CTAs that toast + navigate to marketplace.
+- The "Planes" button in topnav (amber, prominent) navigates to this module.
+- All plan products have stock=999999 (unlimited service), status=ACTIVE, so they appear in the marketplace automatically.
+- .env NEXTAUTH_SECRET restored.

@@ -21,6 +21,7 @@ export type ModuleId =
   | 'web-express'
   | 'publibags'
   | 'bag-plan'
+  | 'planes'
   | 'directorio'
   | 'fuerza'
   | 'automatizacion'

@@ -28,6 +28,7 @@ import { SiteAdminModule } from '@/components/dimar/modules/site-admin'
 import { ZonesModule } from '@/components/dimar/modules/zones'
 import { GridModule } from '@/components/dimar/modules/grid'
 import { BagPlanModule } from '@/components/dimar/modules/bag-plan'
+import { PlanesModule } from '@/components/dimar/modules/planes'
 import { PubliBagsModule } from '@/components/dimar/modules/publibags'
 import { CooperativaModule } from '@/components/dimar/modules/cooperativa'
 import { SupplierBackofficeModule } from '@/components/dimar/modules/supplier-backoffice'
@@ -101,6 +102,7 @@ function HomeContent() {
       case 'zones': return <ZonesModule />
       case 'grid': return <GridModule />
       case 'bag-plan': return <BagPlanModule />
+      case 'planes': return <PlanesModule />
       case 'publibags': return <PubliBagsModule />
       case 'cooperativa': return <CooperativaModule />
       case 'supplier-backoffice': return <SupplierBackofficeModule />
