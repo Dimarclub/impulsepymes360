@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuerza Delta - Mensajería B2B y Tarifas Planas | ImpulsePymes360</title>
+    <meta name="description" content="Fuerza Delta: mensajería B2B con tarifas planas desde $1.75 por entrega. App Deltas + micro-distribuidores de zona. Contrata 16 o más entregas diarias y obtén GRATIS el Plan Integral.">
+    <meta name="theme-color" content="#0B1120">
+    <link rel="canonical" href="https://www.impulsepymes360.com/fuerzadelta/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Fuerza Delta - Mensajería B2B + App Deltas | ImpulsePymes360">
+    <meta property="og:description" content="Mensajería B2B con tarifas planas. App Deltas y micro-distribuidores de zona. Desde $1.75 por entrega.">
+    <meta property="og:url" content="https://www.impulsepymes360.com/fuerzadelta/">
+    <meta property="og:image" content="https://www.impulsepymes360.com/og-image.jpg">
+    <meta property="og:locale" content="es_EC">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230B1120'/%3E%3Ctext x='50' y='68' font-family='Outfit,sans-serif' font-size='52' font-weight='800' text-anchor='middle' fill='%2360A5FA'%3EFD%3C/text%3E%3C/svg%3E">
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg: #0B1120;
+            --bg-card: #15203A;
+            --border: #243352;
+            --accent: #00D4AA;
+            --gold: #F5A623;
+            --text: #E8EDF5;
+            --muted: #6B7FA0;
+            --success: #22C55E;
+            --blue: #60A5FA;
+            --purple: #A855F7;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+
+        .bg-glow {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(96,165,250,0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(245,166,35,0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .wnavbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(11, 17, 32, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .wnavbar-inner {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 68px;
+            gap: 12px;
+        }
+
+        .wlogo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text);
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .wlogo span { color: var(--accent); }
+
+        .wnav-links {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            list-style: none;
+        }
+
+        .wnav-links > li > a,
+        .wdropdown-btn {
+            color: var(--muted);
+            font-size: 0.88rem;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .wnav-links > li > a:hover,
+        .wdropdown-btn:hover {
+            color: var(--text);
+            background: var(--bg-card);
+        }
+
+        .btn-tienda {
+            background: var(--accent) !important;
+            color: var(--bg) !important;
+            font-weight: 600 !important;
+        }
+
+        .btn-tienda:hover { background: #00F0C0 !important; }
+
+        .btn-secondary-nav {
+            background: var(--bg-card) !important;
+            color: var(--text) !important;
+            border: 1px solid var(--border) !important;
+        }
+
+        .btn-tareas {
+            background: linear-gradient(135deg, var(--accent), var(--gold)) !important;
+            color: var(--bg) !important;
+            font-weight: 700 !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+        }
+
+        .btn-tareas:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .badge-tareas {
+            background: var(--bg);
+            color: var(--gold);
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+            margin-left: 4px;
+            line-height: 1;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .wdropdown-wrap { position: relative; }
+
+        .wdropdown-menu {
+            position: absolute;
+            top: 100%; left: 0;
+            margin-top: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 8px;
+            min-width: 240px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px);
+            transition: all 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        }
+
+        .wdropdown-wrap.open .wdropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .wdropdown-menu a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            color: var(--muted);
+            font-size: 0.85rem;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .wdropdown-menu a:hover {
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .wdropdown-menu a i {
+            width: 20px;
+            text-align: center;
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .whamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .whamburger span {
+            width: 24px;
+            height: 2px;
+            background: var(--text);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        /* HERO */
+        .hero-fd {
+            padding: 70px 24px 50px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-content { max-width: 900px; margin: 0 auto; }
+
+        .badge-hero {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(245,166,35,0.15);
+            color: var(--gold);
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            border: 1px solid rgba(245,166,35,0.3);
+        }
+
+        .hero-fd h1 {
+            font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero-fd h1 .highlight { color: var(--blue); }
+        .hero-fd h1 .highlight-gold { color: var(--gold); }
+
+        .hero-fd .hero-p {
+            font-size: 1.05rem;
+            color: var(--muted);
+            max-width: 780px;
+            margin: 0 auto 32px;
+            line-height: 1.7;
+        }
+
+        .precio-hero {
+            display: inline-flex;
+            align-items: center;
+            gap: 20px;
+            background: linear-gradient(135deg, rgba(96,165,250,0.1) 0%, rgba(245,166,35,0.08) 100%);
+            border: 1px solid var(--blue);
+            border-radius: 14px;
+            padding: 20px 32px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .precio-hero .precio-valor {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--blue);
+            line-height: 1;
+        }
+
+        .precio-hero .precio-label {
+            text-align: left;
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .precio-hero .precio-label strong {
+            color: var(--text);
+            display: block;
+            font-size: 1rem;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-gold { background: var(--gold); color: var(--bg); }
+        .btn-gold:hover { background: #FFB849; transform: translateY(-2px); }
+        .btn-primary { background: var(--accent); color: var(--bg); }
+        .btn-primary:hover { background: #00F0C0; transform: translateY(-2px); }
+        .btn-blue { background: var(--blue); color: white; }
+        .btn-blue:hover { background: #3B82F6; transform: translateY(-2px); }
+        .btn-outline {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-outline:hover { background: var(--bg-card); border-color: var(--blue); }
+        .btn-lg { padding: 16px 32px; font-size: 1rem; }
+
+        /* SECCIONES */
+        .section {
+            position: relative;
+            z-index: 1;
+            padding: 70px 24px;
+        }
+
+        .section-container { max-width: 1300px; margin: 0 auto; }
+
+        .section-label {
+            color: var(--accent);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .section-label.blue { color: var(--blue); }
+        .section-label.gold { color: var(--gold); }
+        .section-label.purple { color: var(--purple); }
+
+        .section-title {
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            margin-bottom: 16px;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .section-subtitle {
+            color: var(--muted);
+            font-size: 1rem;
+            margin-bottom: 40px;
+            max-width: 750px;
+        }
+
+        .text-center { text-align: center; }
+        .text-center .section-subtitle { margin-left: auto; margin-right: auto; }
+
+        /* TARIFAS POR UNIDAD */
+        .tarifas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            margin: 40px auto 0;
+        }
+
+        .tarifa-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tarifa-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--blue) 0%, var(--accent) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tarifa-card:hover {
+            border-color: var(--blue);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+
+        .tarifa-card:hover::before { opacity: 1; }
+
+        .tarifa-card h3 {
+            font-size: 0.95rem;
+            color: var(--blue);
+            margin-bottom: 12px;
+        }
+
+        .tarifa-precio {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: var(--gold);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .tarifa-desc {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-bottom: 20px;
+        }
+
+        .tarifa-lista {
+            list-style: none;
+            text-align: left;
+            font-size: 0.82rem;
+            color: var(--muted);
+            margin-bottom: 24px;
+        }
+
+        .tarifa-lista li {
+            padding: 7px 0;
+            border-bottom: 1px solid rgba(36,51,82,0.3);
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .tarifa-lista li i {
+            color: var(--success);
+            font-size: 0.8rem;
+            margin-top: 3px;
+            flex-shrink: 0;
+        }
+
+        .nota-pago {
+            text-align: center;
+            margin: 24px 0;
+        }
+
+        .nota-pago p {
+            font-size: 0.82rem;
+            color: var(--gold);
+            background: rgba(245,166,35,0.08);
+            border: 1px solid var(--gold);
+            border-radius: 10px;
+            padding: 12px 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* MICRO-DISTRIBUIDORES + APP DELTAS */
+        .deltas-section {
+            padding: 70px 24px;
+            background: linear-gradient(160deg, rgba(96,165,250,0.06) 0%, rgba(245,166,35,0.03) 100%);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            z-index: 1;
+        }
+
+        .deltas-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .delta-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px 28px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .delta-card.app::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--blue) 0%, var(--accent) 100%);
+        }
+
+        .delta-card.micro::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--gold) 0%, var(--accent) 100%);
+        }
+
+        .delta-card:hover { transform: translateY(-4px); }
+        .delta-card.app:hover { border-color: var(--blue); }
+        .delta-card.micro:hover { border-color: var(--gold); }
+
+        .delta-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+        }
+
+        .delta-card.app .delta-icon {
+            background: rgba(96,165,250,0.15);
+            color: var(--blue);
+        }
+
+        .delta-card.micro .delta-icon {
+            background: rgba(245,166,35,0.15);
+            color: var(--gold);
+        }
+
+        .delta-card h3 {
+            font-size: 1.25rem;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+
+        .delta-card > p {
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.6;
+            margin-bottom: 18px;
+        }
+
+        .delta-lista {
+            list-style: none;
+        }
+
+        .delta-lista li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 7px 0;
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+
+        .delta-lista li i {
+            color: var(--success);
+            font-size: 0.8rem;
+            margin-top: 3px;
+            flex-shrink: 0;
+        }
+
+        .delta-lista li strong { color: var(--accent); }
+
+        /* CTA PLANES */
+        .cta-planes {
+            padding: 60px 24px;
+            text-align: center;
+            background: linear-gradient(160deg, rgba(0,212,170,0.05) 0%, transparent 100%);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-planes h2 {
+            font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+
+        .cta-planes h2 span { color: var(--success); }
+
+        .cta-planes p {
+            color: var(--muted);
+            max-width: 750px;
+            margin: 0 auto 24px;
+            line-height: 1.6;
+        }
+
+        /* BENEFICIOS */
+        .beneficios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            max-width: 1100px;
+            margin: 40px auto 0;
+        }
+
+        .beneficio-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .beneficio-item:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .beneficio-item i {
+            font-size: 1.3rem;
+            color: var(--accent);
+            flex-shrink: 0;
+            width: 32px;
+            text-align: center;
+        }
+
+        .beneficio-item span {
+            font-size: 0.85rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        /* PROPUESTA DIMARCLUB */
+        .propuesta-section {
+            padding: 70px 24px;
+            background: linear-gradient(160deg, rgba(168,85,247,0.06) 0%, rgba(245,166,35,0.03) 100%);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            z-index: 1;
+        }
+
+        .propuesta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            max-width: 1200px;
+            margin: 40px auto 0;
+        }
+
+        .propuesta-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 22px 18px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .propuesta-card:hover {
+            border-color: var(--purple);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(168,85,247,0.15);
+        }
+
+        .propuesta-card i {
+            font-size: 1.5rem;
+            color: var(--purple);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .propuesta-card h4 {
+            font-size: 0.9rem;
+            color: var(--text);
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .propuesta-card p {
+            font-size: 0.78rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .propuesta-cta {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .propuesta-cta .btn { margin: 0 6px; }
+
+        /* RED UNIVERSAL */
+        .red-info-section {
+            padding: 60px 24px;
+            background: rgba(21, 32, 58, 0.4);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            z-index: 1;
+        }
+
+        .red-info-box {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 1px solid var(--accent);
+            border-radius: 18px;
+            padding: 32px 28px;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .red-info-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: rgba(0,212,170,0.15);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .red-info-content h3 {
+            font-size: 1.2rem;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .red-info-content p {
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .red-info-content .red-info-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .red-info-content .red-info-link:hover { text-decoration: underline; }
+
+        /* CONTACTO */
+        .contact-section {
+            text-align: center;
+            padding: 60px 24px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            position: relative;
+            z-index: 1;
+        }
+
+        .contact-section h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+        }
+
+        .contact-section p {
+            color: var(--muted);
+            margin-bottom: 24px;
+        }
+
+        .whatsapp-btn {
+            background: #25D366;
+            color: white;
+            font-size: 1rem;
+            padding: 14px 28px;
+            border-radius: 50px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .whatsapp-btn:hover {
+            box-shadow: 0 8px 30px rgba(37,211,102,0.3);
+            transform: translateY(-2px);
+        }
+
+        .volver-section {
+            text-align: center;
+            padding: 30px 24px;
+            border-top: 1px solid var(--border);
+            position: relative;
+            z-index: 1;
+        }
+
+        .volver-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 10px 20px;
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .volver-btn:hover {
+            color: var(--blue);
+            border-color: var(--blue);
+        }
+
+        /* FOOTER */
+        .wfooter {
+            position: relative;
+            z-index: 1;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            padding: 48px 24px 24px;
+        }
+
+        .footer-grid {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+
+        .footer-grid h4 {
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .footer-grid a {
+            display: block;
+            color: var(--muted);
+            font-size: 0.85rem;
+            padding: 5px 0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-grid a:hover { color: var(--accent); }
+
+        .footer-social {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .footer-social a {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            transition: all 0.3s ease;
+        }
+
+        .footer-social a:hover {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            padding-top: 24px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            .whamburger { display: flex; }
+            
+            .wnav-links {
+                position: absolute;
+                top: 68px;
+                left: 0; right: 0;
+                background: var(--bg-card);
+                border-bottom: 1px solid var(--border);
+                flex-direction: column;
+                padding: 16px 24px;
+                gap: 4px;
+                display: none;
+                max-height: calc(100vh - 68px);
+                overflow-y: auto;
+                align-items: stretch;
+            }
+            
+            .wnav-links.open { display: flex; }
+            
+            .wnav-links > li > a,
+            .wdropdown-btn {
+                width: 100%;
+                justify-content: space-between;
+                padding: 12px 14px;
+            }
+            
+            .wdropdown-menu {
+                position: static;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+                background: var(--bg);
+                border: none;
+                padding: 0;
+                margin-top: 4px;
+                box-shadow: none;
+                display: none;
+            }
+            
+            .wdropdown-wrap.open .wdropdown-menu { display: block; }
+            
+            .tarifas-grid { grid-template-columns: 1fr; }
+            .deltas-grid { grid-template-columns: 1fr; }
+            .hero-actions { flex-direction: column; align-items: stretch; }
+            .hero-actions .btn { width: 100%; justify-content: center; }
+            .red-info-box { grid-template-columns: 1fr; text-align: center; }
+            .red-info-icon { margin: 0 auto; }
+        }
+
+        @media (max-width: 600px) {
+            .precio-hero { padding: 16px 20px; gap: 12px; }
+            .precio-hero .precio-valor { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+
+<!-- ==================== NAVBAR ==================== -->
+<nav class="wnavbar">
+    <div class="wnavbar-inner">
+        <a class="wlogo" href="/">Impulse<span>Pymes360</span></a>
+        
+        <ul class="wnav-links" id="wnavLinks">
+            <li class="wdropdown-wrap">
+                <button class="wdropdown-btn" type="button">
+                    <i class="fas fa-th"></i> Ecosistema <i class="fas fa-caret-down" style="font-size:0.7rem;"></i>
+                </button>
+                <div class="wdropdown-menu">
+                    <a href="/dimarclub/"><i class="fas fa-users"></i> DimarClub</a>
+                    <a href="/incubadora/"><i class="fas fa-seedling"></i> Incubadora</a>
+                    <a href="/webexpress/"><i class="fas fa-globe"></i> WebExpress</a>
+                    <a href="/impulso360/"><i class="fas fa-shopping-cart"></i> Impulso360</a>
+                    <a href="/enlaceexpress/"><i class="fas fa-headset"></i> Enlace Express</a>
+                    <a href="/publibags/"><i class="fas fa-recycle"></i> Publibags</a>
+                    <a href="/fuerzadelta/"><i class="fas fa-motorcycle"></i> Fuerza Delta</a>
+                    <a href="/dimarpost/"><i class="fas fa-bolt"></i> DimarPost</a>
+                </div>
+            </li>
+            
+            <li><a href="/impulso360/" class="btn-tienda"><i class="fas fa-store"></i> Tienda</a></li>
+            <li><a href="/impulso360/#clasificados" class="btn-secondary-nav"><i class="fas fa-newspaper"></i> Clasificados</a></li>
+            <li><a href="/planes.html"><i class="fas fa-tags"></i> Planes</a></li>
+            <li>
+                <a href="/tareas.html" class="btn-tareas">
+                    <i class="fas fa-tasks"></i> Tareas
+                    <span class="badge-tareas" id="badgeTareas">0</span>
+                </a>
+            </li>
+            
+            <li class="wdropdown-wrap">
+                <button class="wdropdown-btn" type="button">
+                    <i class="fas fa-store-alt"></i> Proveedores <i class="fas fa-caret-down" style="font-size:0.7rem;"></i>
+                </button>
+                <div class="wdropdown-menu">
+                    <a href="/registro-proveedores/"><i class="fas fa-rocket"></i> Quiero ser Proveedor</a>
+                    <a href="/backoffice-proveedor/"><i class="fas fa-globe"></i> Mi Backoffice</a>
+                    <a href="/login.html"><i class="fas fa-sign-in-alt"></i> Mi Cuenta</a>
+                </div>
+            </li>
+            
+            <li class="wdropdown-wrap">
+                <button class="wdropdown-btn" type="button">
+                    <i class="fas fa-users"></i> Miembros <i class="fas fa-caret-down" style="font-size:0.7rem;"></i>
+                </button>
+                <div class="wdropdown-menu">
+                    <a href="/registro-socios/"><i class="fas fa-user-tie"></i> Ser Socio</a>
+                    <a href="/backoffice-miembro/"><i class="fas fa-network-wired"></i> Mi Red</a>
+                    <a href="/registro-clientes/"><i class="fas fa-user"></i> Ser Cliente</a>
+                </div>
+            </li>
+            
+            <li><a href="/login.html" class="btn-secondary-nav"><i class="fas fa-sign-in-alt"></i> Acceso</a></li>
+        </ul>
+        
+        <button class="whamburger" id="whamburger" aria-label="Abrir menú">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</nav>
+
+<main>
+
+    <!-- HERO -->
+    <section class="hero-fd">
+        <div class="hero-content">
+            <span class="badge-hero"><i class="fas fa-fire"></i> Oferta Especial</span>
+            <h1>Ahorra en tus envíos y obtén <span class="highlight-gold">GRATIS</span> nuestro Plan Integral</h1>
+            <p class="hero-p">
+                Por la contratación de nuestras tarifas planas, tu negocio recibe presencia digital completa: 
+                página web, marketplace, publicidad en fundas ecológicas y 
+                <strong style="color:var(--accent)">Enlace Express (Call Center + Vendedores P2P)</strong>. 
+                <strong style="color:var(--gold)">Gratis todos los meses.</strong>
+            </p>
+
+            <div class="precio-hero">
+                <div class="precio-valor">$1.75</div>
+                <div class="precio-label">
+                    <strong>por entrega (Plan 15)</strong>
+                    Desde · Pago diario anticipado
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a href="/planes.html" class="btn btn-gold btn-lg">
+                    <i class="fas fa-tags"></i> Ver Planes Integrales
+                </a>
+                <a href="#tarifas" class="btn btn-outline btn-lg">
+                    <i class="fas fa-arrow-down"></i> Ver tarifas por unidad
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- TARIFAS POR UNIDAD -->
+    <section class="section" id="tarifas" style="padding-top:20px;">
+        <div class="section-container">
+            <p class="section-label text-center">Tarifas por unidad</p>
+            <h2 class="section-title text-center">Paga solo por lo que envías</h2>
+            <p class="section-subtitle text-center" style="margin-left:auto;margin-right:auto;">
+                Sin contratos forzosos. Elige la tarifa según tu volumen diario de envíos.
+            </p>
+
+            <div class="tarifas-grid">
+                <div class="tarifa-card">
+                    <h3><i class="fas fa-envelope"></i> Plan 5</h3>
+                    <div class="tarifa-precio">$2.25</div>
+                    <div class="tarifa-desc">Por entrega · Pago diario</div>
+                    <ul class="tarifa-lista">
+                        <li><i class="fas fa-check"></i> 1 a 5 sobres al día</li>
+                        <li><i class="fas fa-check"></i> Recogida incluida</li>
+                        <li><i class="fas fa-check"></i> Seguimiento en tiempo real</li>
+                        <li><i class="fas fa-check"></i> Pago diario por adelantado</li>
+                    </ul>
+                    <a href="/registro-proveedores/" class="btn btn-blue" style="width:100%;justify-content:center;">
+                        <i class="fas fa-rocket"></i> Solicitar
+                    </a>
+                </div>
+
+                <div class="tarifa-card">
+                    <h3><i class="fas fa-envelope-open-text"></i> Plan 10</h3>
+                    <div class="tarifa-precio">$2.00</div>
+                    <div class="tarifa-desc">Por entrega · Pago diario</div>
+                    <ul class="tarifa-lista">
+                        <li><i class="fas fa-check"></i> 1 a 10 entregas al día</li>
+                        <li><i class="fas fa-check"></i> Recogida incluida</li>
+                        <li><i class="fas fa-check"></i> Seguimiento en tiempo real</li>
+                        <li><i class="fas fa-check"></i> Pago diario por adelantado</li>
+                    </ul>
+                    <a href="/registro-proveedores/" class="btn btn-blue" style="width:100%;justify-content:center;">
+                        <i class="fas fa-rocket"></i> Solicitar
+                    </a>
+                </div>
+
+                <div class="tarifa-card">
+                    <h3><i class="fas fa-building"></i> Plan 15</h3>
+                    <div class="tarifa-precio">$1.75</div>
+                    <div class="tarifa-desc">Por entrega · Pago diario</div>
+                    <ul class="tarifa-lista">
+                        <li><i class="fas fa-check"></i> 1 a 15 entregas al día</li>
+                        <li><i class="fas fa-check"></i> Recogida incluida</li>
+                        <li><i class="fas fa-check"></i> Ejecutiva asignada</li>
+                        <li><i class="fas fa-check"></i> Pago diario por adelantado</li>
+                    </ul>
+                    <a href="/registro-proveedores/" class="btn btn-blue" style="width:100%;justify-content:center;">
+                        <i class="fas fa-rocket"></i> Solicitar
+                    </a>
+                </div>
+            </div>
+
+            <div class="nota-pago">
+                <p>
+                    <i class="fas fa-shield-halved"></i> 
+                    El cobro es diario y anticipado. Sin facturas pendientes.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- APP DELTAS + MICRO-DISTRIBUIDORES -->
+    <section class="deltas-section">
+        <div class="section-container">
+            <div class="text-center">
+                <p class="section-label blue">Parte de Fuerza Delta</p>
+                <h2 class="section-title">App Deltas + Micro-distribuidores de zona</h2>
+                <p class="section-subtitle" style="margin-left:auto;margin-right:auto;">
+                    Un ecosistema logístico completo: motorizados con app propia y una red de micro-distribuidores locales para cubrir más zonas.
+                </p>
+            </div>
+
+            <div class="deltas-grid">
+
+                <div class="delta-card app">
+                    <div class="delta-icon"><i class="fas fa-mobile-alt"></i></div>
+                    <h3>App Deltas</h3>
+                    <p>Plataforma propia para motorizados y clientes. Todo el flujo de entregas en tiempo real desde tu celular.</p>
+                    <ul class="delta-lista">
+                        <li><i class="fas fa-check"></i> Rastreo en tiempo real</li>
+                        <li><i class="fas fa-check"></i> Asignación automática de rutas</li>
+                        <li><i class="fas fa-check"></i> Notificaciones push al cliente</li>
+                        <li><i class="fas fa-check"></i> Historial y comprobantes digitales</li>
+                        <li><i class="fas fa-check"></i> Panel de control para motorizados</li>
+                    </ul>
+                </div>
+
+                <div class="delta-card micro">
+                    <div class="delta-icon"><i class="fas fa-store"></i></div>
+                    <h3>Micro-distribuidores de zona</h3>
+                    <p>Red de personas que retiran sobres en el coworking y entregan en su zona. Ideal para cubrir áreas alejadas.</p>
+                    <ul class="delta-lista">
+                        <li><i class="fas fa-check"></i> Mínimo <strong>10 sobres por zona</strong></li>
+                        <li><i class="fas fa-check"></i> Pago fijo de <strong>$1 por sobre</strong></li>
+                        <li><i class="fas fa-check"></i> Aceptación voluntaria</li>
+                        <li><i class="fas fa-check"></i> Retiro en el coworking</li>
+                        <li><i class="fas fa-check"></i> Plazo de entrega <strong>24-48 horas</strong></li>
+                        <li><i class="fas fa-check"></i> Pago al retirar (efectivo o transferencia)</li>
+                        <li><i class="fas fa-check"></i> Respaldo de Fuerza Delta si rechazan</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA A PLANES -->
+    <section class="cta-planes">
+        <h2>Contrata <span>16 o más entregas diarias</span></h2>
+        <p>
+            y obtén <strong style="color:var(--success)">GRATIS todos los meses</strong> el Plan Integral de Marketing y Publicidad, 
+            con Enlace Express (Call Center + Vendedores P2P) incluido.
+        </p>
+        <a href="/planes.html" class="btn btn-gold btn-lg">
+            <i class="fas fa-tags"></i> Ver Tarifas Planas
+        </a>
+    </section>
+
+    <!-- BENEFICIOS DEL PLAN -->
+    <section class="section">
+        <div class="section-container">
+            <p class="section-label text-center">Plan Integral incluido</p>
+            <h2 class="section-title text-center">Todo lo que recibes GRATIS cada mes</h2>
+            <p class="section-subtitle text-center" style="margin-left:auto;margin-right:auto;">
+                Cada plan incluye acceso completo al ecosistema ImpulsePymes360.
+            </p>
+
+            <div class="beneficios-grid">
+                <div class="beneficio-item">
+                    <i class="fas fa-motorcycle"></i>
+                    <span>Entregas diarias</span>
+                </div>
+
+                <div class="beneficio-item">
+                    <i class="fas fa-globe"></i>
+                    <span>Sitio web profesional</span>
+                </div>
+
+                <div class="beneficio-item">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>Catálogo PDF (DimarCatalog)</span>
+                </div>
+
+                <div class="beneficio-item">
+                    <i class="fas fa-shopping-bag"></i>
+                    <span>Espacio en funda</span>
+                </div>
+
+                <div class="beneficio-item">
+                    <i class="fas fa-store"></i>
+                    <span>Productos en marketplace</span>
+                </div>
+
+                <div class="beneficio-item">
+                    <i class="fas fa-users"></i>
+                    <span>Clientes potenciales</span>
+                </div>
+
+                <div class="beneficio-item">
+                    <i class="fas fa-newspaper"></i>
+                    <span>Clasificados (Dimarads)</span>
+                </div>
+
+                <div class="beneficio-item">
+                    <i class="fas fa-headset"></i>
+                    <span>Enlace Express (Call Center + P2P)</span>
+                </div>
+
+                <div class="beneficio-item">
+                    <i class="fas fa-book-open"></i>
+                    <span>Revista-Directorio (DimarRevista)</span>
+                </div>
+            </div>
+
+            <div style="text-align:center;margin-top:40px;">
+                <a href="/planes.html" class="btn btn-primary btn-lg">
+                    <i class="fas fa-rocket"></i> Ver todos los planes
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROPUESTA DIMARCLUB -->
+    <section class="propuesta-section">
+        <div class="section-container">
+            <div class="text-center">
+                <p class="section-label purple">Propuesta única de valor</p>
+                <h2 class="section-title">Enviar con Fuerza Delta te da más</h2>
+                <p class="section-subtitle" style="margin-left:auto;margin-right:auto;">
+                    Cada cliente de Fuerza Delta accede también a los beneficios exclusivos de DimarClub: un ecosistema completo que cuida a tu empresa y a tu familia.
+                </p>
+            </div>
+
+            <div class="propuesta-grid">
+
+                <div class="propuesta-card">
+                    <i class="fas fa-ambulance"></i>
+                    <h4>Ambulancia Gratis</h4>
+                    <p>Emergencias dentro de la ciudad, sin costo.</p>
+                </div>
+
+                <div class="propuesta-card">
+                    <i class="fas fa-tools"></i>
+                    <h4>Servicios Técnicos</h4>
+                    <p>Electricidad, mecánica, sanitarios. Solo materiales.</p>
+                </div>
+
+                <div class="propuesta-card">
+                    <i class="fas fa-leaf"></i>
+                    <h4>Medicina Ancestral</h4>
+                    <p>Consultas gratuitas con terapeutas naturales.</p>
+                </div>
+
+                <div class="propuesta-card">
+                    <i class="fas fa-truck"></i>
+                    <h4>Entrega Gratis</h4>
+                    <p>En todas las compras del marketplace.</p>
+                </div>
+
+                <div class="propuesta-card">
+                    <i class="fas fa-hand-holding-usd"></i>
+                    <h4>Préstamos con Garantía</h4>
+                    <p>Capital desde $5.000 sin importar el buró.</p>
+                </div>
+
+                <div class="propuesta-card">
+                    <i class="fas fa-credit-card"></i>
+                    <h4>Línea de Crédito 75%</h4>
+                    <p>Sobre tus haberes, para emprender.</p>
+                </div>
+
+                <div class="propuesta-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h4>Inversión 3% Mensual</h4>
+                    <p>Tu capital genera utilidad cada mes.</p>
+                </div>
+
+                <div class="propuesta-card">
+                    <i class="fas fa-tasks"></i>
+                    <h4>Hub de Tareas CPA</h4>
+                    <p>Gana dinero completando tareas simples.</p>
+                </div>
+
+                <div class="propuesta-card">
+                    <i class="fas fa-gift"></i>
+                    <h4>Fundas con Descuentos</h4>
+                    <p>Numeradas, reemplazan cupones tradicionales.</p>
+                </div>
+
+                <div class="propuesta-card">
+                    <i class="fas fa-building"></i>
+                    <h4>Coworking $150/mes</h4>
+                    <p>Espacio profesional con salón de eventos.</p>
+                </div>
+
+                <div class="propuesta-card">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h4>Capacitación</h4>
+                    <p>Formación técnica y financiera continua.</p>
+                </div>
+
+                <div class="propuesta-card">
+                    <i class="fas fa-users-cog"></i>
+                    <h4>Reuniones Semanales</h4>
+                    <p>Sábados 10 AM. Comunidad activa.</p>
+                </div>
+
+            </div>
+
+            <div class="propuesta-cta">
+                <a href="/dimarclub/" class="btn btn-primary btn-lg"><i class="fas fa-users"></i> Conocer DimarClub</a>
+                <a href="/registro-proveedores/" class="btn btn-outline btn-lg"><i class="fas fa-store"></i> Ser Proveedor</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- RED UNIVERSAL -->
+    <section class="red-info-section">
+        <div class="red-info-box">
+            <div class="red-info-icon"><i class="fas fa-network-wired"></i></div>
+            <div class="red-info-content">
+                <h3>¿Y si además quieres ganar como afiliado?</h3>
+                <p>Cada cliente o proveedor de Fuerza Delta también puede construir su propia <strong style="color:var(--accent);">Red Universal de 3 Niveles</strong> y ganar el <strong style="color:var(--accent);">3% de cada uno de sus 3 niveles</strong>. El presupuesto de comisiones es del 12% base, sube a 13%, 14% o hasta 15% máximo según el caso.</p>
+                <a href="/dimarclub/" class="red-info-link">
+                    Ver cómo funciona la Red Universal <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACTO -->
+    <section class="contact-section">
+        <h3><i class="fas fa-rocket" style="color:var(--accent);"></i> ¿Listo para activar tu plan?</h3>
+        <p>Contáctanos y empieza a ahorrar en tus envíos hoy mismo.</p>
+
+        <a href="https://wa.me/593992689844?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20Fuerza%20Delta" 
+           target="_blank" 
+           rel="noopener"
+           class="whatsapp-btn">
+            <i class="fab fa-whatsapp"></i> Hablar por WhatsApp
+        </a>
+
+        <br><br>
+
+        <a href="/planes.html" class="btn btn-primary btn-lg">
+            <i class="fas fa-rocket"></i> Ver Planes y Activar
+        </a>
+    </section>
+
+    <!-- VOLVER -->
+    <section class="volver-section">
+        <a href="/" class="volver-btn">
+            <i class="fas fa-arrow-left"></i> Volver al Portal Principal
+        </a>
+    </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="wfooter">
+    <div class="footer-grid">
+        <div>
+            <h4>ImpulsePymes360</h4>
+            <a href="/">Inicio</a>
+            <a href="/planes.html">Planes</a>
+            <a href="/tareas.html">Tareas</a>
+            <a href="/login.html">Acceso</a>
+        </div>
+        <div>
+            <h4>Ecosistema</h4>
+            <a href="/dimarclub/">DimarClub</a>
+            <a href="/incubadora/">Incubadora</a>
+            <a href="/webexpress/">WebExpress</a>
+            <a href="/impulso360/">Impulso360</a>
+            <a href="/enlaceexpress/">Enlace Express</a>
+        </div>
+        <div>
+            <h4>Más Servicios</h4>
+            <a href="/publibags/">Publibags</a>
+            <a href="/fuerzadelta/">Fuerza Delta</a>
+            <a href="/dimarpost/">DimarPost</a>
+            <a href="/impulso360/#clasificados">Clasificados</a>
+            <a href="/tareas.html">Hub de Tareas</a>
+        </div>
+        <div>
+            <h4>Contacto</h4>
+            <a href="mailto:info@impulsepymes360.com"><i class="fas fa-envelope"></i> info@impulsepymes360.com</a>
+            <a href="https://wa.me/593992689844" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> +593 99 268 9844</a>
+            <a href="#"><i class="fas fa-map-marker-alt"></i> Ecuador</a>
+        </div>
+        <div>
+            <h4>Legal</h4>
+            <a href="/terminos.html">Términos y condiciones</a>
+            <a href="/privacidad.html">Política de privacidad</a>
+            <a href="/cookies.html">Política de cookies</a>
+        </div>
+    </div>
+    <div class="footer-social">
+        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+        <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+        <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2026 ImpulsePymes360. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+<script>
+    var dropdowns = document.querySelectorAll('.wdropdown-wrap');
+    
+    dropdowns.forEach(function(dropdown) {
+        var btn = dropdown.querySelector('.wdropdown-btn');
+        if (btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropdowns.forEach(function(other) {
+                    if (other !== dropdown) other.classList.remove('open');
+                });
+                dropdown.classList.toggle('open');
+            });
+        }
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.wdropdown-wrap')) {
+            dropdowns.forEach(function(d) { d.classList.remove('open'); });
+        }
+    });
+
+    // Cerrar dropdown al hacer clic en un enlace interno
+    document.querySelectorAll('.wdropdown-menu a').forEach(function(link) {
+        link.addEventListener('click', function() {
+            dropdowns.forEach(function(d) { d.classList.remove('open'); });
+        });
+    });
+    
+    var hamburger = document.getElementById('whamburger');
+    var navLinks = document.getElementById('wnavLinks');
+    
+    if (hamburger && navLinks) {
+        hamburger.addEventListener('click', function() {
+            this.classList.toggle('active');
+            navLinks.classList.toggle('open');
+        });
+    }
+    
+    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+        anchor.addEventListener('click', function(e) {
+            var href = this.getAttribute('href');
+            if (href === '#') return;
+            var target = document.querySelector(href);
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    /* Badge de tareas pendientes — placeholder hasta integrar backend */
+    (function cargarBadgeTareas() {
+        var badge = document.getElementById('badgeTareas');
+        if (!badge) return;
+        // TODO: reemplazar por fetch('/api/tareas/pendientes')
+        badge.textContent = '0';
+    })();
+</script>
+</body>
+</html>

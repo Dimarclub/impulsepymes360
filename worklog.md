@@ -1068,3 +1068,67 @@ Stage Summary:
 - The "Planes" button in topnav (amber, prominent) navigates to this module.
 - All plan products have stock=999999 (unlimited service), status=ACTIVE, so they appear in the marketplace automatically.
 - .env NEXTAUTH_SECRET restored.
+
+---
+Task ID: 13-fuerza-delta
+Agent: full-stack-developer (fuerza-delta satellite)
+Task: Construir la landing page satélite "Fuerza Delta" (mensajería B2B con tarifas planas) como componente React dark-themed siguiendo el MISMO patrón que PubliBags.
+
+Work Log:
+- Leído /home/z/my-project/worklog.md para entender contexto previo (Task 11 PubliBags = patrón satélite; Task 12 Planes = módulo destino de CTAs)
+- Leído íntegro src/components/dimar/modules/publibags.tsx (~1110 líneas): paleta oscura `C`, inyección de Google Fonts (Outfit + DM Sans) vía useEffect, componente `Section`, estructura Navbar/Hero/Footer, util `scrollTo`
+- Verificado wiring existente (NO redo): ModuleId incluye 'fuerza-delta' en types.ts:25; permissions.ts lo concede a CLIENT/AFFILIATE/SUPPLIER/PARTNER + PUBLIC_MODULES; page.tsx:32 importa FuerzaDeltaModule y page.tsx:107 tiene `case 'fuerza-delta'`; topnav.tsx:256 (desktop) y 321 (mobile) ya tienen botón "Fuerza Delta" (Truck icon) que llama setModule('fuerza-delta')
+- Creado src/components/dimar/modules/fuerza-delta.tsx (~1017 líneas):
+  * 'use client' + imports Lucide (Truck, Package, Building2, Smartphone, Store, Users, FileText, Newspaper, Headphones, BookOpen, ShoppingBag, Globe, Check, Phone, Menu, X, ArrowRight, ChevronRight, ShieldCheck, Bike, Sparkles)
+  * Paleta C idéntica a PubliBags (bg #0B1120, card #15203A, emerald #00D4AA, gold #F5A623, blue #3B82F6 como accent)
+  * WHATSAPP_URL con mensaje "Fuerza Delta", WHATSAPP_DISPLAY, EMAIL_DISPLAY, WEB_DISPLAY
+  * useAppStore: setModule + toast; useEffect inyecta Google Fonts (id 'fuerza-delta-fonts'); state mobileNav
+  * onSolicitar(planName) → toast("Plan X solicitado — te contactaremos por WhatsApp") + window.open(WHATSAPP_URL)
+  * Navbar sticky: logo "Fuerza Delta" (Truck icon esmeralda + "Delta" en esmeralda), anchor links (#tarifas/#deltas/#beneficios/#contacto), botón WhatsApp (esmeralda), botón "Ver planes" (gold outline → setModule('planes')), hamburger mobile
+  * Hero: badge "Mensajería B2B · Tarifas planas · Ecuador", H1 con "GRATIS" en esmeralda, subtítulo completo, price badge $1.75 "por entrega · Plan 15 · pago diario", 2 CTAs ("Ver tarifas" → scrollTo('tarifas'), "Hablar por WhatsApp"), visual card con $1.75 grande (gold) + 3 chips (Pago diario · Sin contratos · Recogida incluida)
+  * Tarifas (id="tarifas"): 3 cards (Plan 5 $2.25/FileText, Plan 10 $2.00/Package, Plan 15 $1.75/Building2) — Plan 15 destacado con borde gold + badge "Mejor precio"; cada card tiene icon, name, volume, price grande, features con Check, botón "Solicitar" (esmeralda en Plan 5/10, gold en Plan 15). Nota ShieldCheck "El cobro es diario y anticipado"
+  * Deltas (id="deltas"): 2 cards lado a lado — App Deltas (Smartphone, accent esmeralda/blue, borde esmeralda, 5 features) y Micro-distribuidores (Store, accent gold, borde gold, 7 features con strong inline en "10 sobres por zona" / "$1 por sobre" / "24-48 horas")
+  * Cta16 (id="cta-16"): banner gradient gold→esmeralda, "Contrata 16 o más entregas diarias", "GRATIS todos los meses el Plan Integral ... Enlace Express", botón gold "Ver Tarifas Planas" → setModule('planes')
+  * Beneficios (id="beneficios"): grid de 9 items (Bike/Entregas diarias, Globe/Sitio web, FileText/Catálogo PDF, ShoppingBag/Espacio en funda, Store/Productos en marketplace, Users/Clientes potenciales, Newspaper/Clasificados Dimarads, Headphones/Enlace Express, BookOpen/Revista-Directorio). CTA "Ver todos los planes" → setModule('planes')
+  * Contacto (id="contacto"): card WhatsApp (esmeralda) + card "Ver Planes y Activar" (gold) → setModule('planes')
+  * Footer: 5 columnas (ImpulsePymes360 / Ecosistema / Más servicios / Contacto / Legal) + social FB/IG/WA/YT + copyright "© 2026 ImpulsePymes360" + botón "Volver al portal" → setModule('marketplace')
+  * EXCLUIDO intencionalmente (per estrategia "no duplicar contenido"): sección Propuesta DimarClub (12 beneficios) y sección Red Universal — esas pertenecen a otros satélites
+- Ejecutado `bunx eslint . --max-warnings 0` → 0 errors, 0 warnings ✓
+- No se ejecutó build ni se reinició dev server (gestionados externamente)
+
+Stage Summary:
+- Componente FuerzaDeltaModule creado en src/components/dimar/modules/fuerza-delta.tsx (~1017 líneas), sibling visual de publibags.tsx (mismo tema oscuro, misma paleta C, mismas fonts Outfit+DM Sans, mismo Section wrapper, mismo Footer de 5 columnas)
+- 7 secciones presentes: Navbar sticky, Hero ($1.75 price badge), Tarifas (3 cards con Plan 15 destacado), App Deltas + Micro-distribuidores (2 cards), CTA 16+ entregas (banner gradient), Beneficios (9 items), Contacto, Footer
+- Todas las CTAs "Ver tarifas planas" / "Ver todos los planes" / "Ver Planes y Activar" / "Ver planes" navegan a setModule('planes'); "Volver al portal" navega a setModule('marketplace'); "Solicitar" en cada Plan dispara toast + abre WhatsApp
+- Lint pasa limpio (0 errors, 0 warnings, incluso con --max-warnings 0)
+- Sin duplicación de contenido: NO se incluyó Propuesta DimarClub ni Red Universal (esas viven en otros satélites)
+
+---
+Task ID: 13-fuerza-delta (main agent verification)
+Agent: main (Z.ai Code)
+Task: Verify the Fuerza Delta satellite module after subagent completion
+
+Work Log:
+- User provided HTML of Fuerza Delta (mensajería B2B con tarifas planas). Content: 3 tarifas (Plan 5 $2.25, Plan 10 $2.00, Plan 15 $1.75), App Deltas + Micro-distribuidores, CTA "16+ entregas = Plan Integral GRATIS", 9 beneficios del plan incluido, contacto.
+- Main agent did wiring before delegating:
+  * src/lib/types.ts: added 'fuerza-delta' to ModuleId (separate from existing 'fuerza' which is for COURIER app)
+  * src/lib/permissions.ts: granted 'fuerza-delta' to CLIENT, AFFILIATE, SUPPLIER, PARTNER + added to PUBLIC_MODULES
+  * src/app/page.tsx: imported FuerzaDeltaModule + added case 'fuerza-delta'
+  * src/components/dimar/topnav.tsx: added "Fuerza Delta" button (Truck icon) in desktop nav (line 256) + mobile menu (line 321)
+- Delegated Task 13-fuerza-delta to full-stack-developer subagent: built fuerza-delta.tsx (~1017 lines) copying the PubliBags dark-theme pattern, with sections: Hero ($1.75 badge), Tarifas (3 cards, Plan 15 highlighted "Mejor precio"), App Deltas + Micro-distribuidores (2 cards), CTA 16+ (gradient banner), Beneficios (9 items), Contacto, Footer. All "Ver planes" CTAs navigate to the planes module. NO Propuesta DimarClub / Red Universal sections (excluded to avoid content duplication per user strategy).
+
+Verification with Agent Browser:
+- Module renders with dark theme (#0B1120), logo "Fuerza Delta" (Delta in esmeralda)
+- Hero: "Ahorra en tus envíos y obtén GRATIS nuestro Plan Integral" + price badge $1.75 (Plan 15 · pago diario) + "Ver tarifas" / "Hablar por WhatsApp" CTAs ✅
+- Tarifas: Plan 5 $2.25, Plan 10 $2.00, Plan 15 $1.75 — all 3 prices present ✅
+- All sections present: Tarifas, App Deltas, Beneficios, Contacto ✅
+- NO content duplication: 0 matches for "Ambulancia Gratis" / "Red Universal" / "Servicios Técnicos" / "Medicina Ancestral" (correctly excluded) ✅
+- No console errors ✅
+- Lint: 0 errors, 0 warnings ✅
+
+Stage Summary:
+- New module 'fuerza-delta' fully integrated and verified end-to-end.
+- The Fuerza Delta satellite page (dark themed, responsive) showcases mensajería B2B content: tarifas planas, App Deltas, micro-distribuidores, CTA 16+ entregas = Plan Integral GRATIS.
+- All CTAs navigate to the Planes module (which has the 6 integral plans as marketplace products).
+- The "Fuerza Delta" button in topnav (Truck icon) navigates to this module.
+- Content strategy honored: no duplicated DimarClub/Red Universal sections — each satellite has its unique info only.

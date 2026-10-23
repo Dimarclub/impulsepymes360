@@ -22,6 +22,7 @@ export type ModuleId =
   | 'publibags'
   | 'bag-plan'
   | 'planes'
+  | 'fuerza-delta'
   | 'directorio'
   | 'fuerza'
   | 'automatizacion'
