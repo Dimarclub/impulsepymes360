@@ -20,6 +20,7 @@ import {
 import { useAppStore } from '@/lib/store'
 import {
   BAG_PANELS,
+  BAG_TOTAL_SPACES,
   sponsorColor,
   type BagPanel,
 } from '@/lib/bag-plan'
@@ -313,10 +314,10 @@ function Hero({ onSeePlan, onWhats }: { onSeePlan: () => void; onWhats: () => vo
             <h1
               style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 'clamp(32px, 5vw, 52px)', lineHeight: 1.05, letterSpacing: -1, color: C.text }}
             >
-              Convierte cada <span style={{ color: C.emerald }}>funda</span> en publicidad que viaja por tu ciudad
+              Convertimos cada <span style={{ color: C.emerald }}>bolso</span> en publicidad que viaja por tu ciudad
             </h1>
             <p style={{ color: C.textDim, fontSize: 17, marginTop: 18, lineHeight: 1.55, maxWidth: 540 }}>
-              141 espacios publicitarios de 5×5 cm en fundas ecológicas reutilizables que circulan por toda la ciudad.
+              {BAG_TOTAL_SPACES} espacios publicitarios de 5×5 cm en bolsos elegantes, ecológicas y reutilizables que circulan por toda la ciudad.
               Tu marca impresa + QR, vista por miles de personas todos los días.
             </p>
 
