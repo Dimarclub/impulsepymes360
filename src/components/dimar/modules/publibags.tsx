@@ -21,6 +21,7 @@ import { useAppStore } from '@/lib/store'
 import {
   BAG_PANELS,
   BAG_TOTAL_SPACES,
+  BAG_SPACE_PRICE,
   sponsorColor,
   type BagPanel,
 } from '@/lib/bag-plan'
