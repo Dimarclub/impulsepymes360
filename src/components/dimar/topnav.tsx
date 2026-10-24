@@ -234,7 +234,6 @@ export function TopNav() {
             {canAccessModule(displayUser?.role, 'affiliates') && (
               <button onClick={() => setModule('affiliates')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'affiliates' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><Users className="size-4" />Comunidad</button>
             )}
-            <a href="https://dimarclub.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md text-foreground hover:text-primary hover:bg-muted/60 transition-colors"><Sparkles className="size-4" />Dimarclub</a>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md text-foreground hover:text-primary hover:bg-muted/60 transition-colors"><Store className="size-4" />Proveedor<ChevronDown className="size-3" /></button>
