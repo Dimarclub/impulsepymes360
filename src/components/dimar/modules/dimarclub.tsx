@@ -331,13 +331,13 @@ function Hero({ onConocerRed, onSeePlanes }: { onConocerRed: () => void; onSeePl
               Bienvenido a <span style={{ color: C.purple }}>DimarClub</span>
             </h1>
             <p style={{ color: C.textDim, fontSize: 17, marginTop: 18, lineHeight: 1.55, maxWidth: 560 }}>
-              La comunidad donde cada persona puede{' '}
+              Somos una comunidad de emprendedores{' '}
+              <strong style={{ color: C.emerald }}>Prosumidores</strong> comprometidos con las empresas que han confiado en nuestro sistema de comercialización, una comunidad donde cada persona puede{' '}
               <strong style={{ color: C.emerald }}>consumir</strong>,{' '}
               <strong style={{ color: C.emerald }}>recomendar</strong>,{' '}
               <strong style={{ color: C.emerald }}>emprender</strong> y{' '}
-              <strong style={{ color: C.emerald }}>crecer</strong>. Una Red Universal de 3 Niveles
-              donde todos ganan <strong style={{ color: C.emerald }}>el 3% de cada uno de sus 3 niveles</strong> y
-              todos pueden llegar lejos.
+              <strong style={{ color: C.emerald }}>crecer</strong>. Nuestro sistema de afiliados de una sola{' '}
+              <strong style={{ color: C.emerald }}>Red Universal de 3 Niveles</strong> es el motor de nuestro sistema de comercialización en donde todos ganan y todos pueden llegar lejos.
             </p>
 
             <div className="flex flex-wrap gap-3 mt-7">

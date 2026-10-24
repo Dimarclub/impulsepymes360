@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>ImpulsePymes360 - Sistema Integral para PYMES</title>
+    <meta name="description" content="ImpulsePymes360: Ecosistema integral de comercialización, presencia y posicionamiento digital para PYMES. Marketplace, publicidad ecológica, mensajería, call center, auto-poster y comunidad.">
+    <meta name="theme-color" content="#0B1120">
+    <link rel="canonical" href="https://www.impulsepymes360.com/">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="ImpulsePymes360 - Sistema Integral para PYMES">
+    <meta property="og:description" content="Ecosistema integral de comercialización, presencia y posicionamiento digital para PYMES del Ecuador.">
+    <meta property="og:url" content="https://www.impulsepymes360.com/">
+    <meta property="og:image" content="https://www.impulsepymes360.com/og-image.jpg">
+    <meta property="og:locale" content="es_EC">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230B1120'/%3E%3Ctext x='50' y='68' font-family='Outfit,sans-serif' font-size='56' font-weight='800' text-anchor='middle' fill='%2300D4AA'%3EIP%3C/text%3E%3C/svg%3E">
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg: #0B1120;
+            --bg-card: #15203A;
+            --border: #243352;
+            --accent: #00D4AA;
+            --gold: #F5A623;
+            --text: #E8EDF5;
+            --muted: #6B7FA0;
+            /* Colores por elemento */
+            --c-dimarclub: #A855F7;
+            --c-incubadora: #22C55E;
+            --c-webexpress: #22D3EE;
+            --c-impulso360: #60A5FA;
+            --c-enlaceexpress: #60A5FA;
+            --c-publibags: #00D4AA;
+            --c-fuerzadelta: #F5A623;
+            --c-dimarpost: #EC4899;
+            --c-tareas: #00D4AA;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+
+        .bg-glow {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(0, 212, 170, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(245, 166, 35, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ===== NAVBAR ===== */
+        .wnavbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(11, 17, 32, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .wnavbar-inner {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 68px;
+            gap: 12px;
+        }
+
+        .wlogo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text);
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .wlogo span { color: var(--accent); }
+
+        .wnav-links {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            list-style: none;
+        }
+
+        .wnav-links > li > a,
+        .wdropdown-btn {
+            color: var(--muted);
+            font-size: 0.88rem;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .wnav-links > li > a:hover,
+        .wdropdown-btn:hover {
+            color: var(--text);
+            background: var(--bg-card);
+        }
+
+        .btn-tienda {
+            background: var(--accent) !important;
+            color: var(--bg) !important;
+            font-weight: 600 !important;
+        }
+
+        .btn-tienda:hover { background: #00F0C0 !important; }
+
+        .btn-secondary-nav {
+            background: var(--bg-card) !important;
+            color: var(--text) !important;
+            border: 1px solid var(--border) !important;
+        }
+
+        /* Botón Tareas con badge */
+        .btn-tareas {
+            background: linear-gradient(135deg, var(--accent), var(--gold)) !important;
+            color: var(--bg) !important;
+            font-weight: 700 !important;
+            position: relative;
+        }
+
+        .btn-tareas:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .badge-tareas {
+            background: var(--bg);
+            color: var(--gold);
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+            margin-left: 4px;
+            line-height: 1;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .wdropdown-wrap { position: relative; }
+
+        .wdropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 8px;
+            min-width: 240px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-8px);
+            transition: all 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        }
+
+        .wdropdown-wrap.open .wdropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .wdropdown-menu a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            color: var(--muted);
+            font-size: 0.85rem;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .wdropdown-menu a:hover {
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .wdropdown-menu a i {
+            width: 20px;
+            text-align: center;
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .whamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .whamburger span {
+            width: 24px;
+            height: 2px;
+            background: var(--text);
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            position: relative;
+            z-index: 1;
+            padding: 90px 24px 70px;
+            text-align: center;
+        }
+
+        .hero-content { max-width: 850px; margin: 0 auto; }
+
+        .badge-hero {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 212, 170, 0.12);
+            color: var(--accent);
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            border: 1px solid rgba(0, 212, 170, 0.2);
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: 20px;
+            color: var(--text);
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .highlight { color: var(--gold); }
+        .highlight-accent { color: var(--accent); }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--muted);
+            margin-bottom: 32px;
+            line-height: 1.7;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-gold { background: var(--gold); color: var(--bg); }
+        .btn-gold:hover { background: #FFB849; transform: translateY(-2px); }
+
+        .btn-primary { background: var(--accent); color: var(--bg); }
+        .btn-primary:hover { background: #00F0C0; transform: translateY(-2px); }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-outline:hover {
+            background: var(--bg-card);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .section {
+            position: relative;
+            z-index: 1;
+            padding: 70px 24px;
+        }
+
+        .section-container { max-width: 1300px; margin: 0 auto; }
+
+        .section-label {
+            color: var(--accent);
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            margin-bottom: 16px;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .section-subtitle {
+            color: var(--muted);
+            font-size: 1rem;
+            margin-bottom: 40px;
+            max-width: 700px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 28px 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 240px;
+        }
+
+        .card:hover {
+            background: #1a2332;
+            border-color: #334466;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .card p {
+            color: var(--muted);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            flex: 1;
+        }
+
+        .wcard-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(0, 212, 170, 0.12);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin: 0 auto 16px;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        /* Color por elemento */
+        .card[data-color="dimarclub"] .wcard-icon { background: rgba(168,85,247,0.12); color: var(--c-dimarclub); }
+        .card[data-color="dimarclub"]:hover .wcard-icon { background: var(--c-dimarclub); color: var(--bg); }
+        .card[data-color="incubadora"] .wcard-icon { background: rgba(34,197,94,0.12); color: var(--c-incubadora); }
+        .card[data-color="incubadora"]:hover .wcard-icon { background: var(--c-incubadora); color: var(--bg); }
+        .card[data-color="webexpress"] .wcard-icon { background: rgba(34,211,238,0.12); color: var(--c-webexpress); }
+        .card[data-color="webexpress"]:hover .wcard-icon { background: var(--c-webexpress); color: var(--bg); }
+        .card[data-color="impulso360"] .wcard-icon { background: rgba(96,165,250,0.12); color: var(--c-impulso360); }
+        .card[data-color="impulso360"]:hover .wcard-icon { background: var(--c-impulso360); color: var(--bg); }
+        .card[data-color="enlaceexpress"] .wcard-icon { background: rgba(96,165,250,0.12); color: var(--c-enlaceexpress); }
+        .card[data-color="enlaceexpress"]:hover .wcard-icon { background: var(--c-enlaceexpress); color: var(--bg); }
+        .card[data-color="publibags"] .wcard-icon { background: rgba(0,212,170,0.12); color: var(--c-publibags); }
+        .card[data-color="publibags"]:hover .wcard-icon { background: var(--c-publibags); color: var(--bg); }
+        .card[data-color="fuerzadelta"] .wcard-icon { background: linear-gradient(135deg, rgba(96,165,250,0.15), rgba(245,166,35,0.15)); color: var(--c-fuerzadelta); }
+        .card[data-color="fuerzadelta"]:hover .wcard-icon { background: linear-gradient(135deg, var(--c-impulso360), var(--c-fuerzadelta)); color: var(--bg); }
+        .card[data-color="dimarpost"] .wcard-icon { background: rgba(236,72,153,0.12); color: var(--c-dimarpost); }
+        .card[data-color="dimarpost"]:hover .wcard-icon { background: var(--c-dimarpost); color: var(--bg); }
+        .card[data-color="tareas"] .wcard-icon { background: linear-gradient(135deg, rgba(0,212,170,0.15), rgba(245,166,35,0.15)); color: var(--c-tareas); }
+        .card[data-color="tareas"]:hover .wcard-icon { background: linear-gradient(135deg, var(--c-tareas), var(--gold)); color: var(--bg); }
+
+        .wbtn-card {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 10px 22px;
+            border-radius: 8px;
+            background: var(--gold);
+            color: var(--bg);
+            transition: all 0.3s ease;
+            display: inline-block;
+            margin-top: auto;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .wbtn-card:hover {
+            background: #FFB849;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(245, 166, 35, 0.3);
+        }
+
+        .waffiliate {
+            background: linear-gradient(160deg, #0f172a 0%, #15203a 40%, #0b1120 100%);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 70px 24px;
+        }
+
+        .waffiliate-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .waffiliate-content h2 {
+            font-size: clamp(1.5rem, 2.5vw, 2rem);
+            color: var(--text);
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .waffiliate-content p {
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .waffiliate-features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+            margin-bottom: 24px;
+        }
+
+        .waffiliate-feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text);
+        }
+
+        .waffiliate-feature i { color: var(--accent); }
+
+        /* Bloque de presupuesto 12%-15% */
+        .budget-box {
+            background: rgba(0, 212, 170, 0.06);
+            border: 1px solid rgba(0, 212, 170, 0.25);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin: 20px 0 24px;
+        }
+
+        .budget-box .budget-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .budget-box p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .budget-box strong { color: var(--gold); }
+
+        .waffiliate-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .waffiliate-stat {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px 16px;
+            text-align: center;
+        }
+
+        .waffiliate-stat .number {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .waffiliate-stat .label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .cta-planes {
+            padding: 60px 24px;
+            text-align: center;
+            background: linear-gradient(160deg, rgba(0,212,170,0.05) 0%, transparent 100%);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cta-planes h2 {
+            font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+
+        .cta-planes h2 span { color: var(--accent); }
+
+        .cta-planes p {
+            color: var(--muted);
+            max-width: 700px;
+            margin: 0 auto 24px;
+            line-height: 1.6;
+        }
+
+        .wfooter {
+            position: relative;
+            z-index: 1;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            padding: 48px 24px 24px;
+        }
+
+        .footer-grid {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+
+        .footer-grid h4 {
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .footer-grid a {
+            display: block;
+            color: var(--muted);
+            font-size: 0.85rem;
+            padding: 5px 0;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-grid a:hover { color: var(--accent); }
+
+        .footer-social {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .footer-social a {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            transition: all 0.3s ease;
+        }
+
+        .footer-social a:hover {
+            background: var(--accent);
+            color: var(--bg);
+            border-color: var(--accent);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            padding-top: 24px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 900px) {
+            .whamburger { display: flex; }
+            
+            .wnav-links {
+                position: absolute;
+                top: 68px;
+                left: 0;
+                right: 0;
+                background: var(--bg-card);
+                border-bottom: 1px solid var(--border);
+                flex-direction: column;
+                padding: 16px 24px;
+                gap: 4px;
+                display: none;
+                max-height: calc(100vh - 68px);
+                overflow-y: auto;
+                align-items: stretch;
+            }
+            
+            .wnav-links.open { display: flex; }
+            
+            .wnav-links > li > a,
+            .wdropdown-btn {
+                width: 100%;
+                justify-content: space-between;
+                padding: 12px 14px;
+            }
+            
+            .wdropdown-menu {
+                position: static;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+                background: var(--bg);
+                border: none;
+                padding: 0;
+                margin-top: 4px;
+                box-shadow: none;
+                display: none;
+            }
+            
+            .wdropdown-wrap.open .wdropdown-menu { display: block; }
+            
+            .grid { grid-template-columns: 1fr; }
+            .waffiliate-grid { grid-template-columns: 1fr; }
+            .waffiliate-stats { grid-template-columns: 1fr; }
+            .waffiliate-features { grid-template-columns: 1fr; }
+            .hero-actions { flex-direction: column; align-items: stretch; }
+            .hero-actions .btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+
+<!-- ==================== NAVBAR ==================== -->
+<nav class="wnavbar">
+    <div class="wnavbar-inner">
+        <a class="wlogo" href="/">Impulse<span>Pymes360</span></a>
+        
+        <ul class="wnav-links" id="wnavLinks">
+            <!-- DROPDOWN ECOSISTEMA -->
+            <li class="wdropdown-wrap">
+                <button class="wdropdown-btn">
+                    <i class="fas fa-th"></i> Ecosistema <i class="fas fa-caret-down" style="font-size:0.7rem;"></i>
+                </button>
+                <div class="wdropdown-menu">
+                    <a href="/dimarclub/"><i class="fas fa-users"></i> DimarClub</a>
+                    <a href="/incubadora/"><i class="fas fa-seedling"></i> Incubadora</a>
+                    <a href="/webexpress/"><i class="fas fa-globe"></i> WebExpress</a>
+                    <a href="/impulso360/"><i class="fas fa-shopping-cart"></i> Impulso360</a>
+                    <a href="/enlaceexpress/"><i class="fas fa-headset"></i> Enlace Express</a>
+                    <a href="/publibags/"><i class="fas fa-recycle"></i> Publibags</a>
+                    <a href="/fuerzadelta/"><i class="fas fa-motorcycle"></i> Fuerza Delta</a>
+                    <a href="/dimarpost/"><i class="fas fa-bolt"></i> DimarPost</a>
+                </div>
+            </li>
+            
+            <li><a href="/impulso360/" class="btn-tienda"><i class="fas fa-store"></i> Tienda</a></li>
+            <li><a href="/impulso360/#clasificados" class="btn-secondary-nav"><i class="fas fa-newspaper"></i> Clasificados</a></li>
+            <li><a href="/planes.html"><i class="fas fa-tags"></i> Planes</a></li>
+            <li>
+                <a href="/tareas.html" class="btn-tareas">
+                    <i class="fas fa-tasks"></i> Tareas 
+                    <span class="badge-tareas" id="badgeTareas">0</span>
+                </a>
+            </li>
+            
+            <li class="wdropdown-wrap">
+                <button class="wdropdown-btn">
+                    <i class="fas fa-store-alt"></i> Proveedores <i class="fas fa-caret-down" style="font-size:0.7rem;"></i>
+                </button>
+                <div class="wdropdown-menu">
+                    <a href="/registro-proveedores/"><i class="fas fa-rocket"></i> Quiero ser Proveedor</a>
+                    <a href="/backoffice-proveedor/"><i class="fas fa-globe"></i> Mi Backoffice</a>
+                    <a href="/login.html"><i class="fas fa-sign-in-alt"></i> Mi Cuenta</a>
+                </div>
+            </li>
+            
+            <li class="wdropdown-wrap">
+                <button class="wdropdown-btn">
+                    <i class="fas fa-users"></i> Miembros <i class="fas fa-caret-down" style="font-size:0.7rem;"></i>
+                </button>
+                <div class="wdropdown-menu">
+                    <a href="/registro-socios/"><i class="fas fa-user-tie"></i> Ser Socio</a>
+                    <a href="/backoffice-miembro/"><i class="fas fa-network-wired"></i> Mi Red</a>
+                    <a href="/registro-clientes/"><i class="fas fa-user"></i> Ser Cliente</a>
+                </div>
+            </li>
+            
+            <li><a href="/login.html" class="btn-secondary-nav"><i class="fas fa-sign-in-alt"></i> Acceso</a></li>
+        </ul>
+        
+        <button class="whamburger" id="whamburger" aria-label="Abrir menú">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</nav>
+
+<!-- ==================== MAIN ==================== -->
+<main>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-content">
+            <span class="badge-hero"><i class="fas fa-rocket"></i> Ecosistema Integral para PYMES</span>
+            <h1>El sistema que <span class="highlight">impulsa</span> tu negocio</h1>
+            <p>Marketplace, publicidad ecológica, mensajería, call center, auto-poster, presencia digital y una comunidad que te hace crecer. <strong>Todo en ImpulsePymes360.</strong></p>
+            <div class="hero-actions">
+                <a href="#servicios" class="btn btn-gold"><i class="fas fa-arrow-right"></i> Descubrir servicios</a>
+                <a href="/registro-clientes/" class="btn btn-primary"><i class="fas fa-user-plus"></i> Únete a la comunidad</a>
+                <a href="/tareas.html" class="btn btn-outline"><i class="fas fa-tasks"></i> Gana CPA con tareas</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SERVICIOS (9 ELEMENTOS) ==================== -->
+    <section class="section" id="servicios">
+        <div class="section-container">
+            <p class="section-label">Nuestro Sistema</p>
+            <h2 class="section-title">Nueve elementos, un solo ecosistema</h2>
+            <p class="section-subtitle">Cada elemento está diseñado para potenciar tu negocio. Juntos, forman una máquina de ventas y crecimiento.</p>
+
+            <div class="grid">
+
+                <!-- 1. DIMARCLUB -->
+                <div class="card" data-color="dimarclub">
+                    <div class="wcard-icon"><i class="fas fa-users"></i></div>
+                    <h3>DimarClub</h3>
+                    <p>Comunidad de consumidores, emprendedores y afiliados. Red Universal de 3 niveles con beneficios exclusivos.</p>
+                    <a href="/dimarclub/" class="wbtn-card">Descubrir</a>
+                </div>
+
+                <!-- 2. INCUBADORA -->
+                <div class="card" data-color="incubadora">
+                    <div class="wcard-icon"><i class="fas fa-seedling"></i></div>
+                    <h3>Incubadora</h3>
+                    <p>Capital semilla, capacitación y asesoramiento para emprendedores. Envía tu proyecto y hazlo realidad.</p>
+                    <a href="/incubadora/" class="wbtn-card">Descubrir</a>
+                </div>
+
+                <!-- 3. WEBEXPRESS -->
+                <div class="card" data-color="webexpress">
+                    <div class="wcard-icon"><i class="fas fa-globe"></i></div>
+                    <h3>WebExpress</h3>
+                    <p>Web + catálogo PDF (DimarCatalog) + revista-directorio (DimarRevista). Presencia digital completa con indexación en Google.</p>
+                    <a href="/webexpress/" class="wbtn-card">Descubrir</a>
+                </div>
+
+                <!-- 4. IMPULSO360 -->
+                <div class="card" data-color="impulso360">
+                    <div class="wcard-icon"><i class="fas fa-shopping-cart"></i></div>
+                    <h3>Impulso360</h3>
+                    <p>Marketplace B2C multivendedor + clasificados (Dimarads). Compra, vende y publica anuncios 24/7.</p>
+                    <a href="/impulso360/" class="wbtn-card">Descubrir</a>
+                </div>
+
+                <!-- 5. ENLACE EXPRESS -->
+                <div class="card" data-color="enlaceexpress">
+                    <div class="wcard-icon"><i class="fas fa-headset"></i></div>
+                    <h3>Enlace Express</h3>
+                    <p>Call Center + equipo de vendedores P2P calificados que visitan clientes y cierran ventas por ti.</p>
+                    <a href="/enlaceexpress/" class="wbtn-card">Descubrir</a>
+                </div>
+
+                <!-- 6. PUBLIBAGS -->
+                <div class="card" data-color="publibags">
+                    <div class="wcard-icon"><i class="fas fa-recycle"></i></div>
+                    <h3>Publibags</h3>
+                    <p>Publicidad física ambulante en fundas ecológicas de 48×48 cm. 140 espacios (114 vendibles) por $47/mes cada uno.</p>
+                    <a href="/publibags/" class="wbtn-card">Descubrir</a>
+                </div>
+
+                <!-- 7. FUERZA DELTA -->
+                <div class="card" data-color="fuerzadelta">
+                    <div class="wcard-icon"><i class="fas fa-motorcycle"></i></div>
+                    <h3>Fuerza Delta</h3>
+                    <p>Mensajería B2B con tarifas planas. Logística con app Deltas y micro-distribuidores de zona ($1 por sobre).</p>
+                    <a href="/fuerzadelta/" class="wbtn-card">Descubrir</a>
+                </div>
+
+                <!-- 8. DIMARPOST -->
+                <div class="card" data-color="dimarpost">
+                    <div class="wcard-icon"><i class="fas fa-bolt"></i></div>
+                    <h3>DimarPost</h3>
+                    <p>Auto-poster con IA. Genera copy, imagen y video automáticamente y distribúyelos en todos los canales.</p>
+                    <a href="/dimarpost/" class="wbtn-card">Descubrir</a>
+                </div>
+
+                <!-- 9. HUB DE TAREAS -->
+                <div class="card" data-color="tareas">
+                    <div class="wcard-icon"><i class="fas fa-tasks"></i></div>
+                    <h3>Hub de Tareas</h3>
+                    <p>Completa tareas CPA (compartir, ver videos, suscribirte) y gana dinero real. Verificación automática y 3 strikes.</p>
+                    <a href="/tareas.html" class="wbtn-card">Ganar CPA</a>
+                </div>
+
+            </div>
+
+            <!-- CTA Planes integrado al grid -->
+            <div style="text-align:center; margin-top:40px;">
+                <a href="/planes.html" class="btn btn-primary" style="padding:14px 32px;">
+                    <i class="fas fa-tags"></i> Ver los 6 planes integrales
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== AFILIADOS ==================== -->
+    <section class="waffiliate" id="afiliados">
+        <div class="waffiliate-grid">
+            <div class="waffiliate-content">
+                <p class="section-label" style="color:#F5A623;">Red Universal</p>
+                <h2>Gana comisiones <span class="highlight">en 3 niveles</span></h2>
+                <p>Al unirte a ImpulsePymes360 formas parte de una red donde <strong>todos ganan de 3 niveles</strong>, todos activan por consumo y todos pueden construir su propia red.</p>
+
+                <div class="budget-box">
+                    <div class="budget-title">Presupuesto de comisiones</div>
+                    <p>Base <strong>12%</strong> de las ventas de cada red · sube a <strong>13%</strong>, <strong>14%</strong> o hasta <strong>15%</strong> máximo si el fondo no alcanza. El techo del 15% protege la utilidad de la empresa.</p>
+                </div>
+
+                <div class="waffiliate-features">
+                    <div class="waffiliate-feature"><i class="fas fa-check-circle"></i> 3 niveles de profundidad</div>
+                    <div class="waffiliate-feature"><i class="fas fa-check-circle"></i> Activación por consumo</div>
+                    <div class="waffiliate-feature"><i class="fas fa-check-circle"></i> Billetera electrónica</div>
+                    <div class="waffiliate-feature"><i class="fas fa-check-circle"></i> 3% mensual por inversión</div>
+                    <div class="waffiliate-feature"><i class="fas fa-check-circle"></i> 6 frascos financieros</div>
+                    <div class="waffiliate-feature"><i class="fas fa-check-circle"></i> Soporte y capacitación</div>
+                </div>
+                <a href="/registro-socios/" class="btn btn-primary" style="margin-top:24px;"><i class="fas fa-rocket"></i> Únete como socio</a>
+            </div>
+            <div class="waffiliate-stats">
+                <div class="waffiliate-stat">
+                    <div class="number">3</div>
+                    <div class="label">Niveles de red</div>
+                </div>
+                <div class="waffiliate-stat">
+                    <div class="number">15%</div>
+                    <div class="label">Techo de comisiones</div>
+                </div>
+                <div class="waffiliate-stat">
+                    <div class="number">3%</div>
+                    <div class="label">Por inversión</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CTA PLANES ==================== -->
+    <section class="cta-planes">
+        <h2>¿Listo para activar <span>todos los elementos</span>?</h2>
+        <p>Contrata un plan integral y accede a los 9 elementos del ecosistema con una sola cuota mensual. Desde $235/mes.</p>
+        <a href="/planes.html" class="btn btn-gold"><i class="fas fa-tags"></i> Ver Planes Integrales</a>
+    </section>
+
+</main>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="wfooter">
+    <div class="footer-grid">
+        <div>
+            <h4>ImpulsePymes360</h4>
+            <a href="/">Inicio</a>
+            <a href="/planes.html">Planes</a>
+            <a href="/tareas.html">Tareas</a>
+            <a href="/login.html">Acceso</a>
+        </div>
+        <div>
+            <h4>Ecosistema</h4>
+            <a href="/dimarclub/">DimarClub</a>
+            <a href="/incubadora/">Incubadora</a>
+            <a href="/webexpress/">WebExpress</a>
+            <a href="/impulso360/">Impulso360</a>
+            <a href="/enlaceexpress/">Enlace Express</a>
+        </div>
+        <div>
+            <h4>Más Servicios</h4>
+            <a href="/publibags/">Publibags</a>
+            <a href="/fuerzadelta/">Fuerza Delta</a>
+            <a href="/dimarpost/">DimarPost</a>
+            <a href="/impulso360/#clasificados">Clasificados</a>
+            <a href="/tareas.html">Hub de Tareas</a>
+        </div>
+        <div>
+            <h4>Contacto</h4>
+            <a href="mailto:info@impulsepymes360.com"><i class="fas fa-envelope"></i> info@impulsepymes360.com</a>
+            <a href="https://wa.me/593992689844"><i class="fab fa-whatsapp"></i> +593 99 268 9844</a>
+            <a href="#"><i class="fas fa-map-marker-alt"></i> Ecuador</a>
+        </div>
+        <div>
+            <h4>Legal</h4>
+            <a href="/terminos.html">Términos y condiciones</a>
+            <a href="/privacidad.html">Política de privacidad</a>
+            <a href="/cookies.html">Política de cookies</a>
+        </div>
+    </div>
+    <div class="footer-social">
+        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+        <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+        <a href="#" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2026 ImpulsePymes360. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+<script>
+    var dropdowns = document.querySelectorAll('.wdropdown-wrap');
+    
+    dropdowns.forEach(function(dropdown) {
+        var btn = dropdown.querySelector('.wdropdown-btn');
+        
+        if (btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                dropdowns.forEach(function(other) {
+                    if (other !== dropdown) other.classList.remove('open');
+                });
+                
+                dropdown.classList.toggle('open');
+            });
+        }
+    });
+    
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.wdropdown-wrap')) {
+            dropdowns.forEach(function(d) { d.classList.remove('open'); });
+        }
+    });
+    
+    var hamburger = document.getElementById('whamburger');
+    var navLinks = document.getElementById('wnavLinks');
+    
+    if (hamburger && navLinks) {
+        hamburger.addEventListener('click', function() {
+            this.classList.toggle('active');
+            navLinks.classList.toggle('open');
+        });
+    }
+    
+    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+        anchor.addEventListener('click', function(e) {
+            var href = this.getAttribute('href');
+            if (href === '#') return;
+            
+            var target = document.querySelector(href);
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    /* Badge de tareas pendientes — placeholder hasta integrar backend */
+    (function cargarBadgeTareas() {
+        var badge = document.getElementById('badgeTareas');
+        if (!badge) return;
+        // TODO: reemplazar por fetch al backend (ej. /api/tareas/pendientes)
+        // Placeholder visual para maquetación:
+        badge.textContent = '0';
+    })();
+</script>
+</body>
+</html>
