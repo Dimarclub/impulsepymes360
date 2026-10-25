@@ -12,20 +12,23 @@ export interface BagPanel {
   heightCm: number
 }
 
-// Bolso PubliBags versión simplificada — 3 paneles, 141 espacios de 5×5cm.
-// Frente + Posterior (63 c/u = 126) + Correa/Asa de 85cm (15 espacios para colgar).
+// Bolso PubliBags — 5 paneles, 79 espacios de 10×5cm.
+// Frente + Posterior (28 c/u) + Base (8) + Tapa solapa (8) + Correa/Asa (7) = 79.
+// Precio cliente final: $67 por espacio.
 export const BAG_PANELS: readonly BagPanel[] = [
-  { key: 'frontal', label: 'Frontal', cols: 9, rows: 7, start: 1, end: 63, widthCm: 45, heightCm: 35 },
-  { key: 'posterior', label: 'Posterior', cols: 9, rows: 7, start: 64, end: 126, widthCm: 45, heightCm: 35 },
-  { key: 'correa', label: 'Correa / Asa', cols: 15, rows: 1, start: 127, end: 141, widthCm: 75, heightCm: 5 },
+  { key: 'frontal', label: 'Frente', cols: 4, rows: 7, start: 1, end: 28, widthCm: 40, heightCm: 35 },
+  { key: 'posterior', label: 'Posterior', cols: 4, rows: 7, start: 29, end: 56, widthCm: 40, heightCm: 35 },
+  { key: 'base', label: 'Base', cols: 4, rows: 2, start: 57, end: 64, widthCm: 40, heightCm: 10 },
+  { key: 'tapa-solapa', label: 'Tapa solapa', cols: 4, rows: 2, start: 65, end: 72, widthCm: 40, heightCm: 10 },
+  { key: 'correa', label: 'Correa / Asa', cols: 7, rows: 1, start: 73, end: 79, widthCm: 70, heightCm: 5 },
 ] as const
 
-export const BAG_TOTAL_SPACES = 141
-export const BAG_SPACE_PRICE = 20
-export const BAG_POTENTIAL_REVENUE = BAG_TOTAL_SPACES * BAG_SPACE_PRICE // $2,820
+export const BAG_TOTAL_SPACES = 79
+export const BAG_SPACE_PRICE = 67
+export const BAG_POTENTIAL_REVENUE = BAG_TOTAL_SPACES * BAG_SPACE_PRICE // $5,293
 
 /**
- * Devuelve el panel al que pertenece una posición (1..141).
+ * Devuelve el panel al que pertenece una posición (1..79).
  * Lanza error si la posición está fuera de rango.
  */
 export function panelForPosition(position: number): BagPanel {
