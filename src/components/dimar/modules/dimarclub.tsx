@@ -358,60 +358,40 @@ function Hero({ onConocerRed, onSeePlanes }: { onConocerRed: () => void; onSeePl
             </div>
           </div>
 
-          {/* Hero visual */}
+          {/* Hero visual — imagen de la comunidad */}
           <div className="relative">
             <div
-              className="rounded-2xl p-8 flex flex-col items-center justify-center text-center"
+              className="rounded-2xl overflow-hidden"
               style={{
-                background: `linear-gradient(135deg, ${C.card} 0%, ${C.card2} 100%)`,
                 border: `1px solid ${C.borderLight}`,
-                minHeight: 320,
+                background: C.card,
               }}
             >
-              <p
-                style={{
-                  color: C.muted,
-                  fontSize: 12,
-                  letterSpacing: 2,
-                  textTransform: 'uppercase',
-                }}
-              >
-                Tu red completa
-              </p>
-              <p
-                style={{
-                  fontFamily: "'Outfit', sans-serif",
-                  fontWeight: 900,
-                  fontSize: 'clamp(80px, 14vw, 140px)',
-                  lineHeight: 1,
-                  color: C.emerald,
-                  marginTop: 8,
-                }}
-              >
-                1.110
-              </p>
-              <p style={{ color: C.textDim, fontSize: 15, marginTop: 8, maxWidth: 320 }}>
-                personas en tu red completa
-              </p>
-              <div className="flex flex-wrap justify-center gap-2 w-full mt-6">
-                {[
-                  { label: '3 Niveles', color: C.purple },
-                  { label: '3% por nivel', color: C.emerald },
-                  { label: '$41.700/mes presupuesto', color: C.gold },
-                ].map((chip) => (
-                  <span
-                    key={chip.label}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold"
-                    style={{
-                      background: `${chip.color}1A`,
-                      color: chip.color,
-                      border: `1px solid ${chip.color}55`,
-                    }}
-                  >
-                    <Check className="size-3" /> {chip.label}
-                  </span>
-                ))}
-              </div>
+              <img
+                src="/images/dimarclub-hero.png"
+                alt="Comunidad DimarClub — emprendedores unidos"
+                className="w-full h-auto block"
+                style={{ display: 'block' }}
+              />
+            </div>
+            <div className="flex flex-wrap justify-center gap-2 w-full mt-3">
+              {[
+                { label: '3 Niveles', color: C.purple },
+                { label: '3% por nivel', color: C.emerald },
+                { label: '1.110 personas', color: C.gold },
+              ].map((chip) => (
+                <span
+                  key={chip.label}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold"
+                  style={{
+                    background: `${chip.color}1A`,
+                    color: chip.color,
+                    border: `1px solid ${chip.color}55`,
+                  }}
+                >
+                  <Check className="size-3" /> {chip.label}
+                </span>
+              ))}
             </div>
           </div>
         </div>
