@@ -15,7 +15,6 @@ import {
   Menu,
   X,
   ArrowRight,
-  ChevronRight,
 } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 import {
@@ -155,12 +154,6 @@ export function PubliBagsModule() {
       {/* ===== Impacto ===== */}
       <Impacto />
 
-      {/* ===== Propuesta DimarClub ===== */}
-      <Propuesta onCta={() => toast('Próximamente: DimarClub marketplace', 'info')} />
-
-      {/* ===== Red Universal ===== */}
-      <RedUniversal onCta={() => setModule('affiliates')} />
-
       {/* ===== CTA Planes ===== */}
       <CtaPlanes onCta={() => setModule('bag-plan')} />
 
@@ -188,7 +181,6 @@ function Navbar({
     { href: '#como-funciona', label: 'Cómo funciona' },
     { href: '#ventajas', label: 'Ventajas' },
     { href: '#impacto', label: 'Impacto' },
-    { href: '#propuesta', label: 'Propuesta' },
     { href: '#contacto', label: 'Contacto' },
   ]
   return (
@@ -778,120 +770,6 @@ function Impacto() {
         ))}
       </div>
     </Section>
-  )
-}
-
-// ===================== PROPUESTA DIMARCLUB =====================
-function Propuesta({ onCta }: { onCta: () => void }) {
-  const benefits = [
-    { icon: '🚑', title: 'Ambulancia Gratis', desc: 'Servicio de ambulancia sin costo para socios.' },
-    { icon: '🔧', title: 'Servicios Técnicos', desc: 'Red de técnicos en electricidad, plomería y más.' },
-    { icon: '🌿', title: 'Medicina Ancestral', desc: 'Acceso a terapias alternativas y naturales.' },
-    { icon: '🚚', title: 'Entrega Gratis', desc: 'Logística de productos sin costo adicional.' },
-    { icon: '💰', title: 'Préstamos con Garantía', desc: 'Crédito respaldado por tu aporte de capital.' },
-    { icon: '📈', title: 'Línea de Crédito 75%', desc: 'Financia hasta el 75% de tu aporte acumulado.' },
-    { icon: '💹', title: 'Inversión 5% Mensual', desc: 'Tu aporte genera 5% interés mensual compuesto.' },
-    { icon: '🎯', title: 'Hub de Tareas CPA', desc: 'Centro de tareas de costo por acción para afiliados.' },
-    { icon: '🛍️', title: 'Fundas con Descuentos', desc: 'Descuentos exclusivos en fundas y productos.' },
-    { icon: '🏢', title: 'Coworking $150/mes', desc: 'Espacio de trabajo compartido a precio de socio.' },
-    { icon: '🎓', title: 'Capacitación', desc: 'Cursos y formación empresarial continua.' },
-    { icon: '📅', title: 'Reuniones Semanales', desc: 'Encuentros de networking y negocios.' },
-  ]
-  return (
-    <Section
-      id="propuesta"
-      eyebrow="Propuesta DimarClub"
-      title="Ser socio PubliBags te abre las puertas de DimarClub"
-      subtitle="No solo publicitarias tu marca. Al comprar un espacio te conviertes en socio de la cooperativa DimarClub con 12 beneficios exclusivos."
-    >
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-        {benefits.map((b) => (
-          <div
-            key={b.title}
-            className="rounded-xl p-4 transition-transform hover:scale-[1.02]"
-            style={{ background: C.card, border: `1px solid ${C.borderLight}` }}
-          >
-            <div className="size-9 rounded-lg flex items-center justify-center text-lg mb-2" style={{ background: C.bg }}>
-              {b.icon}
-            </div>
-            <h4 style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 2 }}>{b.title}</h4>
-            <p style={{ fontSize: 12, color: C.textDim, lineHeight: 1.4 }}>{b.desc}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap gap-3 mt-6">
-        <button
-          onClick={onCta}
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-semibold text-sm"
-          style={{ background: C.emerald, color: '#062019' }}
-        >
-          Conocer DimarClub <ChevronRight className="size-4" />
-        </button>
-        <button
-          onClick={onCta}
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-semibold text-sm"
-          style={{ background: 'transparent', color: C.text, border: `1px solid ${C.borderLight}` }}
-        >
-          Ser Proveedor
-        </button>
-      </div>
-    </Section>
-  )
-}
-
-// ===================== RED UNIVERSAL =====================
-function RedUniversal({ onCta }: { onCta: () => void }) {
-  return (
-    <section style={{ padding: '40px 0' }}>
-      <div className="max-w-[1280px] mx-auto px-4">
-        <div
-          className="rounded-2xl p-6 sm:p-10 grid lg:grid-cols-[1fr_auto] gap-6 items-center"
-          style={{
-            background: `linear-gradient(135deg, ${C.purple}22 0%, ${C.emerald}11 100%)`,
-            border: `1px solid ${C.purple}55`,
-          }}
-        >
-          <div>
-            <div
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-3"
-              style={{ background: `${C.purple}22`, color: C.purple, border: `1px solid ${C.purple}55` }}
-            >
-              <Users className="size-3.5" /> Red Universal de Afiliados
-            </div>
-            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 'clamp(24px, 3vw, 32px)', color: C.text, lineHeight: 1.15 }}>
-              Construye tu red de 3 niveles y gana comisiones en cada compra
-            </h2>
-            <p style={{ color: C.textDim, fontSize: 15, marginTop: 12, lineHeight: 1.55, maxWidth: 620 }}>
-              Cada socio puede construir su <strong style={{ color: C.text }}>Red Universal de 3 Niveles</strong> y ganar{' '}
-              <strong style={{ color: C.emerald }}>2% de cada nivel</strong> (N1, N2, N3) +{' '}
-              <strong style={{ color: C.gold }}>3% cashback N0</strong> en cada compra de espacio PubliBags.
-            </p>
-            <div className="flex flex-wrap gap-3 mt-6">
-              <div className="rounded-lg px-3 py-2" style={{ background: C.card, border: `1px solid ${C.border}` }}>
-                <p style={{ fontSize: 11, color: C.muted }}>Tú compras</p>
-                <p style={{ fontSize: 18, fontWeight: 700, color: C.gold }}>3% cashback N0</p>
-              </div>
-              <div className="rounded-lg px-3 py-2" style={{ background: C.card, border: `1px solid ${C.border}` }}>
-                <p style={{ fontSize: 11, color: C.muted }}>Tu padrino (N1)</p>
-                <p style={{ fontSize: 18, fontWeight: 700, color: C.emerald }}>2% comisión</p>
-              </div>
-              <div className="rounded-lg px-3 py-2" style={{ background: C.card, border: `1px solid ${C.border}` }}>
-                <p style={{ fontSize: 11, color: C.muted }}>N2 y N3</p>
-                <p style={{ fontSize: 18, fontWeight: 700, color: C.purple }}>+2% cada nivel</p>
-              </div>
-            </div>
-          </div>
-          <button
-            onClick={onCta}
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-bold text-sm whitespace-nowrap justify-self-start lg:justify-self-end"
-            style={{ background: C.purple, color: '#fff' }}
-          >
-            Ver mi red <ArrowRight className="size-4" />
-          </button>
-        </div>
-      </div>
-    </section>
   )
 }
 
