@@ -310,7 +310,7 @@ function Hero({ onSeePlan, onWhats }: { onSeePlan: () => void; onWhats: () => vo
               Convertimos cada <span style={{ color: C.emerald }}>bolso</span> en publicidad que viaja por tu ciudad
             </h1>
             <p style={{ color: C.textDim, fontSize: 17, marginTop: 18, lineHeight: 1.55, maxWidth: 540 }}>
-              {BAG_TOTAL_SPACES} espacios publicitarios de 5×5 cm en bolsos elegantes, ecológicas y reutilizables que circulan por toda la ciudad.
+              {BAG_TOTAL_SPACES} espacios publicitarios de 10×5 cm en bolsos elegantes, ecológicas y reutilizables que circulan por toda la ciudad.
               Tu marca impresa + QR, vista por miles de personas todos los días.
             </p>
 
@@ -323,7 +323,7 @@ function Hero({ onSeePlan, onWhats }: { onSeePlan: () => void; onWhats: () => vo
                 className="size-11 rounded-lg flex items-center justify-center font-bold"
                 style={{ background: `${C.gold}22`, color: C.gold, fontSize: 18 }}
               >
-                $20
+                {BAG_SPACE_PRICE}
               </div>
               <div>
                 <p style={{ fontSize: 14, fontWeight: 600, color: C.text }}>por espacio · pago único</p>
@@ -361,14 +361,14 @@ function Hero({ onSeePlan, onWhats }: { onSeePlan: () => void; onWhats: () => vo
             >
               <p style={{ color: C.muted, fontSize: 12, letterSpacing: 2, textTransform: 'uppercase' }}>Espacios totales</p>
               <p style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 900, fontSize: 'clamp(80px, 14vw, 140px)', lineHeight: 1, color: C.emerald, marginTop: 8 }}>
-                141
+                {BAG_TOTAL_SPACES}
               </p>
               <p style={{ color: C.textDim, fontSize: 15, marginTop: 8, maxWidth: 320 }}>
-                Cada uno de 5×5 cm, distribuidos en 3 paneles del bolso de 45×35 cm
+                Cada uno de 10×5 cm, distribuidos en 5 paneles del bolso (Frente, Posterior, Base, Tapa y Correa)
               </p>
               <div className="grid grid-cols-3 gap-2 w-full mt-6">
                 {[
-                  { label: 'Paneles', value: '3' },
+                  { label: 'Paneles', value: '5' },
                   { label: 'Tamaño bolso', value: '45×35cm' },
                   { label: 'Reutilizable', value: '∞' },
                 ].map((s) => (
@@ -388,21 +388,23 @@ function Hero({ onSeePlan, onWhats }: { onSeePlan: () => void; onWhats: () => vo
 
 // ===================== ANATOMÍA =====================
 function Anatomia() {
-  const panelInfo = [
-    { label: 'Frontal', dims: '45×35 cm', count: 63, color: C.emerald },
-    { label: 'Posterior', dims: '45×35 cm', count: 63, color: C.purple },
-    { label: 'Correa / Asa', dims: '75×5 cm', count: 15, color: C.gold, big: true },
-  ]
+  const panelInfo = BAG_PANELS.map((p, i) => ({
+    label: p.label,
+    dims: `${p.widthCm}×${p.heightCm} cm`,
+    count: p.end - p.start + 1,
+    color: [C.emerald, C.purple, C.gold, C.rose, C.amber][i] || C.emerald,
+    big: i === 2, // Base es la más destacada
+  }))
 
   const stats = [
-    { label: 'Espacios totales', value: '141', color: C.emerald },
-    { label: 'Vendibles', value: '141', color: C.emerald },
-    { label: 'Por espacio', value: '$20', color: C.gold },
+    { label: 'Espacios totales', value: String(BAG_TOTAL_SPACES), color: C.emerald },
+    { label: 'Vendibles', value: String(BAG_TOTAL_SPACES), color: C.emerald },
+    { label: 'Por espacio', value: `$${BAG_SPACE_PRICE}`, color: C.gold },
     { label: 'Interés mensual', value: '5%', color: C.purple },
   ]
 
   return (
-    <Section id="anatomia" eyebrow="Anatomía del bolso" title="141 espacios publicitarios por bolso" subtitle="Cada bolso de 45×35 cm tiene espacios de 5×5 cm distribuidos en 3 paneles (Frontal, Posterior y Correa). Los 141 espacios son vendibles.">
+    <Section id="anatomia" eyebrow="Anatomía del bolso" title={`${BAG_TOTAL_SPACES} espacios publicitarios por bolso`} subtitle="Cada bolso tiene espacios de 10×5 cm distribuidos en 5 paneles (Frente, Posterior, Base, Tapa solapa y Correa). Todos los espacios son vendibles.">
       {/* Visual panels */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {panelInfo.map((p) => (
@@ -451,13 +453,13 @@ function Anatomia() {
 // ===================== CÓMO FUNCIONA =====================
 function ComoFunciona() {
   const steps = [
-    { n: 1, icon: <ShoppingBag className="size-5" />, title: 'Compras tu espacio', desc: 'Eliges un espacio de 5×5 cm en el plano del bolso. Pagas $20 (pago único) y automáticamente te haces SOCIO de la cooperativa.' },
-    { n: 2, icon: <TrendingUp className="size-5" />, title: 'Tu $20 = aporte de capital', desc: 'El $20 se registra como aporte de capital en tu cuenta cooperativa. Genera 5% interés mensual compuesto.' },
-    { n: 3, icon: <Palette className="size-5" />, title: 'Tu marca se imprime + QR', desc: 'Subes tu logo o generas un QR. Se imprime en el bolso junto con 296 marcas más, en 500 bolsas que circulan por toda la ciudad.' },
+    { n: 1, icon: <ShoppingBag className="size-5" />, title: 'Compras tu espacio', desc: `Eliges un espacio de 10×5 cm en el plano del bolso. Pagas $${BAG_SPACE_PRICE} (pago único) y automáticamente te haces SOCIO de la cooperativa.` },
+    { n: 2, icon: <TrendingUp className="size-5" />, title: `Tu $${BAG_SPACE_PRICE} = aporte de capital`, desc: `El $${BAG_SPACE_PRICE} se registra como aporte de capital en tu cuenta cooperativa. Genera 5% interés mensual compuesto.` },
+    { n: 3, icon: <Palette className="size-5" />, title: 'Tu marca se imprime + QR', desc: `Subes tu logo o generas un QR. Se imprime en el bolso junto con ${BAG_TOTAL_SPACES - 1} marcas más, en 500 bolsas que circulan por toda la ciudad.` },
     { n: 4, icon: <Users className="size-5" />, title: 'Miles ven tu marca', desc: 'Cada bolso es visto por miles de personas. Tu red de afiliados gana 2% en 3 niveles + 3% cashback en cada compra.' },
   ]
   return (
-    <Section id="como-funciona" eyebrow="Cómo funciona" title="De $20 a marca impresa en 4 pasos" subtitle="Un flujo simple que te convierte en socio, genera interés compuesto y pone tu marca en circulación.">
+    <Section id="como-funciona" eyebrow="Cómo funciona" title={`De $${BAG_SPACE_PRICE} a marca impresa en 4 pasos`} subtitle="Un flujo simple que te convierte en socio, genera interés compuesto y pone tu marca en circulación.">
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {steps.map((s) => (
           <div key={s.n} className="rounded-xl p-5 relative" style={{ background: C.card, border: `1px solid ${C.borderLight}` }}>
@@ -509,7 +511,7 @@ function PlanoLive({ data, loading, onBuy }: { data: BagPlanData | null; loading
     <Section
       id="plano"
       eyebrow="Plano de corte en vivo"
-      title="Mira los 141 espacios del bolso en tiempo real"
+      title={`Mira los ${BAG_TOTAL_SPACES} espacios del bolso en tiempo real`}
       subtitle="Esta es la campaña actual (impresa, llena de patrocinadores) y la próxima campaña (compra abierta)."
     >
       {/* Toggle */}
@@ -559,7 +561,7 @@ function PlanoLive({ data, loading, onBuy }: { data: BagPlanData | null; loading
           style={{ background: C.card, border: `1px solid ${C.border}` }}
         >
           <div className="inline-block size-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: `${C.emerald} transparent transparent transparent` }} />
-          <p style={{ color: C.muted, fontSize: 14, marginTop: 12 }}>Cargando los 141 espacios…</p>
+          <p style={{ color: C.muted, fontSize: 14, marginTop: 12 }}>Cargando los {BAG_TOTAL_SPACES} espacios…</p>
         </div>
       ) : !spaces ? (
         <div className="rounded-xl p-12 text-center" style={{ background: C.card, border: `1px solid ${C.border}` }}>
@@ -611,7 +613,7 @@ function PlanoLive({ data, loading, onBuy }: { data: BagPlanData | null; loading
                 ¿Listo para imprimir tu marca?
               </h3>
               <p style={{ color: C.textDim, fontSize: 14, marginTop: 4 }}>
-                Abre el visualizador completo, elige tu espacio y hazte socio PubliBags por $20.
+                Abre el visualizador completo, elige tu espacio y hazte socio PubliBags por {BAG_SPACE_PRICE}.
               </p>
             </div>
             <button
@@ -718,7 +720,7 @@ function Ventajas() {
   const items = [
     { icon: <Leaf className="size-5" />, title: '100% Ecológico', desc: 'Bolso reutilizable de tela resistente. Cero plástico de un solo uso.' },
     { icon: <Eye className="size-5" />, title: 'Medición Real', desc: 'Cada QR se escanea y mide en tiempo real. Sabes cuántas personas vieron tu marca.' },
-    { icon: <Palette className="size-5" />, title: 'Diseño Incluido', desc: 'Te ayudamos a diseñar tu espacio de 5×5 cm. No necesitas diseñador.' },
+    { icon: <Palette className="size-5" />, title: 'Diseño Incluido', desc: 'Te ayudamos a diseñar tu espacio de 10×5 cm (QR de 5×5 + logo de tu empresa). No necesitas diseñador.' },
     { icon: <Link2 className="size-5" />, title: 'Enlace a tu Web', desc: 'El QR lleva directo a tu sitio web, tienda o perfil de afiliado.' },
     { icon: <Recycle className="size-5" />, title: 'Reutilización', desc: 'Un bolso se usa cientos de veces. Tu marca se ve una y otra vez.' },
     { icon: <TrendingUp className="size-5" />, title: 'Alcance Masivo', desc: '500 bolsas circulando × cientos de vistas = miles de impresiones/mes.' },
@@ -794,14 +796,14 @@ function CtaPlanes({ onCta }: { onCta: () => void }) {
           ¿Listo para ver tu marca <span style={{ color: C.emerald }}>en todas partes</span>?
         </h2>
         <p style={{ color: C.textDim, fontSize: 16, marginTop: 14, maxWidth: 580, marginLeft: 'auto', marginRight: 'auto' }}>
-          Únete a los 141 espacios del bolso PubliBags. Inversión $20, retorno ambiental + financiero + publicitario.
+          Únete a los {BAG_TOTAL_SPACES} espacios del bolso PubliBags. Inversión {BAG_SPACE_PRICE}, retorno ambiental + financiero + publicitario.
         </p>
         <button
           onClick={onCta}
           className="mt-7 inline-flex items-center gap-2 px-7 py-4 rounded-lg font-bold text-base"
           style={{ background: C.emerald, color: '#062019' }}
         >
-          <ShoppingBag className="size-5" /> Comprar mi espacio — $20
+          <ShoppingBag className="size-5" /> Comprar mi espacio — {BAG_SPACE_PRICE}
         </button>
       </div>
     </section>

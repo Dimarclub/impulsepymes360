@@ -582,7 +582,7 @@ function BagView({
                     </span>
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Espacios {panel.start}–{panel.end} · {total} celdas de 5×5 cm
+                    Espacios {panel.start}–{panel.end} · {total} celdas de 10×5 cm
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -1153,7 +1153,7 @@ function SpaceEditorDialog({
             </Badge>
           </DialogTitle>
           <DialogDescription>
-            {panel?.label} · Fila {row + 1}, Col {col + 1} · 5×5 cm · {fmtUsd(space.price || 20)}
+            {panel?.label} · Fila {row + 1}, Col {col + 1} · 10×5 cm · {fmtUsd(space.price || 20)}
           </DialogDescription>
         </DialogHeader>
 

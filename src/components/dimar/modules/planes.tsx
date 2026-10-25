@@ -374,7 +374,7 @@ function Hero({ onSeePlans, onWhats }: { onSeePlans: () => void; onWhats: () => 
             { k: '6', v: 'planes integrales', color: C.gold },
             { k: '3', v: 'add-ons premium', color: C.emerald },
             { k: '$122', v: 'plan desde /mes', color: C.text },
-            { k: '5×5cm', v: 'QR en funda PubliBags', color: C.purple },
+            { k: '10×5cm', v: 'QR en bolso PubliBags', color: C.purple },
           ].map((m) => (
             <div
               key={m.v}
