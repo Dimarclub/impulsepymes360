@@ -1,0 +1,1018 @@
+     1→'use client'
+     2→
+     3→import { useEffect, useState } from 'react'
+     4→import {
+     5→  Truck,
+     6→  Package,
+     7→  Building2,
+     8→  Smartphone,
+     9→  Store,
+    10→  Users,
+    11→  FileText,
+    12→  Newspaper,
+    13→  Headphones,
+    14→  BookOpen,
+    15→  ShoppingBag,
+    16→  Globe,
+    17→  Check,
+    18→  Phone,
+    19→  Menu,
+    20→  X,
+    21→  ArrowRight,
+    22→  ChevronRight,
+    23→  ShieldCheck,
+    24→  Bike,
+    25→  Sparkles,
+    26→} from 'lucide-react'
+    27→import { useAppStore } from '@/lib/store'
+    28→
+    29→// ---------- Paleta oscura (mismo sistema que PubliBags) ----------
+    30→const C = {
+    31→  bg: '#0B1120',
+    32→  card: '#15203A',
+    33→  card2: '#1A2647',
+    34→  border: '#243352',
+    35→  borderLight: '#2F3F66',
+    36→  emerald: '#00D4AA',
+    37→  emeraldDark: '#00A886',
+    38→  gold: '#F5A623',
+    39→  goldDim: '#B47C18',
+    40→  purple: '#A855F7',
+    41→  blue: '#3B82F6',
+    42→  text: '#E8EDF5',
+    43→  textDim: '#A0AEC8',
+    44→  muted: '#6B7FA0',
+    45→  success: '#22C55E',
+    46→  rose: '#F43F5E',
+    47→  amber: '#F59E0B',
+    48→}
+    49→
+    50→const WHATSAPP_URL =
+    51→  'https://wa.me/593992689844?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20Fuerza%20Delta'
+    52→const WHATSAPP_DISPLAY = '+593 99 268 9844'
+    53→const EMAIL_DISPLAY = 'info@impulsepymes360.com'
+    54→const WEB_DISPLAY = 'impulsepymes360.com'
+    55→
+    56→// ---------- Componente principal ----------
+    57→export function FuerzaDeltaModule() {
+    58→  const setModule = useAppStore((s) => s.setModule)
+    59→  const toast = useAppStore((s) => s.toast)
+    60→  const [mobileNav, setMobileNav] = useState(false)
+    61→
+    62→  // Inyectar Google Fonts (Outfit + DM Sans)
+    63→  useEffect(() => {
+    64→    const id = 'fuerza-delta-fonts'
+    65→    if (document.getElementById(id)) return
+    66→    const link = document.createElement('link')
+    67→    link.id = id
+    68→    link.rel = 'stylesheet'
+    69→    link.href =
+    70→      'https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap'
+    71→    document.head.appendChild(link)
+    72→  }, [])
+    73→
+    74→  const onSolicitar = (planName: string) => {
+    75→    toast(`${planName} solicitado — te contactaremos por WhatsApp`)
+    76→    window.open(WHATSAPP_URL, '_blank')
+    77→  }
+    78→
+    79→  return (
+    80→    <div
+    81→      className="fuerza-delta-satellite"
+    82→      style={{
+    83→        background: C.bg,
+    84→        color: C.text,
+    85→        minHeight: '100vh',
+    86→        fontFamily: "'DM Sans', system-ui, sans-serif",
+    87→      }}
+    88→    >
+    89→      {/* ===== Navbar ===== */}
+    90→      <Navbar
+    91→        mobileNav={mobileNav}
+    92→        setMobileNav={setMobileNav}
+    93→        onSeePlanes={() => setModule('planes')}
+    94→      />
+    95→
+    96→      {/* ===== Hero ===== */}
+    97→      <Hero
+    98→        onSeeTarifas={() => scrollTo('tarifas')}
+    99→        onWhats={() => window.open(WHATSAPP_URL, '_blank')}
+   100→      />
+   101→
+   102→      {/* ===== Tarifas por unidad ===== */}
+   103→      <Tarifas onSolicitar={onSolicitar} />
+   104→
+   105→      {/* ===== App Deltas + Micro-distribuidores ===== */}
+   106→      <Deltas />
+   107→
+   108→      {/* ===== CTA 16+ entregas ===== */}
+   109→      <Cta16 onSeePlanes={() => setModule('planes')} />
+   110→
+   111→      {/* ===== Beneficios del Plan Integral incluido ===== */}
+   112→      <Beneficios onSeePlanes={() => setModule('planes')} />
+   113→
+   114→      {/* ===== Contacto ===== */}
+   115→      <Contacto onSeePlanes={() => setModule('planes')} />
+   116→
+   117→      {/* ===== Footer ===== */}
+   118→      <Footer onBackToPortal={() => setModule('marketplace')} />
+   119→    </div>
+   120→  )
+   121→}
+   122→
+   123→// ===================== NAVBAR =====================
+   124→function Navbar({
+   125→  mobileNav,
+   126→  setMobileNav,
+   127→  onSeePlanes,
+   128→}: {
+   129→  mobileNav: boolean
+   130→  setMobileNav: (v: boolean) => void
+   131→  onSeePlanes: () => void
+   132→}) {
+   133→  const links = [
+   134→    { href: '#tarifas', label: 'Tarifas' },
+   135→    { href: '#deltas', label: 'App Deltas' },
+   136→    { href: '#beneficios', label: 'Beneficios' },
+   137→    { href: '#contacto', label: 'Contacto' },
+   138→  ]
+   139→  return (
+   140→    <header
+   141→      style={{
+   142→        position: 'sticky',
+   143→        top: 0,
+   144→        zIndex: 50,
+   145→        background: 'rgba(11, 17, 32, 0.92)',
+   146→        backdropFilter: 'blur(10px)',
+   147→        borderBottom: `1px solid ${C.border}`,
+   148→      }}
+   149→    >
+   150→      <div className="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between gap-4">
+   151→        <a
+   152→          href="#top"
+   153→          style={{
+   154→            fontFamily: "'Outfit', sans-serif",
+   155→            fontWeight: 800,
+   156→            fontSize: 22,
+   157→            color: C.text,
+   158→            textDecoration: 'none',
+   159→            display: 'inline-flex',
+   160→            alignItems: 'center',
+   161→            gap: 8,
+   162→          }}
+   163→        >
+   164→          <Truck className="size-5" style={{ color: C.emerald }} />
+   165→          Fuerza <span style={{ color: C.emerald }}>Delta</span>
+   166→        </a>
+   167→        <nav className="hidden lg:flex items-center gap-1">
+   168→          {links.map((l) => (
+   169→            <a
+   170→              key={l.href}
+   171→              href={l.href}
+   172→              style={{
+   173→                color: C.textDim,
+   174→                fontSize: 14,
+   175→                padding: '8px 12px',
+   176→                borderRadius: 6,
+   177→                textDecoration: 'none',
+   178→                transition: 'color .15s, background .15s',
+   179→              }}
+   180→              onMouseEnter={(e) => {
+   181→                e.currentTarget.style.color = C.text
+   182→                e.currentTarget.style.background = C.card
+   183→              }}
+   184→              onMouseLeave={(e) => {
+   185→                e.currentTarget.style.color = C.textDim
+   186→                e.currentTarget.style.background = 'transparent'
+   187→              }}
+   188→            >
+   189→              {l.label}
+   190→            </a>
+   191→          ))}
+   192→        </nav>
+   193→        <div className="flex items-center gap-2">
+   194→          <a
+   195→            href={WHATSAPP_URL}
+   196→            target="_blank"
+   197→            rel="noopener noreferrer"
+   198→            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-semibold"
+   199→            style={{ background: C.emerald, color: '#062019' }}
+   200→          >
+   201→            <Phone className="size-3.5" />
+   202→            {WHATSAPP_DISPLAY}
+   203→          </a>
+   204→          <button
+   205→            onClick={onSeePlanes}
+   206→            className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-semibold"
+   207→            style={{ background: 'transparent', color: C.gold, border: `1px solid ${C.gold}` }}
+   208→          >
+   209→            Ver planes
+   210→          </button>
+   211→          <button
+   212→            className="lg:hidden p-2 rounded-md"
+   213→            style={{ color: C.text, background: C.card }}
+   214→            onClick={() => setMobileNav(!mobileNav)}
+   215→            aria-label="Menú"
+   216→          >
+   217→            {mobileNav ? <X className="size-5" /> : <Menu className="size-5" />}
+   218→          </button>
+   219→        </div>
+   220→      </div>
+   221→      {mobileNav && (
+   222→        <div className="lg:hidden border-t" style={{ borderColor: C.border, background: C.card }}>
+   223→          <div className="px-4 py-3 space-y-1">
+   224→            {links.map((l) => (
+   225→              <a
+   226→                key={l.href}
+   227→                href={l.href}
+   228→                onClick={() => setMobileNav(false)}
+   229→                className="block px-3 py-2 rounded-md text-sm"
+   230→                style={{ color: C.textDim }}
+   231→              >
+   232→                {l.label}
+   233→              </a>
+   234→            ))}
+   235→            <a
+   236→              href={WHATSAPP_URL}
+   237→              target="_blank"
+   238→              rel="noopener noreferrer"
+   239→              className="block px-3 py-2 rounded-md text-sm font-semibold"
+   240→              style={{ color: C.emerald }}
+   241→            >
+   242→              WhatsApp: {WHATSAPP_DISPLAY}
+   243→            </a>
+   244→            <button
+   245→              onClick={() => {
+   246→                setMobileNav(false)
+   247→                onSeePlanes()
+   248→              }}
+   249→              className="block w-full text-left px-3 py-2 rounded-md text-sm font-semibold"
+   250→              style={{ color: C.gold }}
+   251→            >
+   252→              Ver planes
+   253→            </button>
+   254→          </div>
+   255→        </div>
+   256→      )}
+   257→    </header>
+   258→  )
+   259→}
+   260→
+   261→// ===================== HERO =====================
+   262→function Hero({ onSeeTarifas, onWhats }: { onSeeTarifas: () => void; onWhats: () => void }) {
+   263→  return (
+   264→    <section id="top" style={{ position: 'relative', overflow: 'hidden', padding: '60px 0 80px' }}>
+   265→      {/* glow */}
+   266→      <div
+   267→        style={{
+   268→          position: 'absolute',
+   269→          top: -120,
+   270→          left: '50%',
+   271→          transform: 'translateX(-50%)',
+   272→          width: 600,
+   273→          height: 600,
+   274→          borderRadius: '50%',
+   275→          background: `radial-gradient(circle, ${C.emerald}22 0%, transparent 70%)`,
+   276→          pointerEvents: 'none',
+   277→        }}
+   278→      />
+   279→      <div className="max-w-[1280px] mx-auto px-4 relative">
+   280→        <div className="grid lg:grid-cols-2 gap-10 items-center">
+   281→          <div>
+   282→            <div
+   283→              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-5"
+   284→              style={{
+   285→                background: `${C.emerald}1A`,
+   286→                color: C.emerald,
+   287→                border: `1px solid ${C.emerald}55`,
+   288→              }}
+   289→            >
+   290→              <Sparkles className="size-3.5" />
+   291→              Mensajería B2B · Tarifas planas · Ecuador
+   292→            </div>
+   293→            <h1
+   294→              style={{
+   295→                fontFamily: "'Outfit', sans-serif",
+   296→                fontWeight: 800,
+   297→                fontSize: 'clamp(32px, 5vw, 52px)',
+   298→                lineHeight: 1.05,
+   299→                letterSpacing: -1,
+   300→                color: C.text,
+   301→              }}
+   302→            >
+   303→              Ahorra en tus envíos y obtén <span style={{ color: C.emerald }}>GRATIS</span> nuestro
+   304→              Plan Integral
+   305→            </h1>
+   306→            <p style={{ color: C.textDim, fontSize: 17, marginTop: 18, lineHeight: 1.55, maxWidth: 540 }}>
+   307→              Por la contratación de nuestras tarifas planas, tu negocio recibe presencia digital
+   308→              completa: página web, marketplace, publicidad en fundas ecológicas y más.
+   309→            </p>
+   310→
+   311→            {/* Price badge */}
+   312→            <div
+   313→              className="inline-flex items-center gap-3 px-4 py-3 rounded-xl mt-6"
+   314→              style={{ background: C.card, border: `1px solid ${C.borderLight}` }}
+   315→            >
+   316→              <div
+   317→                className="size-11 rounded-lg flex items-center justify-center font-bold"
+   318→                style={{ background: `${C.gold}22`, color: C.gold, fontSize: 18 }}
+   319→              >
+   320→                $1.75
+   321→              </div>
+   322→              <div>
+   323→                <p style={{ fontSize: 14, fontWeight: 600, color: C.text }}>
+   324→                  por entrega · Plan 15 · pago diario
+   325→                </p>
+   326→                <p style={{ fontSize: 12, color: C.muted }}>
+   327→                  Recogida incluida · Sin contratos forzosos
+   328→                </p>
+   329→              </div>
+   330→            </div>
+   331→
+   332→            <div className="flex flex-wrap gap-3 mt-7">
+   333→              <button
+   334→                onClick={onSeeTarifas}
+   335→                className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-semibold text-sm"
+   336→                style={{ background: C.emerald, color: '#062019' }}
+   337→              >
+   338→                Ver tarifas <ArrowRight className="size-4" />
+   339→              </button>
+   340→              <button
+   341→                onClick={onWhats}
+   342→                className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-semibold text-sm"
+   343→                style={{ background: 'transparent', color: C.text, border: `1px solid ${C.borderLight}` }}
+   344→              >
+   345→                <Phone className="size-4" /> Hablar por WhatsApp
+   346→              </button>
+   347→            </div>
+   348→          </div>
+   349→
+   350→          {/* Hero visual */}
+   351→          <div className="relative">
+   352→            <div
+   353→              className="rounded-2xl p-8 flex flex-col items-center justify-center text-center"
+   354→              style={{
+   355→                background: `linear-gradient(135deg, ${C.card} 0%, ${C.card2} 100%)`,
+   356→                border: `1px solid ${C.borderLight}`,
+   357→                minHeight: 320,
+   358→              }}
+   359→            >
+   360→              <p
+   361→                style={{
+   362→                  color: C.muted,
+   363→                  fontSize: 12,
+   364→                  letterSpacing: 2,
+   365→                  textTransform: 'uppercase',
+   366→                }}
+   367→              >
+   368→                Tarifa plana · Plan 15
+   369→              </p>
+   370→              <p
+   371→                style={{
+   372→                  fontFamily: "'Outfit', sans-serif",
+   373→                  fontWeight: 900,
+   374→                  fontSize: 'clamp(80px, 14vw, 140px)',
+   375→                  lineHeight: 1,
+   376→                  color: C.gold,
+   377→                  marginTop: 8,
+   378→                }}
+   379→              >
+   380→                $1.75
+   381→              </p>
+   382→              <p
+   383→                style={{
+   384→                  color: C.textDim,
+   385→                  fontSize: 15,
+   386→                  marginTop: 4,
+   387→                  maxWidth: 320,
+   388→                }}
+   389→              >
+   390→                por entrega · pago diario anticipado · 1 a 15 entregas al día
+   391→              </p>
+   392→              <div className="flex flex-wrap justify-center gap-2 w-full mt-6">
+   393→                {['Pago diario', 'Sin contratos', 'Recogida incluida'].map((chip) => (
+   394→                  <span
+   395→                    key={chip}
+   396→                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold"
+   397→                    style={{
+   398→                      background: `${C.emerald}1A`,
+   399→                      color: C.emerald,
+   400→                      border: `1px solid ${C.emerald}55`,
+   401→                    }}
+   402→                  >
+   403→                    <Check className="size-3" /> {chip}
+   404→                  </span>
+   405→                ))}
+   406→              </div>
+   407→            </div>
+   408→          </div>
+   409→        </div>
+   410→      </div>
+   411→    </section>
+   412→  )
+   413→}
+   414→
+   415→// ===================== TARIFAS =====================
+   416→function Tarifas({ onSolicitar }: { onSolicitar: (planName: string) => void }) {
+   417→  const planes = [
+   418→    {
+   419→      id: 'plan-5',
+   420→      name: 'Plan 5',
+   421→      icon: <FileText className="size-5" />,
+   422→      price: 2.25,
+   423→      volume: '1 a 5 sobres al día',
+   424→      features: ['Recogida incluida', 'Seguimiento en tiempo real', 'Pago diario por adelantado'],
+   425→      best: false,
+   426→    },
+   427→    {
+   428→      id: 'plan-10',
+   429→      name: 'Plan 10',
+   430→      icon: <Package className="size-5" />,
+   431→      price: 2.0,
+   432→      volume: '1 a 10 entregas al día',
+   433→      features: ['Recogida incluida', 'Seguimiento en tiempo real', 'Pago diario por adelantado'],
+   434→      best: false,
+   435→    },
+   436→    {
+   437→      id: 'plan-15',
+   438→      name: 'Plan 15',
+   439→      icon: <Building2 className="size-5" />,
+   440→      price: 1.75,
+   441→      volume: '1 a 15 entregas al día',
+   442→      features: ['Recogida incluida', 'Ejecutiva asignada', 'Pago diario por adelantado'],
+   443→      best: true,
+   444→    },
+   445→  ]
+   446→
+   447→  return (
+   448→    <Section
+   449→      id="tarifas"
+   450→      eyebrow="Tarifas por unidad"
+   451→      title="Paga solo por lo que envías"
+   452→      subtitle="Sin contratos forzosos. Elige la tarifa según tu volumen diario de envíos."
+   453→    >
+   454→      <div className="grid md:grid-cols-3 gap-5">
+   455→        {planes.map((p) => (
+   456→          <div
+   457→            key={p.id}
+   458→            className="rounded-2xl p-6 flex flex-col relative"
+   459→            style={{
+   460→              background: p.best
+   461→                ? `linear-gradient(135deg, ${C.card} 0%, ${C.card2} 100%)`
+   462→                : C.card,
+   463→              border: p.best ? `1px solid ${C.gold}` : `1px solid ${C.borderLight}`,
+   464→            }}
+   465→          >
+   466→            {p.best && (
+   467→              <span
+   468→                className="absolute -top-3 right-4 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide"
+   469→                style={{ background: C.gold, color: '#1a1206' }}
+   470→              >
+   471→                <Sparkles className="size-3" /> Mejor precio
+   472→              </span>
+   473→            )}
+   474→            <div
+   475→              className="size-11 rounded-lg flex items-center justify-center mb-4"
+   476→              style={{
+   477→                background: p.best ? `${C.gold}22` : `${C.emerald}22`,
+   478→                color: p.best ? C.gold : C.emerald,
+   479→              }}
+   480→            >
+   481→              {p.icon}
+   482→            </div>
+   483→            <h3
+   484→              style={{
+   485→                fontFamily: "'Outfit', sans-serif",
+   486→                fontWeight: 700,
+   487→                fontSize: 20,
+   488→                color: C.text,
+   489→              }}
+   490→            >
+   491→              {p.name}
+   492→            </h3>
+   493→            <p style={{ fontSize: 13, color: C.muted, marginTop: 2 }}>{p.volume}</p>
+   494→
+   495→            <div className="mt-4 mb-5">
+   496→              <span
+   497→                style={{
+   498→                  fontFamily: "'Outfit', sans-serif",
+   499→                  fontWeight: 900,
+   500→                  fontSize: 40,
+   501→                  color: p.best ? C.gold : C.emerald,
+   502→                  lineHeight: 1,
+   503→                }}
+   504→              >
+   505→                ${p.price.toFixed(2)}
+   506→              </span>
+   507→              <span style={{ fontSize: 13, color: C.textDim, marginLeft: 6 }}>por entrega</span>
+   508→            </div>
+   509→
+   510→            <ul className="space-y-2 mb-6 flex-1">
+   511→              {p.features.map((f) => (
+   512→                <li key={f} className="flex items-start gap-2">
+   513→                  <Check
+   514→                    className="size-4 mt-0.5 flex-shrink-0"
+   515→                    style={{ color: p.best ? C.gold : C.emerald }}
+   516→                  />
+   517→                  <span style={{ fontSize: 13, color: C.textDim, lineHeight: 1.45 }}>{f}</span>
+   518→                </li>
+   519→              ))}
+   520→            </ul>
+   521→
+   522→            <button
+   523→              onClick={() => onSolicitar(p.name)}
+   524→              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm w-full"
+   525→              style={{
+   526→                background: p.best ? C.gold : C.emerald,
+   527→                color: p.best ? '#1a1206' : '#062019',
+   528→              }}
+   529→            >
+   530→              Solicitar <ChevronRight className="size-4" />
+   531→            </button>
+   532→          </div>
+   533→        ))}
+   534→      </div>
+   535→
+   536→      {/* Nota */}
+   537→      <div
+   538→        className="mt-6 rounded-xl p-4 flex items-start gap-3"
+   539→        style={{
+   540→          background: `${C.emerald}0F`,
+   541→          border: `1px solid ${C.emerald}33`,
+   542→        }}
+   543→      >
+   544→        <ShieldCheck className="size-5 flex-shrink-0" style={{ color: C.emerald }} />
+   545→        <p style={{ fontSize: 13, color: C.textDim, lineHeight: 1.5 }}>
+   546→          El cobro es <strong style={{ color: C.text }}>diario y anticipado</strong>. Sin facturas
+   547→          pendientes ni sorpresas al final del mes.
+   548→        </p>
+   549→      </div>
+   550→    </Section>
+   551→  )
+   552→}
+   553→
+   554→// ===================== DELTAS (App Deltas + Micro-distribuidores) =====================
+   555→function Deltas() {
+   556→  return (
+   557→    <Section
+   558→      id="deltas"
+   559→      eyebrow="Parte de Fuerza Delta"
+   560→      title="App Deltas + Micro-distribuidores de zona"
+   561→      subtitle="Un ecosistema logístico completo: motorizados con app propia y una red de micro-distribuidores locales para cubrir más zonas."
+   562→    >
+   563→      <div className="grid lg:grid-cols-2 gap-5">
+   564→        {/* Card 1 — App Deltas */}
+   565→        <div
+   566→          className="rounded-2xl p-6"
+   567→          style={{
+   568→            background: `linear-gradient(135deg, ${C.card} 0%, ${C.card2} 100%)`,
+   569→            border: `1px solid ${C.emerald}55`,
+   570→          }}
+   571→        >
+   572→          <div className="flex items-center gap-3 mb-4">
+   573→            <div
+   574→              className="size-12 rounded-xl flex items-center justify-center"
+   575→              style={{ background: `${C.blue}22`, color: C.blue }}
+   576→            >
+   577→              <Smartphone className="size-6" />
+   578→            </div>
+   579→            <div>
+   580→              <p style={{ fontSize: 11, color: C.emerald, textTransform: 'uppercase', letterSpacing: 1.5, fontWeight: 700 }}>
+   581→                Para motorizados y clientes
+   582→              </p>
+   583→              <h3
+   584→                style={{
+   585→                  fontFamily: "'Outfit', sans-serif",
+   586→                  fontWeight: 800,
+   587→                  fontSize: 22,
+   588→                  color: C.text,
+   589→                }}
+   590→              >
+   591→                App Deltas
+   592→              </h3>
+   593→            </div>
+   594→          </div>
+   595→          <p style={{ fontSize: 14, color: C.textDim, lineHeight: 1.55, marginBottom: 16 }}>
+   596→            Plataforma propia para motorizados y clientes. Todo el flujo de entregas en tiempo real
+   597→            desde tu celular.
+   598→          </p>
+   599→          <ul className="space-y-2.5">
+   600→            {[
+   601→              'Rastreo en tiempo real',
+   602→              'Asignación automática de rutas',
+   603→              'Notificaciones push al cliente',
+   604→              'Historial y comprobantes digitales',
+   605→              'Panel de control para motorizados',
+   606→            ].map((f) => (
+   607→              <li key={f} className="flex items-start gap-2">
+   608→                <Check className="size-4 mt-0.5 flex-shrink-0" style={{ color: C.emerald }} />
+   609→                <span style={{ fontSize: 13.5, color: C.textDim, lineHeight: 1.45 }}>{f}</span>
+   610→              </li>
+   611→            ))}
+   612→          </ul>
+   613→        </div>
+   614→
+   615→        {/* Card 2 — Micro-distribuidores */}
+   616→        <div
+   617→          className="rounded-2xl p-6"
+   618→          style={{
+   619→            background: `linear-gradient(135deg, ${C.card} 0%, ${C.card2} 100%)`,
+   620→            border: `1px solid ${C.gold}55`,
+   621→          }}
+   622→        >
+   623→          <div className="flex items-center gap-3 mb-4">
+   624→            <div
+   625→              className="size-12 rounded-xl flex items-center justify-center"
+   626→              style={{ background: `${C.gold}22`, color: C.gold }}
+   627→            >
+   628→              <Store className="size-6" />
+   629→            </div>
+   630→            <div>
+   631→              <p style={{ fontSize: 11, color: C.gold, textTransform: 'uppercase', letterSpacing: 1.5, fontWeight: 700 }}>
+   632→                Red de zona
+   633→              </p>
+   634→              <h3
+   635→                style={{
+   636→                  fontFamily: "'Outfit', sans-serif",
+   637→                  fontWeight: 800,
+   638→                  fontSize: 22,
+   639→                  color: C.text,
+   640→                }}
+   641→              >
+   642→                Micro-distribuidores de zona
+   643→              </h3>
+   644→            </div>
+   645→          </div>
+   646→          <p style={{ fontSize: 14, color: C.textDim, lineHeight: 1.55, marginBottom: 16 }}>
+   647→            Red de personas que retiran sobres en el coworking y entregan en su zona. Ideal para
+   648→            cubrir áreas alejadas.
+   649→          </p>
+   650→          <ul className="space-y-2.5">
+   651→            {[
+   652→              { pre: 'Mínimo ', strong: '10 sobres por zona', post: '' },
+   653→              { pre: 'Pago fijo de ', strong: '$1 por sobre', post: '' },
+   654→              { pre: 'Aceptación voluntaria', strong: '', post: '' },
+   655→              { pre: 'Retiro en el coworking', strong: '', post: '' },
+   656→              { pre: 'Plazo de entrega ', strong: '24-48 horas', post: '' },
+   657→              { pre: 'Pago al retirar (efectivo o transferencia)', strong: '', post: '' },
+   658→              { pre: 'Respaldo de Fuerza Delta si rechazan', strong: '', post: '' },
+   659→            ].map((f, i) => (
+   660→              <li key={i} className="flex items-start gap-2">
+   661→                <Check className="size-4 mt-0.5 flex-shrink-0" style={{ color: C.gold }} />
+   662→                <span style={{ fontSize: 13.5, color: C.textDim, lineHeight: 1.45 }}>
+   663→                  {f.pre}
+   664→                  {f.strong && <strong style={{ color: C.text }}>{f.strong}</strong>}
+   665→                  {f.post}
+   666→                </span>
+   667→              </li>
+   668→            ))}
+   669→          </ul>
+   670→        </div>
+   671→      </div>
+   672→    </Section>
+   673→  )
+   674→}
+   675→
+   676→// ===================== CTA 16+ ENTREGAS =====================
+   677→function Cta16({ onSeePlanes }: { onSeePlanes: () => void }) {
+   678→  return (
+   679→    <section id="cta-16" style={{ padding: '40px 0' }}>
+   680→      <div className="max-w-[1280px] mx-auto px-4">
+   681→        <div
+   682→          className="rounded-2xl p-6 sm:p-10 grid lg:grid-cols-[1fr_auto] gap-6 items-center"
+   683→          style={{
+   684→            background: `linear-gradient(135deg, ${C.gold}22 0%, ${C.emerald}11 100%)`,
+   685→            border: `1px solid ${C.gold}55`,
+   686→          }}
+   687→        >
+   688→          <div>
+   689→            <div
+   690→              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-3"
+   691→              style={{ background: `${C.gold}22`, color: C.gold, border: `1px solid ${C.gold}55` }}
+   692→            >
+   693→              <Sparkles className="size-3.5" /> Plan Integral GRATIS
+   694→            </div>
+   695→            <h2
+   696→              style={{
+   697→                fontFamily: "'Outfit', sans-serif",
+   698→                fontWeight: 800,
+   699→                fontSize: 'clamp(24px, 3vw, 32px)',
+   700→                color: C.text,
+   701→                lineHeight: 1.15,
+   702→              }}
+   703→            >
+   704→              Contrata <span style={{ color: C.gold }}>16 o más entregas diarias</span>
+   705→            </h2>
+   706→            <p
+   707→              style={{ color: C.textDim, fontSize: 15, marginTop: 12, lineHeight: 1.55, maxWidth: 640 }}
+   708→            >
+   709→              y obtén <strong style={{ color: C.emerald }}>GRATIS todos los meses</strong> el Plan
+   710→              Integral de Marketing y Publicidad, con <strong style={{ color: C.text }}>Enlace Express</strong>{' '}
+   711→              (Call Center + Vendedores P2P) incluido.
+   712→            </p>
+   713→          </div>
+   714→          <button
+   715→            onClick={onSeePlanes}
+   716→            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-lg font-bold text-sm whitespace-nowrap justify-self-start lg:justify-self-end"
+   717→            style={{ background: C.gold, color: '#1a1206' }}
+   718→          >
+   719→            Ver Tarifas Planas <ArrowRight className="size-4" />
+   720→          </button>
+   721→        </div>
+   722→      </div>
+   723→    </section>
+   724→  )
+   725→}
+   726→
+   727→// ===================== BENEFICIOS DEL PLAN INTEGRAL =====================
+   728→function Beneficios({ onSeePlanes }: { onSeePlanes: () => void }) {
+   729→  const items = [
+   730→    { icon: <Bike className="size-5" />, label: 'Entregas diarias' },
+   731→    { icon: <Globe className="size-5" />, label: 'Sitio web profesional' },
+   732→    { icon: <FileText className="size-5" />, label: 'Catálogo PDF (DimarCatalog)' },
+   733→    { icon: <ShoppingBag className="size-5" />, label: 'Espacio en funda' },
+   734→    { icon: <Store className="size-5" />, label: 'Productos en marketplace' },
+   735→    { icon: <Users className="size-5" />, label: 'Clientes potenciales' },
+   736→    { icon: <Newspaper className="size-5" />, label: 'Clasificados (Dimarads)' },
+   737→    { icon: <Headphones className="size-5" />, label: 'Enlace Express (Call Center + P2P)' },
+   738→    { icon: <BookOpen className="size-5" />, label: 'Revista-Directorio (DimarRevista)' },
+   739→  ]
+   740→  return (
+   741→    <Section
+   742→      id="beneficios"
+   743→      eyebrow="Plan Integral incluido"
+   744→      title="Todo lo que recibes GRATIS cada mes"
+   745→      subtitle="Cada plan incluye acceso completo al ecosistema ImpulsePymes360."
+   746→    >
+   747→      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4">
+   748→        {items.map((it) => (
+   749→          <div
+   750→            key={it.label}
+   751→            className="rounded-xl p-5 flex flex-col items-center text-center transition-transform hover:scale-[1.02]"
+   752→            style={{
+   753→              background: `linear-gradient(135deg, ${C.card} 0%, ${C.card2} 100%)`,
+   754→              border: `1px solid ${C.borderLight}`,
+   755→            }}
+   756→          >
+   757→            <div
+   758→              className="size-11 rounded-lg flex items-center justify-center mb-3"
+   759→              style={{ background: `${C.emerald}22`, color: C.emerald }}
+   760→            >
+   761→              {it.icon}
+   762→            </div>
+   763→            <p style={{ fontSize: 13.5, fontWeight: 600, color: C.text, lineHeight: 1.4 }}>
+   764→              {it.label}
+   765→            </p>
+   766→          </div>
+   767→        ))}
+   768→      </div>
+   769→
+   770→      <div className="mt-8 text-center">
+   771→        <button
+   772→          onClick={onSeePlanes}
+   773→          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-sm"
+   774→          style={{ background: C.emerald, color: '#062019' }}
+   775→        >
+   776→          Ver todos los planes <ArrowRight className="size-4" />
+   777→        </button>
+   778→      </div>
+   779→    </Section>
+   780→  )
+   781→}
+   782→
+   783→// ===================== CONTACTO =====================
+   784→function Contacto({ onSeePlanes }: { onSeePlanes: () => void }) {
+   785→  return (
+   786→    <Section
+   787→      id="contacto"
+   788→      eyebrow="Contacto"
+   789→      title="¿Listo para activar tu plan?"
+   790→      subtitle="Contáctanos y empieza a ahorrar en tus envíos hoy mismo."
+   791→    >
+   792→      <div className="grid sm:grid-cols-2 gap-4">
+   793→        <a
+   794→          href={WHATSAPP_URL}
+   795→          target="_blank"
+   796→          rel="noopener noreferrer"
+   797→          className="rounded-xl p-6 flex items-center gap-4 transition-transform hover:scale-[1.02]"
+   798→          style={{
+   799→            background: `linear-gradient(135deg, ${C.emerald}22 0%, ${C.card} 100%)`,
+   800→            border: `1px solid ${C.emerald}55`,
+   801→          }}
+   802→        >
+   803→          <div
+   804→            className="size-12 rounded-full flex items-center justify-center"
+   805→            style={{ background: C.emerald, color: '#062019' }}
+   806→          >
+   807→            <Phone className="size-6" />
+   808→          </div>
+   809→          <div>
+   810→            <p style={{ fontSize: 13, color: C.muted, textTransform: 'uppercase', letterSpacing: 1 }}>
+   811→              WhatsApp
+   812→            </p>
+   813→            <p
+   814→              style={{
+   815→                fontFamily: "'Outfit', sans-serif",
+   816→                fontWeight: 700,
+   817→                fontSize: 20,
+   818→                color: C.text,
+   819→              }}
+   820→            >
+   821→              {WHATSAPP_DISPLAY}
+   822→            </p>
+   823→          </div>
+   824→        </a>
+   825→        <button
+   826→          onClick={onSeePlanes}
+   827→          className="rounded-xl p-6 flex items-center gap-4 text-left transition-transform hover:scale-[1.02]"
+   828→          style={{ background: C.card, border: `1px solid ${C.borderLight}` }}
+   829→        >
+   830→          <div
+   831→            className="size-12 rounded-full flex items-center justify-center"
+   832→            style={{ background: C.gold, color: '#1a1206' }}
+   833→          >
+   834→            <Sparkles className="size-6" />
+   835→          </div>
+   836→          <div>
+   837→            <p style={{ fontSize: 13, color: C.muted, textTransform: 'uppercase', letterSpacing: 1 }}>
+   838→              Planes
+   839→            </p>
+   840→            <p
+   841→              style={{
+   842→                fontFamily: "'Outfit', sans-serif",
+   843→                fontWeight: 700,
+   844→                fontSize: 20,
+   845→                color: C.text,
+   846→              }}
+   847→            >
+   848→              Ver Planes y Activar
+   849→            </p>
+   850→          </div>
+   851→        </button>
+   852→      </div>
+   853→    </Section>
+   854→  )
+   855→}
+   856→
+   857→// ===================== FOOTER =====================
+   858→function Footer({ onBackToPortal }: { onBackToPortal: () => void }) {
+   859→  const cols = [
+   860→    {
+   861→      title: 'ImpulsePymes360',
+   862→      links: ['Marketplace', 'DimarClub', 'PubliBags', 'Fuerza Delta', 'Planes'],
+   863→    },
+   864→    {
+   865→      title: 'Ecosistema',
+   866→      links: ['Socios', 'Proveedores', 'Mensajería B2B', 'CRM', 'Email Marketing'],
+   867→    },
+   868→    {
+   869→      title: 'Más servicios',
+   870→      links: ['App Deltas', 'Micro-distribuidores', 'Enlace Express', 'DimarCatalog', 'Dimarads'],
+   871→    },
+   872→    {
+   873→      title: 'Contacto',
+   874→      links: [WHATSAPP_DISPLAY, EMAIL_DISPLAY, WEB_DISPLAY, 'Guayaquil, Ecuador'],
+   875→    },
+   876→    {
+   877→      title: 'Legal',
+   878→      links: ['Términos', 'Privacidad', 'Política de devoluciones', 'PQRS'],
+   879→    },
+   880→  ]
+   881→  return (
+   882→    <footer style={{ background: '#070C18', borderTop: `1px solid ${C.border}`, padding: '48px 0 24px' }}>
+   883→      <div className="max-w-[1280px] mx-auto px-4">
+   884→        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+   885→          {cols.map((col) => (
+   886→            <div key={col.title}>
+   887→              <h4
+   888→                style={{
+   889→                  fontFamily: "'Outfit', sans-serif",
+   890→                  fontWeight: 700,
+   891→                  fontSize: 13,
+   892→                  color: C.text,
+   893→                  marginBottom: 12,
+   894→                  textTransform: 'uppercase',
+   895→                  letterSpacing: 1,
+   896→                }}
+   897→              >
+   898→                {col.title}
+   899→              </h4>
+   900→              <ul className="space-y-1.5">
+   901→                {col.links.map((l) => (
+   902→                  <li key={l}>
+   903→                    <span style={{ fontSize: 13, color: C.muted, cursor: 'default' }}>{l}</span>
+   904→                  </li>
+   905→                ))}
+   906→              </ul>
+   907→            </div>
+   908→          ))}
+   909→        </div>
+   910→
+   911→        <div
+   912→          className="mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4"
+   913→          style={{ borderTop: `1px solid ${C.border}` }}
+   914→        >
+   915→          <div className="flex items-center gap-3">
+   916→            <span
+   917→              style={{
+   918→                fontFamily: "'Outfit', sans-serif",
+   919→                fontWeight: 800,
+   920→                fontSize: 18,
+   921→                color: C.text,
+   922→                display: 'inline-flex',
+   923→                alignItems: 'center',
+   924→                gap: 6,
+   925→              }}
+   926→            >
+   927→              <Truck className="size-4" style={{ color: C.emerald }} />
+   928→              Fuerza <span style={{ color: C.emerald }}>Delta</span>
+   929→            </span>
+   930→            <span style={{ fontSize: 12, color: C.muted }}>· por ImpulsePymes360</span>
+   931→          </div>
+   932→          <div className="flex items-center gap-3">
+   933→            {['FB', 'IG', 'WA', 'YT'].map((s) => (
+   934→              <div
+   935→                key={s}
+   936→                className="size-8 rounded-full flex items-center justify-center text-[10px] font-bold"
+   937→                style={{ background: C.card, color: C.textDim, border: `1px solid ${C.border}` }}
+   938→              >
+   939→                {s}
+   940→              </div>
+   941→            ))}
+   942→          </div>
+   943→          <p style={{ fontSize: 12, color: C.muted }}>© 2026 ImpulsePymes360 · Todos los derechos reservados</p>
+   944→        </div>
+   945→
+   946→        <div className="mt-6 text-center">
+   947→          <button
+   948→            onClick={onBackToPortal}
+   949→            className="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold"
+   950→            style={{ background: C.card, color: C.textDim, border: `1px solid ${C.border}` }}
+   951→          >
+   952→            <ArrowRight className="size-4 rotate-180" /> Volver al portal
+   953→          </button>
+   954→        </div>
+   955→      </div>
+   956→    </footer>
+   957→  )
+   958→}
+   959→
+   960→// ===================== SECTION WRAPPER =====================
+   961→function Section({
+   962→  id,
+   963→  eyebrow,
+   964→  title,
+   965→  subtitle,
+   966→  children,
+   967→}: {
+   968→  id: string
+   969→  eyebrow: string
+   970→  title: string
+   971→  subtitle?: string
+   972→  children: React.ReactNode
+   973→}) {
+   974→  return (
+   975→    <section id={id} style={{ padding: '56px 0' }}>
+   976→      <div className="max-w-[1280px] mx-auto px-4">
+   977→        <div style={{ maxWidth: 720, marginBottom: 32 }}>
+   978→          <p
+   979→            style={{
+   980→              fontSize: 12,
+   981→              color: C.emerald,
+   982→              textTransform: 'uppercase',
+   983→              letterSpacing: 2,
+   984→              fontWeight: 700,
+   985→              marginBottom: 10,
+   986→            }}
+   987→          >
+   988→            {eyebrow}
+   989→          </p>
+   990→          <h2
+   991→            style={{
+   992→              fontFamily: "'Outfit', sans-serif",
+   993→              fontWeight: 800,
+   994→              fontSize: 'clamp(24px, 3.4vw, 36px)',
+   995→              color: C.text,
+   996→              lineHeight: 1.15,
+   997→              letterSpacing: -0.5,
+   998→            }}
+   999→          >
+  1000→            {title}
+  1001→          </h2>
+  1002→          {subtitle && (
+  1003→            <p style={{ color: C.textDim, fontSize: 15, marginTop: 12, lineHeight: 1.55 }}>{subtitle}</p>
+  1004→          )}
+  1005→        </div>
+  1006→        {children}
+  1007→      </div>
+  1008→    </section>
+  1009→  )
+  1010→}
+  1011→
+  1012→// ===================== UTIL =====================
+  1013→function scrollTo(id: string) {
+  1014→  if (typeof document === 'undefined') return
+  1015→  const el = document.getElementById(id)
+  1016→  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  1017→}
+  1018→

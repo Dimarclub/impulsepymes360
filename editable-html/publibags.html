@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PubliBags | ImpulsePymes360</title>
+
+    <!-- ===== Google Fonts: Outfit + DM Sans ===== -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- ===== Font Awesome 6.5 ===== -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        /* ============================================================
+           PALETA DE COLORES — Modifica estos valores para cambiar
+           los colores de toda la página rápidamente.
+           ============================================================ */
+        :root {
+            --bg: #0B1120;
+            --bg2: #070C18;
+            --card: #15203A;
+            --card2: #1A2647;
+            --border: #243352;
+            --borderLight: #2F3F66;
+            --emerald: #00D4AA;
+            --emeraldDark: #00A886;
+            --gold: #F5A623;
+            --goldDim: #B47C18;
+            --purple: #A855F7;
+            --text: #E8EDF5;
+            --textDim: #A0AEC8;
+            --muted: #6B7FA0;
+            --rose: #F43F5E;
+            --amber: #F59E0B;
+        }
+
+        /* ===== Reset ===== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', system-ui, sans-serif;
+            line-height: 1.5;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: inherit; text-decoration: none; }
+        ul { list-style: none; }
+        img { max-width: 100%; display: block; }
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+
+        /* ===== Layout helpers ===== */
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
+        .section { padding: 56px 0; }
+        .section-head { max-width: 720px; margin-bottom: 32px; }
+        .eyebrow {
+            font-size: 12px;
+            color: var(--emerald);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: clamp(24px, 3.4vw, 36px);
+            color: var(--text);
+            line-height: 1.15;
+            letter-spacing: -0.5px;
+        }
+        .section-sub {
+            color: var(--textDim);
+            font-size: 15px;
+            margin-top: 12px;
+            line-height: 1.55;
+        }
+
+        /* ===== Grid helpers ===== */
+        .grid { display: grid; gap: 16px; }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+        .grid-6 { grid-template-columns: repeat(6, 1fr); }
+        @media (max-width: 900px) {
+            .grid-3, .grid-4, .grid-6 { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 560px) {
+            .grid-2, .grid-3, .grid-4, .grid-6 { grid-template-columns: 1fr; }
+        }
+
+        /* ===== Card base ===== */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--borderLight);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        /* ===== Buttons ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-family: inherit;
+            text-decoration: none;
+        }
+        .btn-emerald { background: var(--emerald); color: #062019; }
+        .btn-outline { background: transparent; color: var(--text); border-color: var(--borderLight); }
+        .btn-gold { background: var(--gold); color: #1a1206; }
+        .btn-purple { background: var(--purple); color: #fff; }
+
+        /* ===== Navbar ===== */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(11, 17, 32, 0.92);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+        .navbar-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 16px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .brand {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 22px;
+            color: var(--text);
+        }
+        .brand .accent { color: var(--emerald); }
+        .nav-links {
+            display: none;
+            align-items: center;
+            gap: 4px;
+        }
+        .nav-links a {
+            color: var(--textDim);
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: color .15s, background .15s;
+        }
+        .nav-links a:hover { color: var(--text); background: var(--card); }
+        .nav-actions { display: flex; align-items: center; gap: 8px; }
+        .btn-wa {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            background: var(--emerald);
+            color: #062019;
+        }
+        .btn-comprar {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            background: transparent;
+            color: var(--emerald);
+            border: 1px solid var(--emerald);
+        }
+        @media (min-width: 768px) { .btn-wa { display: inline-flex; } }
+        @media (min-width: 1024px) { .nav-links { display: flex; } .btn-comprar { display: inline-flex; } }
+
+        /* ===== Hero ===== */
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: 60px 0 80px;
+        }
+        .hero-glow {
+            position: absolute;
+            top: -120px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,212,170,0.13) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+            align-items: center;
+            position: relative;
+        }
+        @media (min-width: 1024px) { .hero-grid { grid-template-columns: 1fr 1fr; } }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(0,212,170,0.1);
+            color: var(--emerald);
+            border: 1px solid rgba(0,212,170,0.33);
+            margin-bottom: 20px;
+        }
+        .hero h1 {
+            font-weight: 800;
+            font-size: clamp(32px, 5vw, 52px);
+            line-height: 1.05;
+            letter-spacing: -1px;
+            color: var(--text);
+        }
+        .hero h1 .accent { color: var(--emerald); }
+        .hero-desc {
+            color: var(--textDim);
+            font-size: 17px;
+            margin-top: 18px;
+            line-height: 1.55;
+            max-width: 540px;
+        }
+        .price-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-top: 24px;
+            background: var(--card);
+            border: 1px solid var(--borderLight);
+        }
+        .price-badge .icon {
+            width: 44px; height: 44px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700;
+            background: rgba(245,166,35,0.13);
+            color: var(--gold);
+            font-size: 18px;
+        }
+        .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+
+        .hero-visual {
+            border-radius: 16px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
+            border: 1px solid var(--borderLight);
+            min-height: 320px;
+        }
+        .hero-visual .label {
+            color: var(--muted);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .hero-visual .big-num {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: clamp(80px, 14vw, 140px);
+            line-height: 1;
+            color: var(--emerald);
+            margin-top: 8px;
+        }
+        .hero-visual .sub {
+            color: var(--textDim);
+            font-size: 15px;
+            margin-top: 8px;
+            max-width: 320px;
+        }
+        .hero-visual .stats-mini {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            width: 100%;
+            margin-top: 24px;
+        }
+        .hero-visual .stat-mini {
+            border-radius: 8px;
+            padding: 10px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+        }
+        .hero-visual .stat-mini .v { font-size: 18px; font-weight: 700; color: var(--text); }
+        .hero-visual .stat-mini .l { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* ===== Anatomía ===== */
+        .panels-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        @media (min-width: 1024px) { .panels-grid { grid-template-columns: repeat(4, 1fr); } }
+        .panel-card {
+            border-radius: 12px;
+            padding: 16px;
+            background: var(--card);
+            border: 1px solid var(--borderLight);
+        }
+        .panel-head { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .panel-head .lbl { font-size: 13px; font-weight: 600; color: var(--text); }
+        .panel-head .dim { font-size: 11px; color: var(--muted); }
+        .panel-box {
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            min-height: 56px;
+            font-size: 20px;
+        }
+
+        /* ===== Stats grid ===== */
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 24px; }
+        @media (min-width: 1024px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+        .stat-box {
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            background: var(--card);
+            border: 1px solid var(--border);
+        }
+        .stat-box .v {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 36px;
+            color: var(--emerald);
+        }
+        .stat-box .l { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+        /* ===== Steps (Cómo funciona) ===== */
+        .steps-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        @media (min-width: 640px) { .steps-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .steps-grid { grid-template-columns: repeat(4, 1fr); } }
+        .step-card {
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            background: var(--card);
+            border: 1px solid var(--borderLight);
+        }
+        .step-num {
+            position: absolute;
+            top: -12px;
+            left: -12px;
+            width: 36px; height: 36px;
+            border-radius: 999px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            background: var(--emerald);
+            color: #062019;
+        }
+        .step-icon {
+            width: 40px; height: 40px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,212,170,0.13);
+            color: var(--emerald);
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+        .step-card h3 { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+        .step-card p { font-size: 13px; color: var(--textDim); line-height: 1.5; }
+
+        /* ===== Plano LIVE ===== */
+        .plano-toggle {
+            display: inline-flex;
+            border-radius: 8px;
+            padding: 4px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .plano-toggle button {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            background: transparent;
+            color: var(--textDim);
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .plano-toggle button.active { background: var(--emerald); color: #062019; }
+        .plano-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+        @media (min-width: 640px) { .plano-stats { grid-template-columns: repeat(4, 1fr); } }
+        .plano-panels { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        @media (min-width: 768px) { .plano-panels { grid-template-columns: repeat(2, 1fr); } }
+        .plano-panel {
+            border-radius: 12px;
+            padding: 16px;
+            background: var(--card);
+            border: 1px solid var(--border);
+        }
+        .plano-panel .h {
+            display: flex; justify-content: space-between; margin-bottom: 12px;
+        }
+        .plano-panel .h .name { font-size: 14px; font-weight: 600; color: var(--text); }
+        .plano-panel .h .meta { font-size: 11px; color: var(--muted); }
+        .plano-panel .h .range { font-size: 11px; color: var(--muted); }
+        .plano-grid {
+            display: grid;
+            gap: 2px;
+        }
+        .plano-cell {
+            aspect-ratio: 1 / 1;
+            border-radius: 2px;
+            min-width: 6px;
+            background: rgba(0,212,170,0.2);
+        }
+        .plano-legend {
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+        }
+        .plano-legend .lbl {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 2px; }
+        .legend-dot.green { background: var(--emerald); }
+        .legend-dot.amber { background: var(--amber); }
+        .legend-dot.rose { background: var(--rose); }
+
+        .plano-cta {
+            margin-top: 24px;
+            border-radius: 16px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            background: linear-gradient(135deg, rgba(0,212,170,0.13) 0%, rgba(245,166,35,0.07) 100%);
+            border: 1px solid rgba(0,212,170,0.33);
+        }
+        @media (min-width: 640px) { .plano-cta { flex-direction: row; align-items: center; } }
+        .plano-cta h3 { font-size: 22px; font-weight: 700; color: var(--text); }
+        .plano-cta p { color: var(--textDim); font-size: 14px; margin-top: 4px; }
+
+        /* ===== Ventajas ===== */
+        .ventajas-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        @media (min-width: 640px) { .ventajas-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .ventajas-grid { grid-template-columns: repeat(3, 1fr); } }
+        .ventaja-card {
+            border-radius: 12px;
+            padding: 20px;
+            background: var(--card);
+            border: 1px solid var(--borderLight);
+        }
+        .ventaja-icon {
+            width: 40px; height: 40px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,212,170,0.13);
+            color: var(--emerald);
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+        .ventaja-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        .ventaja-card p { font-size: 13px; color: var(--textDim); line-height: 1.5; }
+
+        /* ===== Impacto ===== */
+        .impacto-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        @media (min-width: 1024px) { .impacto-grid { grid-template-columns: repeat(4, 1fr); } }
+        .impacto-card {
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
+            border: 1px solid var(--borderLight);
+        }
+        .impacto-card .v {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 44px;
+            line-height: 1;
+        }
+        .impacto-card .l { font-size: 12px; color: var(--textDim); margin-top: 10px; line-height: 1.4; }
+
+        /* ===== Propuesta DimarClub ===== */
+        .benefits-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        @media (min-width: 640px) { .benefits-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .benefits-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1280px) { .benefits-grid { grid-template-columns: repeat(4, 1fr); } }
+        .benefit-card {
+            border-radius: 12px;
+            padding: 16px;
+            background: var(--card);
+            border: 1px solid var(--borderLight);
+            transition: transform .15s;
+        }
+        .benefit-card:hover { transform: scale(1.02); }
+        .benefit-icon {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            margin-bottom: 8px;
+            background: var(--bg);
+        }
+        .benefit-card h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        .benefit-card p { font-size: 12px; color: var(--textDim); line-height: 1.4; }
+
+        /* ===== Red Universal ===== */
+        .red-banner {
+            border-radius: 16px;
+            padding: 40px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(168,85,247,0.13) 0%, rgba(0,212,170,0.07) 100%);
+            border: 1px solid rgba(168,85,247,0.33);
+        }
+        @media (min-width: 1024px) { .red-banner { grid-template-columns: 1fr auto; } }
+        .red-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(168,85,247,0.13);
+            color: var(--purple);
+            border: 1px solid rgba(168,85,247,0.33);
+            margin-bottom: 12px;
+        }
+        .red-banner h2 {
+            font-weight: 800;
+            font-size: clamp(24px, 3vw, 32px);
+            color: var(--text);
+            line-height: 1.15;
+        }
+        .red-banner p { color: var(--textDim); font-size: 15px; margin-top: 12px; line-height: 1.55; max-width: 620px; }
+        .red-banner p strong { color: var(--text); }
+        .red-stats { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+        .red-stat {
+            border-radius: 8px;
+            padding: 8px 12px;
+            background: var(--card);
+            border: 1px solid var(--border);
+        }
+        .red-stat .l { font-size: 11px; color: var(--muted); }
+        .red-stat .v { font-size: 18px; font-weight: 700; }
+
+        /* ===== CTA Planes ===== */
+        .cta-planes {
+            padding: 60px 0;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+        .cta-planes .glow {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 700px; height: 400px;
+            background: radial-gradient(ellipse, rgba(0,212,170,0.13) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .cta-planes .container { position: relative; }
+        .cta-planes h2 {
+            font-weight: 800;
+            font-size: clamp(28px, 4vw, 44px);
+            color: var(--text);
+            line-height: 1.1;
+        }
+        .cta-planes h2 .accent { color: var(--emerald); }
+        .cta-planes p { color: var(--textDim); font-size: 16px; margin-top: 14px; max-width: 580px; margin-left: auto; margin-right: auto; }
+        .cta-planes .btn { margin-top: 28px; padding: 16px 28px; font-size: 16px; font-weight: 700; }
+
+        /* ===== Contacto ===== */
+        .contacto-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        @media (min-width: 640px) { .contacto-grid { grid-template-columns: repeat(2, 1fr); } }
+        .contacto-card {
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform .15s;
+        }
+        .contacto-card:hover { transform: scale(1.02); }
+        .contacto-card.wa {
+            background: linear-gradient(135deg, rgba(0,212,170,0.13) 0%, var(--card) 100%);
+            border: 1px solid rgba(0,212,170,0.33);
+        }
+        .contacto-card.planes {
+            background: var(--card);
+            border: 1px solid var(--borderLight);
+        }
+        .contacto-icon {
+            width: 48px; height: 48px;
+            border-radius: 999px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        .contacto-card .l { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+        .contacto-card .v { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 20px; color: var(--text); }
+
+        /* ===== Footer ===== */
+        footer {
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
+            padding: 48px 0 24px;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        @media (min-width: 768px) { .footer-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1024px) { .footer-grid { grid-template-columns: repeat(5, 1fr); } }
+        .footer-col h4 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .footer-col li { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+        .footer-bottom {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        @media (min-width: 640px) { .footer-bottom { flex-direction: row; } }
+        .footer-social { display: flex; gap: 12px; }
+        .footer-social a {
+            width: 32px; height: 32px;
+            border-radius: 999px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            background: var(--card);
+            color: var(--textDim);
+            border: 1px solid var(--border);
+        }
+        .footer-copy { font-size: 12px; color: var(--muted); }
+        .footer-back {
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        /* ===== Misc helpers ===== */
+        .text-emerald { color: var(--emerald); }
+        .text-gold { color: var(--gold); }
+        .text-purple { color: var(--purple); }
+        .text-rose { color: var(--rose); }
+        strong.text-emerald { color: var(--emerald); }
+        strong.text-gold { color: var(--gold); }
+        strong.text-purple { color: var(--purple); }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== NAVBAR ==================== -->
+    <header class="navbar">
+        <div class="navbar-inner">
+            <a href="#top" class="brand">Publi<span class="accent">bags</span></a>
+            <nav class="nav-links">
+                <a href="#anatomia">Anatomía</a>
+                <a href="#como-funciona">Cómo funciona</a>
+                <a href="#ventajas">Ventajas</a>
+                <a href="#impacto">Impacto</a>
+                <a href="#propuesta">Propuesta</a>
+                <a href="#contacto">Contacto</a>
+            </nav>
+            <div class="nav-actions">
+                <a href="https://wa.me/593992689844" target="_blank" rel="noopener" class="btn-wa">
+                    <i class="fas fa-phone" style="font-size:14px;"></i> +593 99 268 9844
+                </a>
+                <a href="#plano" class="btn-comprar">Comprar espacio</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== HERO ==================== -->
+    <section class="hero" id="top">
+        <div class="hero-glow"></div>
+        <div class="container">
+            <div class="hero-grid">
+                <div>
+                    <span class="hero-badge">
+                        <i class="fas fa-sparkles"></i> Bolso ecológico publicitario · Guayaquil
+                    </span>
+                    <h1>Convertimos cada <span class="accent">bolso</span> en publicidad que viaja por tu ciudad</h1>
+                    <p class="hero-desc">
+                        79 espacios publicitarios de 10×5 cm en bolsos elegantes, ecológicas y reutilizables que circulan por toda la ciudad.
+                        Tu marca impresa + QR, vista por miles de personas todos los días.
+                    </p>
+
+                    <!-- Price badge -->
+                    <div class="price-badge">
+                        <div class="icon">$67</div>
+                        <div>
+                            <p style="font-size:14px; font-weight:600; color:var(--text);">por espacio · pago único</p>
+                            <p style="font-size:12px; color:var(--muted);">Se convierte en aporte de capital de socio + 5% interés mensual</p>
+                        </div>
+                    </div>
+
+                    <div class="hero-cta">
+                        <a href="#plano" class="btn btn-emerald">
+                            Ver plano del bolso <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <a href="https://wa.me/593992689844" target="_blank" rel="noopener" class="btn btn-outline">
+                            <i class="fas fa-phone"></i> Hablar por WhatsApp
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Hero visual -->
+                <div>
+                    <div class="hero-visual">
+                        <p class="label">Espacios totales</p>
+                        <p class="big-num">79</p>
+                        <p class="sub">Cada uno de 10×5 cm, distribuidos en 5 paneles del bolso</p>
+                        <div class="stats-mini">
+                            <div class="stat-mini">
+                                <p class="v">5</p>
+                                <p class="l">Paneles</p>
+                            </div>
+                            <div class="stat-mini">
+                                <p class="v">10×5cm</p>
+                                <p class="l">Por espacio</p>
+                            </div>
+                            <div class="stat-mini">
+                                <p class="v">∞</p>
+                                <p class="l">Reutilizable</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== ANATOMÍA ==================== -->
+    <section class="section" id="anatomia">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow">Anatomía del bolso</p>
+                <h2 class="section-title">79 espacios publicitarios por bolso</h2>
+                <p class="section-sub">Cada bolso tiene espacios de 10×5 cm distribuidos en 5 paneles (Frente, Posterior, Base, Tapa solapa y Correa). Los 79 espacios son vendibles.</p>
+            </div>
+
+            <!-- 5 paneles: Frente 28, Posterior 28, Base 8, Tapa solapa 8, Correa 7 -->
+            <div class="panels-grid">
+                <div class="panel-card">
+                    <div class="panel-head">
+                        <span class="lbl">Frente</span>
+                        <span class="dim">45×35 cm</span>
+                    </div>
+                    <div class="panel-box" style="background:rgba(0,212,170,0.13); border:1px solid rgba(0,212,170,0.33); color:var(--emerald);">
+                        28 espacios
+                    </div>
+                </div>
+                <div class="panel-card">
+                    <div class="panel-head">
+                        <span class="lbl">Posterior</span>
+                        <span class="dim">45×35 cm</span>
+                    </div>
+                    <div class="panel-box" style="background:rgba(168,85,247,0.13); border:1px solid rgba(168,85,247,0.33); color:var(--purple);">
+                        28 espacios
+                    </div>
+                </div>
+                <div class="panel-card">
+                    <div class="panel-head">
+                        <span class="lbl">Base</span>
+                        <span class="dim">30×10 cm</span>
+                    </div>
+                    <div class="panel-box" style="background:rgba(245,166,35,0.13); border:1px solid rgba(245,166,35,0.33); color:var(--gold);">
+                        8 espacios
+                    </div>
+                </div>
+                <div class="panel-card">
+                    <div class="panel-head">
+                        <span class="lbl">Tapa solapa</span>
+                        <span class="dim">20×10 cm</span>
+                    </div>
+                    <div class="panel-box" style="background:rgba(244,63,94,0.13); border:1px solid rgba(244,63,94,0.33); color:var(--rose);">
+                        8 espacios
+                    </div>
+                </div>
+            </div>
+
+            <!-- Correa panel — full width -->
+            <div class="panel-card" style="margin-top:12px;">
+                <div class="panel-head">
+                    <span class="lbl">Correa / Asa</span>
+                    <span class="dim">75×5 cm</span>
+                </div>
+                <div class="panel-box" style="background:rgba(245,158,11,0.13); border:1px solid rgba(245,158,11,0.33); color:var(--amber); min-height:80px; font-size:28px;">
+                    7 espacios
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <p class="v" style="color:var(--emerald);">79</p>
+                    <p class="l">Espacios totales</p>
+                </div>
+                <div class="stat-box">
+                    <p class="v" style="color:var(--emerald);">79</p>
+                    <p class="l">Vendibles</p>
+                </div>
+                <div class="stat-box">
+                    <p class="v" style="color:var(--gold);">$67</p>
+                    <p class="l">Por espacio</p>
+                </div>
+                <div class="stat-box">
+                    <p class="v" style="color:var(--purple);">5%</p>
+                    <p class="l">Interés mensual</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CÓMO FUNCIONA ==================== -->
+    <section class="section" id="como-funciona">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow">Cómo funciona</p>
+                <h2 class="section-title">De $67 a marca impresa en 4 pasos</h2>
+                <p class="section-sub">Un flujo simple que te convierte en socio, genera interés compuesto y pone tu marca en circulación.</p>
+            </div>
+
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-num">1</div>
+                    <div class="step-icon"><i class="fas fa-shopping-bag"></i></div>
+                    <h3>Compras tu espacio</h3>
+                    <p>Eliges un espacio de 10×5 cm en el plano del bolso. Pagas $67 (pago único) y automáticamente te haces SOCIO de la cooperativa.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">2</div>
+                    <div class="step-icon"><i class="fas fa-chart-line"></i></div>
+                    <h3>Tu $67 = aporte de capital</h3>
+                    <p>El $67 se registra como aporte de capital en tu cuenta cooperativa. Genera 5% interés mensual compuesto.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">3</div>
+                    <div class="step-icon"><i class="fas fa-palette"></i></div>
+                    <h3>Tu marca se imprime + QR</h3>
+                    <p>Subes tu logo o generas un QR. Se imprime en el bolso junto con 78 marcas más, en 500 bolsas que circulan por toda la ciudad.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">4</div>
+                    <div class="step-icon"><i class="fas fa-users"></i></div>
+                    <h3>Miles ven tu marca</h3>
+                    <p>Cada bolso es visto por miles de personas. Tu red de afiliados gana 2% en 3 niveles + 3% cashback en cada compra.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== PLANO LIVE ==================== -->
+    <section class="section" id="plano">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow">Plano de corte en vivo</p>
+                <h2 class="section-title">Mira los 79 espacios del bolso en tiempo real</h2>
+                <p class="section-sub">Esta es la campaña actual (impresa, llena de patrocinadores) y la próxima campaña (compra abierta).</p>
+            </div>
+
+            <!-- Toggle (estático — solo visual) -->
+            <div class="plano-toggle">
+                <button class="active">Campaña actual (impresa)</button>
+                <button>Próxima campaña (compra abierta)</button>
+            </div>
+
+            <p style="font-size:13px; color:var(--muted); margin-bottom:20px;">Octubre 2026 · Guayaquil · 500 bolsas</p>
+
+            <!-- Stats -->
+            <div class="plano-stats">
+                <div class="stat-box">
+                    <p class="v" style="color:var(--text); font-size:26px;">79</p>
+                    <p class="l">Total</p>
+                </div>
+                <div class="stat-box">
+                    <p class="v" style="color:var(--rose); font-size:26px;">79</p>
+                    <p class="l">Vendidos</p>
+                </div>
+                <div class="stat-box">
+                    <p class="v" style="color:var(--emerald); font-size:26px;">0</p>
+                    <p class="l">Disponibles</p>
+                </div>
+                <div class="stat-box">
+                    <p class="v" style="color:var(--gold); font-size:26px;">$5.293</p>
+                    <p class="l">Recaudado</p>
+                </div>
+            </div>
+
+            <!-- Panels -->
+            <div class="plano-panels">
+
+                <!-- Panel 1: Frente (28 celdas — 7 cols × 4 rows) -->
+                <div class="plano-panel">
+                    <div class="h">
+                        <div>
+                            <p class="name">Frente</p>
+                            <p class="meta">45×35 cm · 7×4</p>
+                        </div>
+                        <span class="range">#1–28</span>
+                    </div>
+                    <div class="plano-grid" style="grid-template-columns: repeat(7, 1fr);">
+                        <div class="plano-cell" style="background:hsl(150,60%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(35,70%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(280,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(150,60%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(0,65%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(45,75%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(180,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(35,70%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(280,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(150,60%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(0,65%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(45,75%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(180,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(35,70%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(280,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(150,60%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(0,65%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(45,75%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(180,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(35,70%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(280,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(150,60%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(0,65%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(45,75%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(180,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(35,70%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(280,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(150,60%,55%);"></div>
+                    </div>
+                </div>
+
+                <!-- Panel 2: Posterior (28 celdas — 7 cols × 4 rows) -->
+                <div class="plano-panel">
+                    <div class="h">
+                        <div>
+                            <p class="name">Posterior</p>
+                            <p class="meta">45×35 cm · 7×4</p>
+                        </div>
+                        <span class="range">#29–56</span>
+                    </div>
+                    <div class="plano-grid" style="grid-template-columns: repeat(7, 1fr);">
+                        <div class="plano-cell" style="background:hsl(45,75%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(180,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(35,70%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(280,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(150,60%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(0,65%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(45,75%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(180,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(35,70%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(280,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(150,60%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(0,65%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(45,75%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(180,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(35,70%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(280,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(150,60%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(0,65%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(45,75%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(180,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(35,70%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(280,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(150,60%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(0,65%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(45,75%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(180,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(35,70%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(280,55%,55%);"></div>
+                    </div>
+                </div>
+
+                <!-- Panel 3: Base (8 celdas — 4 cols × 2 rows) -->
+                <div class="plano-panel">
+                    <div class="h">
+                        <div>
+                            <p class="name">Base</p>
+                            <p class="meta">30×10 cm · 4×2</p>
+                        </div>
+                        <span class="range">#57–64</span>
+                    </div>
+                    <div class="plano-grid" style="grid-template-columns: repeat(4, 1fr);">
+                        <div class="plano-cell" style="background:hsl(150,60%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(0,65%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(45,75%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(180,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(35,70%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(280,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(150,60%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(0,65%,55%);"></div>
+                    </div>
+                </div>
+
+                <!-- Panel 4: Tapa solapa (8 celdas — 4 cols × 2 rows) -->
+                <div class="plano-panel">
+                    <div class="h">
+                        <div>
+                            <p class="name">Tapa solapa</p>
+                            <p class="meta">20×10 cm · 4×2</p>
+                        </div>
+                        <span class="range">#65–72</span>
+                    </div>
+                    <div class="plano-grid" style="grid-template-columns: repeat(4, 1fr);">
+                        <div class="plano-cell" style="background:hsl(45,75%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(180,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(35,70%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(280,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(150,60%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(0,65%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(45,75%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(180,55%,55%);"></div>
+                    </div>
+                </div>
+
+                <!-- Panel 5: Correa (7 celdas — 7 cols × 1 row) -->
+                <div class="plano-panel" style="grid-column: 1 / -1;">
+                    <div class="h">
+                        <div>
+                            <p class="name">Correa / Asa</p>
+                            <p class="meta">75×5 cm · 7×1</p>
+                        </div>
+                        <span class="range">#73–79</span>
+                    </div>
+                    <div class="plano-grid" style="grid-template-columns: repeat(7, 1fr);">
+                        <div class="plano-cell" style="background:hsl(35,70%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(280,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(150,60%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(0,65%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(45,75%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(180,55%,55%);"></div>
+                        <div class="plano-cell" style="background:hsl(35,70%,55%);"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leyenda -->
+            <div class="plano-legend">
+                <span class="lbl">Leyenda:</span>
+                <div class="legend-item">
+                    <div class="legend-dot green"></div>
+                    <span style="font-size:12px; color:var(--textDim);">Disponible</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot amber"></div>
+                    <span style="font-size:12px; color:var(--textDim);">Reservado</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot rose"></div>
+                    <span style="font-size:12px; color:var(--textDim);">Vendido</span>
+                </div>
+            </div>
+
+            <!-- Big CTA -->
+            <div class="plano-cta">
+                <div>
+                    <h3>¿Listo para imprimir tu marca?</h3>
+                    <p>Abre el visualizador completo, elige tu espacio y hazte socio PubliBags por $67.</p>
+                </div>
+                <a href="#contacto" class="btn btn-emerald" style="padding:12px 24px; font-weight:700;">
+                    Comprar mi espacio <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== VENTAJAS ==================== -->
+    <section class="section" id="ventajas">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow">Ventajas</p>
+                <h2 class="section-title">Por qué PubliBags funciona</h2>
+                <p class="section-sub">No es solo publicidad. Es un activo que genera retorno ambiental, social y financiero.</p>
+            </div>
+
+            <div class="ventajas-grid">
+                <div class="ventaja-card">
+                    <div class="ventaja-icon"><i class="fas fa-leaf"></i></div>
+                    <h3>100% Ecológico</h3>
+                    <p>Bolso reutilizable de tela resistente. Cero plástico de un solo uso.</p>
+                </div>
+                <div class="ventaja-card">
+                    <div class="ventaja-icon"><i class="fas fa-eye"></i></div>
+                    <h3>Medición Real</h3>
+                    <p>Cada QR se escanea y mide en tiempo real. Sabes cuántas personas vieron tu marca.</p>
+                </div>
+                <div class="ventaja-card">
+                    <div class="ventaja-icon"><i class="fas fa-palette"></i></div>
+                    <h3>Diseño Incluido</h3>
+                    <p>Te ayudamos a diseñar tu espacio de 10×5 cm. No necesitas diseñador.</p>
+                </div>
+                <div class="ventaja-card">
+                    <div class="ventaja-icon"><i class="fas fa-link"></i></div>
+                    <h3>Enlace a tu Web</h3>
+                    <p>El QR lleva directo a tu sitio web, tienda o perfil de afiliado.</p>
+                </div>
+                <div class="ventaja-card">
+                    <div class="ventaja-icon"><i class="fas fa-recycle"></i></div>
+                    <h3>Reutilización</h3>
+                    <p>Un bolso se usa cientos de veces. Tu marca se ve una y otra vez.</p>
+                </div>
+                <div class="ventaja-card">
+                    <div class="ventaja-icon"><i class="fas fa-chart-line"></i></div>
+                    <h3>Alcance Masivo</h3>
+                    <p>500 bolsas circulando × cientos de vistas = miles de impresiones/mes.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== IMPACTO ECOLÓGICO ==================== -->
+    <section class="section" id="impacto">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow">Impacto ecológico</p>
+                <h2 class="section-title">Publicidad que cuida el planeta</h2>
+                <p class="section-sub">Cada bolso PubliBags evita cientos de fundas plásticas. Tu marca promueve un consumo consciente.</p>
+            </div>
+
+            <div class="impacto-grid">
+                <div class="impacto-card">
+                    <p class="v" style="color:var(--emerald);">100%</p>
+                    <p class="l">Papel reciclado</p>
+                </div>
+                <div class="impacto-card">
+                    <p class="v" style="color:var(--gold);">3R</p>
+                    <p class="l">Reducir, Reutilizar, Reciclar</p>
+                </div>
+                <div class="impacto-card">
+                    <p class="v" style="color:var(--rose);">0%</p>
+                    <p class="l">Plástico de un solo uso</p>
+                </div>
+                <div class="impacto-card">
+                    <p class="v" style="color:var(--purple);">∞</p>
+                    <p class="l">Reutilizaciones por bolso</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== PROPUESTA DIMARCLUB ==================== -->
+    <section class="section" id="propuesta">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow">Propuesta DimarClub</p>
+                <h2 class="section-title">Ser socio PubliBags te abre las puertas de DimarClub</h2>
+                <p class="section-sub">No solo publicitarias tu marca. Al comprar un espacio te conviertes en socio de la cooperativa DimarClub con 12 beneficios exclusivos.</p>
+            </div>
+
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">🚑</div>
+                    <h4>Ambulancia Gratis</h4>
+                    <p>Servicio de ambulancia sin costo para socios.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🔧</div>
+                    <h4>Servicios Técnicos</h4>
+                    <p>Red de técnicos en electricidad, plomería y más.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🌿</div>
+                    <h4>Medicina Ancestral</h4>
+                    <p>Acceso a terapias alternativas y naturales.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🚚</div>
+                    <h4>Entrega Gratis</h4>
+                    <p>Logística de productos sin costo adicional.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">💰</div>
+                    <h4>Préstamos con Garantía</h4>
+                    <p>Crédito respaldado por tu aporte de capital.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">📈</div>
+                    <h4>Línea de Crédito 75%</h4>
+                    <p>Financia hasta el 75% de tu aporte acumulado.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">💹</div>
+                    <h4>Inversión 5% Mensual</h4>
+                    <p>Tu aporte genera 5% interés mensual compuesto.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🎯</div>
+                    <h4>Hub de Tareas CPA</h4>
+                    <p>Centro de tareas de costo por acción para afiliados.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🛍️</div>
+                    <h4>Fundas con Descuentos</h4>
+                    <p>Descuentos exclusivos en fundas y productos.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🏢</div>
+                    <h4>Coworking $150/mes</h4>
+                    <p>Espacio de trabajo compartido a precio de socio.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🎓</div>
+                    <h4>Capacitación</h4>
+                    <p>Cursos y formación empresarial continua.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">📅</div>
+                    <h4>Reuniones Semanales</h4>
+                    <p>Encuentros de networking y negocios.</p>
+                </div>
+            </div>
+
+            <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:24px;">
+                <a href="#contacto" class="btn btn-emerald">
+                    Conocer DimarClub <i class="fas fa-chevron-right"></i>
+                </a>
+                <a href="#contacto" class="btn btn-outline">Ser Proveedor</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== RED UNIVERSAL ==================== -->
+    <section style="padding:40px 0;">
+        <div class="container">
+            <div class="red-banner">
+                <div>
+                    <span class="red-badge">
+                        <i class="fas fa-users"></i> Red Universal de Afiliados
+                    </span>
+                    <h2>Construye tu red de 3 niveles y gana comisiones en cada compra</h2>
+                    <p>
+                        Cada socio puede construir su <strong>Red Universal de 3 Niveles</strong> y ganar
+                        <strong class="text-emerald"> 2% de cada nivel</strong> (N1, N2, N3) +
+                        <strong class="text-gold"> 3% cashback N0</strong> en cada compra de espacio PubliBags.
+                    </p>
+                    <div class="red-stats">
+                        <div class="red-stat">
+                            <p class="l">Tú compras</p>
+                            <p class="v" style="color:var(--gold);">3% cashback N0</p>
+                        </div>
+                        <div class="red-stat">
+                            <p class="l">Tu padrino (N1)</p>
+                            <p class="v" style="color:var(--emerald);">2% comisión</p>
+                        </div>
+                        <div class="red-stat">
+                            <p class="l">N2 y N3</p>
+                            <p class="v" style="color:var(--purple);">+2% cada nivel</p>
+                        </div>
+                    </div>
+                </div>
+                <a href="#contacto" class="btn btn-purple" style="padding:12px 20px; font-weight:700; white-space:nowrap;">
+                    Ver mi red <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CTA PLANES ==================== -->
+    <section class="cta-planes">
+        <div class="glow"></div>
+        <div class="container">
+            <h2>¿Listo para ver tu marca <span class="accent">en todas partes</span>?</h2>
+            <p>Únete a los 79 espacios del bolso PubliBags. Inversión $67, retorno ambiental + financiero + publicitario.</p>
+            <a href="#contacto" class="btn btn-emerald">
+                <i class="fas fa-shopping-bag"></i> Comprar mi espacio — $67
+            </a>
+        </div>
+    </section>
+
+    <!-- ==================== CONTACTO ==================== -->
+    <section class="section" id="contacto">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow">Contacto</p>
+                <h2 class="section-title">Hablemos de tu marca</h2>
+                <p class="section-sub">Escríbenos por WhatsApp y te ayudamos a elegir el mejor espacio para tu negocio.</p>
+            </div>
+
+            <div class="contacto-grid">
+                <a href="https://wa.me/593992689844" target="_blank" rel="noopener" class="contacto-card wa">
+                    <div class="contacto-icon" style="background:var(--emerald); color:#062019;">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div>
+                        <p class="l">WhatsApp</p>
+                        <p class="v">+593 99 268 9844</p>
+                    </div>
+                </a>
+                <a href="#plano" class="contacto-card planes">
+                    <div class="contacto-icon" style="background:var(--gold); color:#1a1206;">
+                        <i class="fas fa-sparkles"></i>
+                    </div>
+                    <div>
+                        <p class="l">Marketplace</p>
+                        <p class="v">Ver planes y productos</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>ImpulsePymes360</h4>
+                    <ul>
+                        <li>Marketplace</li>
+                        <li>DimarClub</li>
+                        <li>PubliBags</li>
+                        <li>Cooperativa</li>
+                        <li>Afiliados</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Ecosistema</h4>
+                    <ul>
+                        <li>Socios</li>
+                        <li>Proveedores</li>
+                        <li>Mensajería</li>
+                        <li>CRM</li>
+                        <li>Email Marketing</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Más servicios</h4>
+                    <ul>
+                        <li>Grid 360</li>
+                        <li>Web Express</li>
+                        <li>Social Studio</li>
+                        <li>Directorio</li>
+                        <li>Alertas</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contacto</h4>
+                    <ul>
+                        <li>+593 99 268 9844</li>
+                        <li>Guayaquil, Ecuador</li>
+                        <li>Lun–Sáb 8am–8pm</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li>Términos</li>
+                        <li>Privacidad</li>
+                        <li>Política de devoluciones</li>
+                        <li>PQRS</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span class="brand" style="font-size:18px;">Publi<span class="accent">bags</span></span>
+                    <span style="font-size:12px; color:var(--muted);">· por ImpulsePymes360</span>
+                </div>
+                <div class="footer-social">
+                    <a href="#">FB</a>
+                    <a href="#">IG</a>
+                    <a href="#">WA</a>
+                    <a href="#">YT</a>
+                </div>
+                <p class="footer-copy">© 2026 ImpulsePymes360 · Todos los derechos reservados</p>
+            </div>
+
+            <div class="footer-back">
+                <a href="#top" class="btn btn-outline" style="font-size:14px; padding:8px 16px;">
+                    <i class="fas fa-arrow-left"></i> Volver al portal
+                </a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuerza Delta | ImpulsePymes360</title>
+
+    <!-- ===== Google Fonts: Outfit + DM Sans ===== -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- ===== Font Awesome 6.5 ===== -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        /* ============================================================
+           PALETA DE COLORES — Modifica estos valores para cambiar
+           los colores de toda la página rápidamente.
+           ============================================================ */
+        :root {
+            --bg: #0B1120;
+            --bg2: #070C18;
+            --card: #15203A;
+            --card2: #1A2647;
+            --border: #243352;
+            --borderLight: #2F3F66;
+            --emerald: #00D4AA;
+            --emeraldDark: #00A886;
+            --gold: #F5A623;
+            --goldDim: #B47C18;
+            --purple: #A855F7;
+            --blue: #3B82F6;
+            --text: #E8EDF5;
+            --textDim: #A0AEC8;
+            --muted: #6B7FA0;
+            --success: #22C55E;
+            --rose: #F43F5E;
+            --amber: #F59E0B;
+        }
+
+        /* ===== Reset ===== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', system-ui, sans-serif;
+            line-height: 1.5;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: inherit; text-decoration: none; }
+        ul { list-style: none; }
+        img { max-width: 100%; display: block; }
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+
+        /* ===== Layout helpers ===== */
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
+        .section { padding: 56px 0; }
+        .section-head { max-width: 720px; margin-bottom: 32px; }
+        .eyebrow {
+            font-size: 12px;
+            color: var(--emerald);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: clamp(24px, 3.4vw, 36px);
+            color: var(--text);
+            line-height: 1.15;
+            letter-spacing: -0.5px;
+        }
+        .section-sub {
+            color: var(--textDim);
+            font-size: 15px;
+            margin-top: 12px;
+            line-height: 1.55;
+        }
+
+        /* ===== Card base ===== */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--borderLight);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        /* ===== Buttons ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-family: inherit;
+            text-decoration: none;
+        }
+        .btn-emerald { background: var(--emerald); color: #062019; }
+        .btn-outline { background: transparent; color: var(--text); border-color: var(--borderLight); }
+        .btn-gold { background: var(--gold); color: #1a1206; }
+        .btn-purple { background: var(--purple); color: #fff; }
+
+        /* ===== Navbar ===== */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(11, 17, 32, 0.92);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+        .navbar-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 16px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .brand {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 22px;
+            color: var(--text);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .brand i { color: var(--emerald); font-size: 20px; }
+        .brand .accent { color: var(--emerald); }
+        .nav-links {
+            display: none;
+            align-items: center;
+            gap: 4px;
+        }
+        .nav-links a {
+            color: var(--textDim);
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: color .15s, background .15s;
+        }
+        .nav-links a:hover { color: var(--text); background: var(--card); }
+        .nav-actions { display: flex; align-items: center; gap: 8px; }
+        .btn-wa {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            background: var(--emerald);
+            color: #062019;
+        }
+        .btn-planes {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            background: transparent;
+            color: var(--gold);
+            border: 1px solid var(--gold);
+        }
+        @media (min-width: 768px) { .btn-wa { display: inline-flex; } }
+        @media (min-width: 1024px) { .nav-links { display: flex; } .btn-planes { display: inline-flex; } }
+
+        /* ===== Hero ===== */
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: 60px 0 80px;
+        }
+        .hero-glow {
+            position: absolute;
+            top: -120px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,212,170,0.13) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+            align-items: center;
+            position: relative;
+        }
+        @media (min-width: 1024px) { .hero-grid { grid-template-columns: 1fr 1fr; } }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(0,212,170,0.1);
+            color: var(--emerald);
+            border: 1px solid rgba(0,212,170,0.33);
+            margin-bottom: 20px;
+        }
+        .hero h1 {
+            font-weight: 800;
+            font-size: clamp(32px, 5vw, 52px);
+            line-height: 1.05;
+            letter-spacing: -1px;
+            color: var(--text);
+        }
+        .hero h1 .accent { color: var(--emerald); }
+        .hero-desc {
+            color: var(--textDim);
+            font-size: 17px;
+            margin-top: 18px;
+            line-height: 1.55;
+            max-width: 540px;
+        }
+        .price-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-top: 24px;
+            background: var(--card);
+            border: 1px solid var(--borderLight);
+        }
+        .price-badge .icon {
+            width: 44px; height: 44px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700;
+            background: rgba(245,166,35,0.13);
+            color: var(--gold);
+            font-size: 18px;
+        }
+        .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+
+        .hero-visual {
+            border-radius: 16px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
+            border: 1px solid var(--borderLight);
+            min-height: 320px;
+        }
+        .hero-visual .label {
+            color: var(--muted);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .hero-visual .big-num {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: clamp(80px, 14vw, 140px);
+            line-height: 1;
+            color: var(--gold);
+            margin-top: 8px;
+        }
+        .hero-visual .sub {
+            color: var(--textDim);
+            font-size: 15px;
+            margin-top: 4px;
+            max-width: 320px;
+        }
+        .hero-visual .chips {
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: 8px;
+            width: 100%;
+            margin-top: 24px;
+        }
+        .hero-visual .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(0,212,170,0.1);
+            color: var(--emerald);
+            border: 1px solid rgba(0,212,170,0.33);
+        }
+
+        /* ===== Tarifas ===== */
+        .planes-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 768px) { .planes-grid { grid-template-columns: repeat(3, 1fr); } }
+        .plan-card {
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: var(--card);
+            border: 1px solid var(--borderLight);
+        }
+        .plan-card.best {
+            background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
+            border: 1px solid var(--gold);
+        }
+        .plan-badge {
+            position: absolute;
+            top: -12px;
+            right: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--gold);
+            color: #1a1206;
+        }
+        .plan-icon {
+            width: 44px; height: 44px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+        .plan-icon.green { background: rgba(0,212,170,0.13); color: var(--emerald); }
+        .plan-icon.gold { background: rgba(245,166,35,0.13); color: var(--gold); }
+        .plan-card h3 { font-size: 20px; font-weight: 700; color: var(--text); }
+        .plan-card .vol { font-size: 13px; color: var(--muted); margin-top: 2px; }
+        .plan-price {
+            margin: 16px 0 20px;
+        }
+        .plan-price .v {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 40px;
+            line-height: 1;
+        }
+        .plan-price .v.green { color: var(--emerald); }
+        .plan-price .v.gold { color: var(--gold); }
+        .plan-price .unit { font-size: 13px; color: var(--textDim); margin-left: 6px; }
+        .plan-features {
+            margin-bottom: 24px;
+            flex: 1;
+        }
+        .plan-features li {
+            display: flex; align-items: flex-start; gap: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: var(--textDim);
+            line-height: 1.45;
+        }
+        .plan-features li i { color: var(--emerald); font-size: 14px; margin-top: 3px; flex-shrink: 0; }
+        .plan-features.gold li i { color: var(--gold); }
+        .plan-card .btn { width: 100%; justify-content: center; }
+
+        .nota {
+            margin-top: 24px;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: rgba(0,212,170,0.06);
+            border: 1px solid rgba(0,212,170,0.2);
+        }
+        .nota i { color: var(--emerald); font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+        .nota p { font-size: 13px; color: var(--textDim); line-height: 1.5; }
+        .nota p strong { color: var(--text); }
+
+        /* ===== Deltas ===== */
+        .deltas-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 1024px) { .deltas-grid { grid-template-columns: repeat(2, 1fr); } }
+        .delta-card {
+            border-radius: 16px;
+            padding: 24px;
+            background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
+        }
+        .delta-card.emerald { border: 1px solid rgba(0,212,170,0.33); }
+        .delta-card.gold { border: 1px solid rgba(245,166,35,0.33); }
+        .delta-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+        .delta-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+        }
+        .delta-icon.blue { background: rgba(59,130,246,0.13); color: var(--blue); }
+        .delta-icon.gold { background: rgba(245,166,35,0.13); color: var(--gold); }
+        .delta-card .tag {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+        }
+        .delta-card.emerald .tag { color: var(--emerald); }
+        .delta-card.gold .tag { color: var(--gold); }
+        .delta-card h3 { font-size: 22px; font-weight: 800; color: var(--text); }
+        .delta-card > p {
+            font-size: 14px; color: var(--textDim); line-height: 1.55; margin-bottom: 16px;
+        }
+        .delta-list li {
+            display: flex; align-items: flex-start; gap: 8px;
+            margin-bottom: 10px;
+            font-size: 13.5px;
+            color: var(--textDim);
+            line-height: 1.45;
+        }
+        .delta-list li i { font-size: 14px; margin-top: 3px; flex-shrink: 0; }
+        .delta-card.emerald .delta-list li i { color: var(--emerald); }
+        .delta-card.gold .delta-list li i { color: var(--gold); }
+        .delta-list li strong { color: var(--text); }
+
+        /* ===== CTA 16+ banner ===== */
+        .cta-16 {
+            padding: 40px 0;
+        }
+        .cta-16-banner {
+            border-radius: 16px;
+            padding: 40px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(245,166,35,0.13) 0%, rgba(0,212,170,0.07) 100%);
+            border: 1px solid rgba(245,166,35,0.33);
+        }
+        @media (min-width: 1024px) { .cta-16-banner { grid-template-columns: 1fr auto; } }
+        .cta-16-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(245,166,35,0.13);
+            color: var(--gold);
+            border: 1px solid rgba(245,166,35,0.33);
+            margin-bottom: 12px;
+        }
+        .cta-16-banner h2 {
+            font-weight: 800;
+            font-size: clamp(24px, 3vw, 32px);
+            color: var(--text);
+            line-height: 1.15;
+        }
+        .cta-16-banner h2 .accent { color: var(--gold); }
+        .cta-16-banner p { color: var(--textDim); font-size: 15px; margin-top: 12px; line-height: 1.55; max-width: 640px; }
+        .cta-16-banner p strong { color: var(--text); }
+
+        /* ===== Beneficios ===== */
+        .beneficios-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        @media (min-width: 1024px) { .beneficios-grid { grid-template-columns: repeat(3, 1fr); } }
+        .beneficio-card {
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: transform .15s;
+            background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
+            border: 1px solid var(--borderLight);
+        }
+        .beneficio-card:hover { transform: scale(1.02); }
+        .beneficio-icon {
+            width: 44px; height: 44px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 12px;
+            font-size: 18px;
+            background: rgba(0,212,170,0.13);
+            color: var(--emerald);
+        }
+        .beneficio-card p {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.4;
+        }
+
+        /* ===== Propuesta DimarClub (12 beneficios) ===== */
+        .benefits-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        @media (min-width: 640px) { .benefits-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .benefits-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1280px) { .benefits-grid { grid-template-columns: repeat(4, 1fr); } }
+        .benefit-card {
+            border-radius: 12px;
+            padding: 16px;
+            background: var(--card);
+            border: 1px solid var(--borderLight);
+            transition: transform .15s;
+        }
+        .benefit-card:hover { transform: scale(1.02); }
+        .benefit-icon {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            margin-bottom: 8px;
+            background: var(--bg);
+        }
+        .benefit-card h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        .benefit-card p { font-size: 12px; color: var(--textDim); line-height: 1.4; }
+
+        /* ===== Red Universal ===== */
+        .red-banner {
+            border-radius: 16px;
+            padding: 40px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(168,85,247,0.13) 0%, rgba(0,212,170,0.07) 100%);
+            border: 1px solid rgba(168,85,247,0.33);
+        }
+        @media (min-width: 1024px) { .red-banner { grid-template-columns: 1fr auto; } }
+        .red-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(168,85,247,0.13);
+            color: var(--purple);
+            border: 1px solid rgba(168,85,247,0.33);
+            margin-bottom: 12px;
+        }
+        .red-banner h2 {
+            font-weight: 800;
+            font-size: clamp(24px, 3vw, 32px);
+            color: var(--text);
+            line-height: 1.15;
+        }
+        .red-banner p { color: var(--textDim); font-size: 15px; margin-top: 12px; line-height: 1.55; max-width: 620px; }
+        .red-banner p strong { color: var(--text); }
+        .red-stats { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+        .red-stat {
+            border-radius: 8px;
+            padding: 8px 12px;
+            background: var(--card);
+            border: 1px solid var(--border);
+        }
+        .red-stat .l { font-size: 11px; color: var(--muted); }
+        .red-stat .v { font-size: 18px; font-weight: 700; }
+
+        /* ===== Contacto ===== */
+        .contacto-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        @media (min-width: 640px) { .contacto-grid { grid-template-columns: repeat(2, 1fr); } }
+        .contacto-card {
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform .15s;
+        }
+        .contacto-card:hover { transform: scale(1.02); }
+        .contacto-card.wa {
+            background: linear-gradient(135deg, rgba(0,212,170,0.13) 0%, var(--card) 100%);
+            border: 1px solid rgba(0,212,170,0.33);
+        }
+        .contacto-card.planes {
+            background: var(--card);
+            border: 1px solid var(--borderLight);
+        }
+        .contacto-icon {
+            width: 48px; height: 48px;
+            border-radius: 999px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        .contacto-card .l { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+        .contacto-card .v { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 20px; color: var(--text); }
+
+        /* ===== Footer ===== */
+        footer {
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
+            padding: 48px 0 24px;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        @media (min-width: 768px) { .footer-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1024px) { .footer-grid { grid-template-columns: repeat(5, 1fr); } }
+        .footer-col h4 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .footer-col li { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+        .footer-bottom {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        @media (min-width: 640px) { .footer-bottom { flex-direction: row; } }
+        .footer-social { display: flex; gap: 12px; }
+        .footer-social a {
+            width: 32px; height: 32px;
+            border-radius: 999px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            background: var(--card);
+            color: var(--textDim);
+            border: 1px solid var(--border);
+        }
+        .footer-copy { font-size: 12px; color: var(--muted); }
+        .footer-back {
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        /* ===== Misc helpers ===== */
+        .text-emerald { color: var(--emerald); }
+        .text-gold { color: var(--gold); }
+        .text-purple { color: var(--purple); }
+        strong.text-emerald { color: var(--emerald); }
+        strong.text-gold { color: var(--gold); }
+        strong.text-purple { color: var(--purple); }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== NAVBAR ==================== -->
+    <header class="navbar">
+        <div class="navbar-inner">
+            <a href="#top" class="brand">
+                <i class="fas fa-truck"></i>
+                Fuerza <span class="accent">Delta</span>
+            </a>
+            <nav class="nav-links">
+                <a href="#tarifas">Tarifas</a>
+                <a href="#deltas">App Deltas</a>
+                <a href="#beneficios">Beneficios</a>
+                <a href="#contacto">Contacto</a>
+            </nav>
+            <div class="nav-actions">
+                <a href="https://wa.me/593992689844" target="_blank" rel="noopener" class="btn-wa">
+                    <i class="fas fa-phone" style="font-size:14px;"></i> +593 99 268 9844
+                </a>
+                <a href="#tarifas" class="btn-planes">Ver planes</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== HERO ==================== -->
+    <section class="hero" id="top">
+        <div class="hero-glow"></div>
+        <div class="container">
+            <div class="hero-grid">
+                <div>
+                    <span class="hero-badge">
+                        <i class="fas fa-sparkles"></i> Mensajería B2B · Tarifas planas · Ecuador
+                    </span>
+                    <h1>Ahorra en tus envíos y obtén <span class="accent">GRATIS</span> nuestro Plan Integral</h1>
+                    <p class="hero-desc">
+                        Por la contratación de nuestras tarifas planas, tu negocio recibe presencia digital
+                        completa: página web, marketplace, publicidad en fundas ecológicas y más.
+                    </p>
+
+                    <!-- Price badge -->
+                    <div class="price-badge">
+                        <div class="icon">$1.75</div>
+                        <div>
+                            <p style="font-size:14px; font-weight:600; color:var(--text);">por entrega · Plan 15 · pago diario</p>
+                            <p style="font-size:12px; color:var(--muted);">Recogida incluida · Sin contratos forzosos</p>
+                        </div>
+                    </div>
+
+                    <div class="hero-cta">
+                        <a href="#tarifas" class="btn btn-emerald">
+                            Ver tarifas <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <a href="https://wa.me/593992689844" target="_blank" rel="noopener" class="btn btn-outline">
+                            <i class="fas fa-phone"></i> Hablar por WhatsApp
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Hero visual -->
+                <div>
+                    <div class="hero-visual">
+                        <p class="label">Tarifa plana · Plan 15</p>
+                        <p class="big-num">$1.75</p>
+                        <p class="sub">por entrega · pago diario anticipado · 1 a 15 entregas al día</p>
+                        <div class="chips">
+                            <span class="chip"><i class="fas fa-check" style="font-size:10px;"></i> Pago diario</span>
+                            <span class="chip"><i class="fas fa-check" style="font-size:10px;"></i> Sin contratos</span>
+                            <span class="chip"><i class="fas fa-check" style="font-size:10px;"></i> Recogida incluida</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== TARIFAS ==================== -->
+    <section class="section" id="tarifas">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow">Tarifas por unidad</p>
+                <h2 class="section-title">Paga solo por lo que envías</h2>
+                <p class="section-sub">Sin contratos forzosos. Elige la tarifa según tu volumen diario de envíos.</p>
+            </div>
+
+            <div class="planes-grid">
+
+                <!-- Plan 5 -->
+                <div class="plan-card">
+                    <div class="plan-icon green"><i class="fas fa-file-lines"></i></div>
+                    <h3>Plan 5</h3>
+                    <p class="vol">1 a 5 sobres al día</p>
+                    <div class="plan-price">
+                        <span class="v green">$2.25</span>
+                        <span class="unit">por entrega</span>
+                    </div>
+                    <ul class="plan-features">
+                        <li><i class="fas fa-check"></i> Recogida incluida</li>
+                        <li><i class="fas fa-check"></i> Seguimiento en tiempo real</li>
+                        <li><i class="fas fa-check"></i> Pago diario por adelantado</li>
+                    </ul>
+                    <a href="#contacto" class="btn btn-emerald">Solicitar <i class="fas fa-chevron-right"></i></a>
+                </div>
+
+                <!-- Plan 10 -->
+                <div class="plan-card">
+                    <div class="plan-icon green"><i class="fas fa-box"></i></div>
+                    <h3>Plan 10</h3>
+                    <p class="vol">1 a 10 entregas al día</p>
+                    <div class="plan-price">
+                        <span class="v green">$2.00</span>
+                        <span class="unit">por entrega</span>
+                    </div>
+                    <ul class="plan-features">
+                        <li><i class="fas fa-check"></i> Recogida incluida</li>
+                        <li><i class="fas fa-check"></i> Seguimiento en tiempo real</li>
+                        <li><i class="fas fa-check"></i> Pago diario por adelantado</li>
+                    </ul>
+                    <a href="#contacto" class="btn btn-emerald">Solicitar <i class="fas fa-chevron-right"></i></a>
+                </div>
+
+                <!-- Plan 15 (Best) -->
+                <div class="plan-card best">
+                    <span class="plan-badge"><i class="fas fa-sparkles"></i> Mejor precio</span>
+                    <div class="plan-icon gold"><i class="fas fa-building"></i></div>
+                    <h3>Plan 15</h3>
+                    <p class="vol">1 a 15 entregas al día</p>
+                    <div class="plan-price">
+                        <span class="v gold">$1.75</span>
+                        <span class="unit">por entrega</span>
+                    </div>
+                    <ul class="plan-features gold">
+                        <li><i class="fas fa-check"></i> Recogida incluida</li>
+                        <li><i class="fas fa-check"></i> Ejecutiva asignada</li>
+                        <li><i class="fas fa-check"></i> Pago diario por adelantado</li>
+                    </ul>
+                    <a href="#contacto" class="btn btn-gold">Solicitar <i class="fas fa-chevron-right"></i></a>
+                </div>
+            </div>
+
+            <!-- Nota -->
+            <div class="nota">
+                <i class="fas fa-shield-halved"></i>
+                <p>El cobro es <strong>diario y anticipado</strong>. Sin facturas pendientes ni sorpresas al final del mes.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== DELTAS (App Deltas + Micro-distribuidores) ==================== -->
+    <section class="section" id="deltas">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow">Parte de Fuerza Delta</p>
+                <h2 class="section-title">App Deltas + Micro-distribuidores de zona</h2>
+                <p class="section-sub">Un ecosistema logístico completo: motorizados con app propia y una red de micro-distribuidores locales para cubrir más zonas.</p>
+            </div>
+
+            <div class="deltas-grid">
+
+                <!-- Card 1 — App Deltas -->
+                <div class="delta-card emerald">
+                    <div class="delta-head">
+                        <div class="delta-icon blue"><i class="fas fa-mobile-screen"></i></div>
+                        <div>
+                            <p class="tag">Para motorizados y clientes</p>
+                            <h3>App Deltas</h3>
+                        </div>
+                    </div>
+                    <p>Plataforma propia para motorizados y clientes. Todo el flujo de entregas en tiempo real desde tu celular.</p>
+                    <ul class="delta-list">
+                        <li><i class="fas fa-check"></i> Rastreo en tiempo real</li>
+                        <li><i class="fas fa-check"></i> Asignación automática de rutas</li>
+                        <li><i class="fas fa-check"></i> Notificaciones push al cliente</li>
+                        <li><i class="fas fa-check"></i> Historial y comprobantes digitales</li>
+                        <li><i class="fas fa-check"></i> Panel de control para motorizados</li>
+                    </ul>
+                </div>
+
+                <!-- Card 2 — Micro-distribuidores -->
+                <div class="delta-card gold">
+                    <div class="delta-head">
+                        <div class="delta-icon gold"><i class="fas fa-store"></i></div>
+                        <div>
+                            <p class="tag">Red de zona</p>
+                            <h3>Micro-distribuidores de zona</h3>
+                        </div>
+                    </div>
+                    <p>Red de personas que retiran sobres en el coworking y entregan en su zona. Ideal para cubrir áreas alejadas.</p>
+                    <ul class="delta-list">
+                        <li><i class="fas fa-check"></i> Mínimo <strong>10 sobres por zona</strong></li>
+                        <li><i class="fas fa-check"></i> Pago fijo de <strong>$1 por sobre</strong></li>
+                        <li><i class="fas fa-check"></i> Aceptación voluntaria</li>
+                        <li><i class="fas fa-check"></i> Retiro en el coworking</li>
+                        <li><i class="fas fa-check"></i> Plazo de entrega <strong>24-48 horas</strong></li>
+                        <li><i class="fas fa-check"></i> Pago al retirar (efectivo o transferencia)</li>
+                        <li><i class="fas fa-check"></i> Respaldo de Fuerza Delta si rechazan</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CTA 16+ ENTREGAS ==================== -->
+    <section class="cta-16" id="cta-16">
+        <div class="container">
+            <div class="cta-16-banner">
+                <div>
+                    <span class="cta-16-badge"><i class="fas fa-sparkles"></i> Plan Integral GRATIS</span>
+                    <h2>Contrata <span class="accent">16 o más entregas diarias</span></h2>
+                    <p>
+                        y obtén <strong class="text-emerald">GRATIS todos los meses</strong> el Plan
+                        Integral de Marketing y Publicidad, con <strong>Enlace Express</strong>
+                        (Call Center + Vendedores P2P) incluido.
+                    </p>
+                </div>
+                <a href="#tarifas" class="btn btn-gold" style="padding:14px 24px; font-weight:700; white-space:nowrap;">
+                    Ver Tarifas Planas <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== BENEFICIOS DEL PLAN INTEGRAL ==================== -->
+    <section class="section" id="beneficios">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow">Plan Integral incluido</p>
+                <h2 class="section-title">Todo lo que recibes GRATIS cada mes</h2>
+                <p class="section-sub">Cada plan incluye acceso completo al ecosistema ImpulsePymes360.</p>
+            </div>
+
+            <div class="beneficios-grid">
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-bicycle"></i></div>
+                    <p>Entregas diarias</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-globe"></i></div>
+                    <p>Sitio web profesional</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-file-lines"></i></div>
+                    <p>Catálogo PDF (DimarCatalog)</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-shopping-bag"></i></div>
+                    <p>Espacio en funda</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-store"></i></div>
+                    <p>Productos en marketplace</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-users"></i></div>
+                    <p>Clientes potenciales</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-newspaper"></i></div>
+                    <p>Clasificados (Dimarads)</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-headset"></i></div>
+                    <p>Enlace Express (Call Center + P2P)</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-book-open"></i></div>
+                    <p>Revista-Directorio (DimarRevista)</p>
+                </div>
+            </div>
+
+            <div style="text-align:center; margin-top:32px;">
+                <a href="#contacto" class="btn btn-emerald" style="padding:12px 24px;">
+                    Ver todos los planes <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== PROPUESTA DIMARCLUB ==================== -->
+    <section class="section" id="propuesta">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow">Propuesta DimarClub</p>
+                <h2 class="section-title">Ser cliente Fuerza Delta te abre las puertas de DimarClub</h2>
+                <p class="section-sub">No solo obtienes entregas. Al contratar un plan te conviertes en socio de la cooperativa DimarClub con 12 beneficios exclusivos.</p>
+            </div>
+
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">🚑</div>
+                    <h4>Ambulancia Gratis</h4>
+                    <p>Servicio de ambulancia sin costo para socios.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🔧</div>
+                    <h4>Servicios Técnicos</h4>
+                    <p>Red de técnicos en electricidad, plomería y más.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🌿</div>
+                    <h4>Medicina Ancestral</h4>
+                    <p>Acceso a terapias alternativas y naturales.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🚚</div>
+                    <h4>Entrega Gratis</h4>
+                    <p>Logística de productos sin costo adicional.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">💰</div>
+                    <h4>Préstamos con Garantía</h4>
+                    <p>Crédito respaldado por tu aporte de capital.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">📈</div>
+                    <h4>Línea de Crédito 75%</h4>
+                    <p>Financia hasta el 75% de tu aporte acumulado.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">💹</div>
+                    <h4>Inversión 5% Mensual</h4>
+                    <p>Tu aporte genera 5% interés mensual compuesto.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🎯</div>
+                    <h4>Hub de Tareas CPA</h4>
+                    <p>Centro de tareas de costo por acción para afiliados.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🛍️</div>
+                    <h4>Fundas con Descuentos</h4>
+                    <p>Descuentos exclusivos en fundas y productos.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🏢</div>
+                    <h4>Coworking $150/mes</h4>
+                    <p>Espacio de trabajo compartido a precio de socio.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">🎓</div>
+                    <h4>Capacitación</h4>
+                    <p>Cursos y formación empresarial continua.</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">📅</div>
+                    <h4>Reuniones Semanales</h4>
+                    <p>Encuentros de networking y negocios.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== RED UNIVERSAL ==================== -->
+    <section style="padding:40px 0;">
+        <div class="container">
+            <div class="red-banner">
+                <div>
+                    <span class="red-badge">
+                        <i class="fas fa-users"></i> Red Universal de Afiliados
+                    </span>
+                    <h2>Construye tu red de 3 niveles y gana comisiones en cada entrega</h2>
+                    <p>
+                        Cada socio puede construir su <strong>Red Universal de 3 Niveles</strong> y ganar
+                        <strong class="text-emerald"> 2% de cada nivel</strong> (N1, N2, N3) +
+                        <strong class="text-gold"> 3% cashback N0</strong> en cada contratación de Fuerza Delta.
+                    </p>
+                    <div class="red-stats">
+                        <div class="red-stat">
+                            <p class="l">Tú contratas</p>
+                            <p class="v" style="color:var(--gold);">3% cashback N0</p>
+                        </div>
+                        <div class="red-stat">
+                            <p class="l">Tu padrino (N1)</p>
+                            <p class="v" style="color:var(--emerald);">2% comisión</p>
+                        </div>
+                        <div class="red-stat">
+                            <p class="l">N2 y N3</p>
+                            <p class="v" style="color:var(--purple);">+2% cada nivel</p>
+                        </div>
+                    </div>
+                </div>
+                <a href="#contacto" class="btn btn-purple" style="padding:12px 20px; font-weight:700; white-space:nowrap;">
+                    Ver mi red <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CONTACTO ==================== -->
+    <section class="section" id="contacto">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow">Contacto</p>
+                <h2 class="section-title">¿Listo para activar tu plan?</h2>
+                <p class="section-sub">Contáctanos y empieza a ahorrar en tus envíos hoy mismo.</p>
+            </div>
+
+            <div class="contacto-grid">
+                <a href="https://wa.me/593992689844" target="_blank" rel="noopener" class="contacto-card wa">
+                    <div class="contacto-icon" style="background:var(--emerald); color:#062019;">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div>
+                        <p class="l">WhatsApp</p>
+                        <p class="v">+593 99 268 9844</p>
+                    </div>
+                </a>
+                <a href="#tarifas" class="contacto-card planes">
+                    <div class="contacto-icon" style="background:var(--gold); color:#1a1206;">
+                        <i class="fas fa-sparkles"></i>
+                    </div>
+                    <div>
+                        <p class="l">Planes</p>
+                        <p class="v">Ver Planes y Activar</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>ImpulsePymes360</h4>
+                    <ul>
+                        <li>Marketplace</li>
+                        <li>DimarClub</li>
+                        <li>PubliBags</li>
+                        <li>Fuerza Delta</li>
+                        <li>Planes</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Ecosistema</h4>
+                    <ul>
+                        <li>Socios</li>
+                        <li>Proveedores</li>
+                        <li>Mensajería B2B</li>
+                        <li>CRM</li>
+                        <li>Email Marketing</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Más servicios</h4>
+                    <ul>
+                        <li>App Deltas</li>
+                        <li>Micro-distribuidores</li>
+                        <li>Enlace Express</li>
+                        <li>DimarCatalog</li>
+                        <li>Dimarads</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contacto</h4>
+                    <ul>
+                        <li>+593 99 268 9844</li>
+                        <li>info@impulsepymes360.com</li>
+                        <li>impulsepymes360.com</li>
+                        <li>Guayaquil, Ecuador</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li>Términos</li>
+                        <li>Privacidad</li>
+                        <li>Política de devoluciones</li>
+                        <li>PQRS</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span class="brand" style="font-size:18px;">
+                        <i class="fas fa-truck"></i>
+                        Fuerza <span class="accent">Delta</span>
+                    </span>
+                    <span style="font-size:12px; color:var(--muted);">· por ImpulsePymes360</span>
+                </div>
+                <div class="footer-social">
+                    <a href="#">FB</a>
+                    <a href="#">IG</a>
+                    <a href="#">WA</a>
+                    <a href="#">YT</a>
+                </div>
+                <p class="footer-copy">© 2026 ImpulsePymes360 · Todos los derechos reservados</p>
+            </div>
+
+            <div class="footer-back">
+                <a href="#top" class="btn btn-outline" style="font-size:14px; padding:8px 16px;">
+                    <i class="fas fa-arrow-left"></i> Volver al portal
+                </a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

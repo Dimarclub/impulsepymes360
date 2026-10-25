@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DimarClub | ImpulsePymes360</title>
+
+    <!-- ===== Google Fonts: Outfit + DM Sans ===== -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- ===== Font Awesome 6.5 ===== -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        /* ============================================================
+           PALETA DE COLORES — Modifica estos valores para cambiar
+           los colores de toda la página rápidamente.
+           ============================================================ */
+        :root {
+            --bg: #0B1120;
+            --bg2: #070C18;
+            --card: #15203A;
+            --card2: #1A2647;
+            --border: #243352;
+            --borderLight: #2F3F66;
+            --emerald: #00D4AA;
+            --emeraldDark: #00A886;
+            --gold: #F5A623;
+            --goldDim: #B47C18;
+            --purple: #A855F7;
+            --text: #E8EDF5;
+            --textDim: #A0AEC8;
+            --muted: #6B7FA0;
+            --success: #22C55E;
+            --rose: #F43F5E;
+            --amber: #F59E0B;
+        }
+
+        /* ===== Reset ===== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', system-ui, sans-serif;
+            line-height: 1.5;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: inherit; text-decoration: none; }
+        ul { list-style: none; }
+        img { max-width: 100%; display: block; }
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+
+        /* ===== Layout helpers ===== */
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
+        .section { padding: 56px 0; }
+        .section-head { max-width: 720px; margin-bottom: 32px; }
+        .eyebrow {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .eyebrow.purple { color: var(--purple); }
+        .eyebrow.emerald { color: var(--emerald); }
+        .eyebrow.gold { color: var(--gold); }
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: clamp(24px, 3.4vw, 36px);
+            color: var(--text);
+            line-height: 1.15;
+            letter-spacing: -0.5px;
+        }
+        .section-sub {
+            color: var(--textDim);
+            font-size: 15px;
+            margin-top: 12px;
+            line-height: 1.55;
+        }
+
+        /* ===== Card base ===== */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--borderLight);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        /* ===== Buttons ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-family: inherit;
+            text-decoration: none;
+        }
+        .btn-emerald { background: var(--emerald); color: #062019; }
+        .btn-outline { background: transparent; color: var(--text); border-color: var(--borderLight); }
+        .btn-gold { background: var(--gold); color: #1a1206; }
+        .btn-purple { background: var(--purple); color: #fff; }
+
+        /* ===== Navbar ===== */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(11, 17, 32, 0.92);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+        .navbar-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 16px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .brand {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 22px;
+            color: var(--text);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .brand i { color: var(--purple); font-size: 20px; }
+        .brand .accent { color: var(--emerald); }
+        .nav-links {
+            display: none;
+            align-items: center;
+            gap: 4px;
+        }
+        .nav-links a {
+            color: var(--textDim);
+            font-size: 14px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            transition: color .15s, background .15s;
+        }
+        .nav-links a:hover { color: var(--text); background: var(--card); }
+        .nav-actions { display: flex; align-items: center; gap: 8px; }
+        .btn-wa {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            background: var(--emerald);
+            color: #062019;
+        }
+        .btn-planes {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            background: transparent;
+            color: var(--gold);
+            border: 1px solid var(--gold);
+        }
+        @media (min-width: 768px) { .btn-wa { display: inline-flex; } }
+        @media (min-width: 1280px) { .nav-links { display: flex; } .btn-planes { display: inline-flex; } }
+
+        /* ===== Hero ===== */
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: 60px 0 80px;
+        }
+        .hero-glow {
+            position: absolute;
+            top: -120px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(168,85,247,0.13) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+            align-items: center;
+            position: relative;
+        }
+        @media (min-width: 1024px) { .hero-grid { grid-template-columns: 1fr 1fr; } }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(168,85,247,0.13);
+            color: var(--purple);
+            border: 1px solid rgba(168,85,247,0.33);
+            margin-bottom: 20px;
+        }
+        .hero h1 {
+            font-weight: 800;
+            font-size: clamp(32px, 5vw, 52px);
+            line-height: 1.05;
+            letter-spacing: -1px;
+            color: var(--text);
+        }
+        .hero h1 .accent { color: var(--purple); }
+        .hero-desc {
+            color: var(--textDim);
+            font-size: 17px;
+            margin-top: 18px;
+            line-height: 1.55;
+            max-width: 560px;
+        }
+        .hero-desc strong { color: var(--emerald); }
+        .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+
+        .hero-visual {
+            border-radius: 16px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
+            border: 1px solid var(--borderLight);
+            min-height: 320px;
+        }
+        .hero-visual .label {
+            color: var(--muted);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .hero-visual .big-num {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: clamp(80px, 14vw, 140px);
+            line-height: 1;
+            color: var(--emerald);
+            margin-top: 8px;
+        }
+        .hero-visual .sub {
+            color: var(--textDim);
+            font-size: 15px;
+            margin-top: 8px;
+            max-width: 320px;
+        }
+        .hero-visual .chips {
+            display: flex; flex-wrap: wrap; justify-content: center;
+            gap: 8px;
+            width: 100%;
+            margin-top: 24px;
+        }
+        .hero-visual .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .hero-visual .chip.purple { background: rgba(168,85,247,0.13); color: var(--purple); border: 1px solid rgba(168,85,247,0.33); }
+        .hero-visual .chip.emerald { background: rgba(0,212,170,0.13); color: var(--emerald); border: 1px solid rgba(0,212,170,0.33); }
+        .hero-visual .chip.gold { background: rgba(245,166,35,0.13); color: var(--gold); border: 1px solid rgba(245,166,35,0.33); }
+
+        /* ===== Roles grid (¿Qué es?) ===== */
+        .roles-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        @media (min-width: 640px) { .roles-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .roles-grid { grid-template-columns: repeat(4, 1fr); } }
+        .role-card {
+            border-radius: 12px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
+            border: 1px solid var(--borderLight);
+        }
+        .role-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 16px;
+            font-size: 22px;
+        }
+        .role-card h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+        .role-card p { font-size: 13px; color: var(--textDim); line-height: 1.5; }
+
+        /* ===== Tareas CPA ===== */
+        .tareas-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+        @media (min-width: 1024px) { .tareas-grid { grid-template-columns: 1fr 1fr; } }
+        .tareas-list li {
+            display: flex; align-items: flex-start; gap: 10px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: var(--textDim);
+            line-height: 1.5;
+        }
+        .tareas-list li i { color: var(--gold); font-size: 18px; margin-top: 2px; flex-shrink: 0; }
+        .tareas-panel {
+            border-radius: 16px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
+            border: 1px solid rgba(245,166,35,0.33);
+        }
+        .tareas-panel-head {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+        }
+        .tareas-panel-head .left { display: flex; align-items: center; gap: 8px; }
+        .tareas-panel-icon {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+            background: rgba(245,166,35,0.13);
+            color: var(--gold);
+        }
+        .tareas-panel-head .tag { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+        .tareas-panel-head .title { font-size: 14px; font-weight: 700; color: var(--text); }
+        .tareas-panel-head .cpa-lbl { font-size: 11px; color: var(--muted); }
+        .tareas-panel-head .cpa-val {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 26px;
+            color: var(--gold);
+            line-height: 1;
+        }
+        .tareas-item {
+            border-radius: 12px;
+            padding: 12px;
+            display: flex; align-items: center; gap: 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            margin-bottom: 10px;
+        }
+        .tareas-emoji {
+            width: 40px; height: 40px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            background: var(--card2);
+            flex-shrink: 0;
+        }
+        .tareas-item .body { flex: 1; min-width: 0; }
+        .tareas-item .title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.3; }
+        .tareas-item .prov { font-size: 11px; color: var(--muted); }
+        .tareas-item .reward {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            background: rgba(245,166,35,0.13);
+            color: var(--gold);
+            flex-shrink: 0;
+        }
+        .tareas-foot {
+            font-size: 11px; color: var(--muted); margin-top: 12px; text-align: center;
+        }
+
+        /* ===== Red Universal ===== */
+        .red-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+        @media (min-width: 1024px) { .red-grid { grid-template-columns: 1fr 360px; } }
+        .level-card {
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
+        }
+        .level-card.l1 { border: 1px solid rgba(0,212,170,0.33); }
+        .level-card.l2 { border: 1px solid rgba(168,85,247,0.33); }
+        .level-card.l3 { border: 1px solid rgba(245,166,35,0.33); }
+        .level-num {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        .level-num.l1 { background: rgba(0,212,170,0.13); color: var(--emerald); }
+        .level-num.l2 { background: rgba(168,85,247,0.13); color: var(--purple); }
+        .level-num.l3 { background: rgba(245,166,35,0.13); color: var(--gold); }
+        .level-card .body { flex: 1; }
+        .level-card .title { font-size: 14px; font-weight: 700; color: var(--text); }
+        .level-card .people { font-size: 12px; color: var(--muted); }
+        .level-card .commission {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .level-card.l1 .commission { background: rgba(0,212,170,0.13); color: var(--emerald); }
+        .level-card.l2 .commission { background: rgba(168,85,247,0.13); color: var(--purple); }
+        .level-card.l3 .commission { background: rgba(245,166,35,0.13); color: var(--gold); }
+        .arrow-down {
+            text-align: center;
+            padding: 4px 0;
+            color: var(--muted);
+        }
+        .red-highlight {
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 8px;
+            background: linear-gradient(135deg, rgba(245,166,35,0.13) 0%, var(--card) 100%);
+            border: 1px solid rgba(245,166,35,0.33);
+        }
+        .red-highlight-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            background: var(--gold);
+            color: #1a1206;
+            flex-shrink: 0;
+        }
+        .red-highlight .v {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 24px;
+            color: var(--gold);
+            line-height: 1;
+        }
+        .red-highlight .l { font-size: 13px; color: var(--textDim); margin-top: 2px; }
+
+        .red-note {
+            border-radius: 12px;
+            padding: 16px;
+            background: var(--card);
+            border: 1px solid var(--borderLight);
+        }
+        .red-note p { font-size: 13px; color: var(--textDim); line-height: 1.55; }
+        .red-note p strong { color: var(--text); }
+        .red-note.purple { background: rgba(168,85,247,0.06); border: 1px solid rgba(168,85,247,0.2); }
+        .red-note .head {
+            display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px;
+        }
+        .red-note .head i { color: var(--purple); font-size: 16px; margin-top: 2px; flex-shrink: 0; }
+        .red-note .head .title { font-size: 13px; font-weight: 700; color: var(--purple); }
+
+        /* ===== Beneficios ===== */
+        .beneficios-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        @media (min-width: 640px) { .beneficios-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .beneficios-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1280px) { .beneficios-grid { grid-template-columns: repeat(4, 1fr); } }
+        .beneficio-card {
+            border-radius: 12px;
+            padding: 16px;
+            background: var(--card);
+            border: 1px solid var(--borderLight);
+            transition: transform .15s;
+        }
+        .beneficio-card:hover { transform: scale(1.02); }
+        .beneficio-card.destacado {
+            background: linear-gradient(135deg, rgba(245,166,35,0.13) 0%, var(--card) 100%);
+            border: 1px solid var(--gold);
+        }
+        .beneficio-icon {
+            width: 40px; height: 40px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 12px;
+            font-size: 18px;
+            background: rgba(0,212,170,0.13);
+            color: var(--emerald);
+        }
+        .beneficio-card.destacado .beneficio-icon { background: rgba(245,166,35,0.2); color: var(--gold); }
+        .beneficio-card h4 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .beneficio-card h4 .tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--gold);
+            color: #1a1206;
+        }
+        .beneficio-card p { font-size: 12.5px; color: var(--textDim); line-height: 1.45; }
+
+        /* ===== Rangos ===== */
+        .rangos-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        @media (min-width: 640px) { .rangos-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .rangos-grid { grid-template-columns: repeat(5, 1fr); } }
+        .rango-card {
+            border-radius: 16px;
+            padding: 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
+        }
+        .rango-emoji {
+            position: absolute;
+            top: -12px;
+            left: -12px;
+            width: 40px; height: 40px;
+            border-radius: 999px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            background: var(--bg);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .rango-card .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+        .rango-card h3 { font-size: 20px; font-weight: 800; color: var(--text); }
+        .rango-card .price {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 32px;
+            line-height: 1;
+            margin-top: 16px;
+        }
+        .rango-card .price-l { font-size: 11px; color: var(--muted); margin-top: 4px; }
+        .rango-card .bono {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 700;
+            margin: 12px 0;
+            background: rgba(245,166,35,0.13);
+            color: var(--gold);
+        }
+        .rango-card .desc { font-size: 12.5px; color: var(--textDim); line-height: 1.45; margin-top: auto; }
+
+        .rango-card.r1 { border: 1px solid rgba(244,63,94,0.33); }
+        .rango-card.r2 { border: 1px solid rgba(245,158,11,0.33); }
+        .rango-card.r3 { border: 1px solid rgba(0,212,170,0.33); }
+        .rango-card.r4 { border: 1px solid rgba(168,85,247,0.33); }
+        .rango-card.r5 { border: 1px solid rgba(245,166,35,0.33); }
+        .rango-card.r1 .price { color: var(--rose); }
+        .rango-card.r2 .price { color: var(--amber); }
+        .rango-card.r3 .price { color: var(--emerald); }
+        .rango-card.r4 .price { color: var(--purple); }
+        .rango-card.r5 .price { color: var(--gold); }
+
+        .rango-info {
+            margin-top: 24px;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: rgba(0,212,170,0.06);
+            border: 1px solid rgba(0,212,170,0.2);
+        }
+        .rango-info i { color: var(--emerald); font-size: 18px; margin-top: 2px; flex-shrink: 0; }
+        .rango-info p { font-size: 13px; color: var(--textDim); line-height: 1.55; }
+        .rango-info p strong { color: var(--text); }
+
+        /* ===== Frascos ===== */
+        .frascos-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        @media (min-width: 640px) { .frascos-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1024px) { .frascos-grid { grid-template-columns: repeat(6, 1fr); } }
+        .frasco-card {
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
+            border: 1px solid var(--borderLight);
+        }
+        .frasco-icon {
+            width: 40px; height: 40px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 18px;
+        }
+        .frasco-card .pct {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 28px;
+            line-height: 1;
+        }
+        .frasco-card .l { font-size: 12px; color: var(--textDim); margin-top: 6px; line-height: 1.3; }
+
+        .frasco-info {
+            margin-top: 24px;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: rgba(168,85,247,0.06);
+            border: 1px solid rgba(168,85,247,0.2);
+        }
+        .frasco-info i { color: var(--purple); font-size: 18px; margin-top: 2px; flex-shrink: 0; }
+        .frasco-info p { font-size: 13px; color: var(--textDim); line-height: 1.55; }
+        .frasco-info p strong { color: var(--text); }
+
+        /* ===== Stats ===== */
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        @media (min-width: 640px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1024px) { .stats-grid { grid-template-columns: repeat(6, 1fr); } }
+        .stat-card {
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
+            border: 1px solid var(--borderLight);
+        }
+        .stat-icon {
+            width: 40px; height: 40px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 18px;
+        }
+        .stat-card .v {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 900;
+            font-size: 30px;
+            line-height: 1;
+        }
+        .stat-card .l { font-size: 11.5px; color: var(--textDim); margin-top: 6px; line-height: 1.35; }
+
+        /* ===== CTA + Contacto ===== */
+        .cta-section {
+            padding: 60px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-glow {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 700px; height: 400px;
+            background: radial-gradient(ellipse, rgba(168,85,247,0.13) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .cta-card {
+            border-radius: 16px;
+            padding: 48px;
+            text-align: center;
+            position: relative;
+            background: linear-gradient(135deg, rgba(168,85,247,0.13) 0%, rgba(0,212,170,0.07) 100%);
+            border: 1px solid rgba(168,85,247,0.33);
+        }
+        .cta-card h2 {
+            font-weight: 800;
+            font-size: clamp(28px, 4vw, 44px);
+            color: var(--text);
+            line-height: 1.1;
+        }
+        .cta-card h2 .accent { color: var(--purple); }
+        .cta-card p {
+            color: var(--textDim);
+            font-size: 16px;
+            margin-top: 14px;
+            max-width: 580px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.55;
+        }
+        .cta-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        /* ===== Footer ===== */
+        footer {
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
+            padding: 48px 0 24px;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        @media (min-width: 768px) { .footer-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1024px) { .footer-grid { grid-template-columns: repeat(5, 1fr); } }
+        .footer-col h4 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .footer-col li { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+        .footer-bottom {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        @media (min-width: 640px) { .footer-bottom { flex-direction: row; } }
+        .footer-social { display: flex; gap: 12px; }
+        .footer-social a {
+            width: 32px; height: 32px;
+            border-radius: 999px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            background: var(--card);
+            color: var(--textDim);
+            border: 1px solid var(--border);
+        }
+        .footer-copy { font-size: 12px; color: var(--muted); }
+        .footer-back {
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        /* ===== Misc helpers ===== */
+        .text-emerald { color: var(--emerald); }
+        .text-gold { color: var(--gold); }
+        .text-purple { color: var(--purple); }
+        strong.text-emerald { color: var(--emerald); }
+        strong.text-gold { color: var(--gold); }
+        strong.text-purple { color: var(--purple); }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== NAVBAR ==================== -->
+    <header class="navbar">
+        <div class="navbar-inner">
+            <a href="#top" class="brand">
+                <i class="fas fa-users"></i>
+                Dimar<span class="accent">Club</span>
+            </a>
+            <nav class="nav-links">
+                <a href="#que-es">Qué es</a>
+                <a href="#tareas">Tareas CPA</a>
+                <a href="#red">Red Universal</a>
+                <a href="#beneficios">Beneficios</a>
+                <a href="#rangos">Rangos</a>
+                <a href="#frascos">Frascos</a>
+                <a href="#contacto">Contacto</a>
+            </nav>
+            <div class="nav-actions">
+                <a href="https://wa.me/593992689844" target="_blank" rel="noopener" class="btn-wa">
+                    <i class="fas fa-phone" style="font-size:14px;"></i> +593 99 268 9844
+                </a>
+                <a href="#contacto" class="btn-planes">Ver planes</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== HERO ==================== -->
+    <section class="hero" id="top">
+        <div class="hero-glow"></div>
+        <div class="container">
+            <div class="hero-grid">
+                <div>
+                    <span class="hero-badge">
+                        <i class="fas fa-sparkles"></i> Comunidad · Red de Afiliados · Incubadora · Ecuador
+                    </span>
+                    <h1>Bienvenido a <span class="accent">DimarClub</span></h1>
+                    <p class="hero-desc">
+                        Somos una comunidad de emprendedores <strong>Prosumidores</strong> comprometidos con las empresas que han confiado en nuestro sistema de comercialización, una comunidad donde cada persona puede <strong>consumir</strong>, <strong>recomendar</strong>, <strong>emprender</strong> y <strong>crecer</strong>. Nuestro sistema de afiliados de una sola <strong>Red Universal de 3 Niveles</strong> es el motor de nuestro sistema de comercialización en donde todos ganan y todos pueden llegar lejos.
+                    </p>
+
+                    <div class="hero-cta">
+                        <a href="#red" class="btn btn-purple">
+                            Conocer la Red <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <a href="#contacto" class="btn btn-outline">Ver Planes</a>
+                    </div>
+                </div>
+
+                <!-- Hero visual -->
+                <div>
+                    <div class="hero-visual">
+                        <p class="label">Tu red completa</p>
+                        <p class="big-num">1.110</p>
+                        <p class="sub">personas en tu red completa</p>
+                        <div class="chips">
+                            <span class="chip purple"><i class="fas fa-check" style="font-size:10px;"></i> 3 Niveles</span>
+                            <span class="chip emerald"><i class="fas fa-check" style="font-size:10px;"></i> 3% por nivel</span>
+                            <span class="chip gold"><i class="fas fa-check" style="font-size:10px;"></i> $41.700/mes presupuesto</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== ¿QUÉ ES DIMARCLUB? ==================== -->
+    <section class="section" id="que-es">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow purple">¿Qué es DimarClub?</p>
+                <h2 class="section-title">Mucho más que una comunidad</h2>
+                <p class="section-sub">DimarClub es el corazón humano de ImpulsePymes360. Es donde las personas se conectan, consumen, producen, recomiendan y construyen patrimonio juntas. No es solo una red de afiliados: es un ecosistema donde todos crecen.</p>
+            </div>
+
+            <div class="roles-grid">
+                <div class="role-card">
+                    <div class="role-icon" style="background:rgba(0,212,170,0.13); color:var(--emerald);">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Comunidad</h3>
+                    <p>Personas que consumen productos y servicios de calidad, con beneficios exclusivos y precios preferenciales.</p>
+                </div>
+                <div class="role-card">
+                    <div class="role-icon" style="background:rgba(168,85,247,0.13); color:var(--purple);">
+                        <i class="fas fa-network-wired"></i>
+                    </div>
+                    <h3>Red de Afiliados</h3>
+                    <p>Cada miembro puede construir su propia Red Universal de 3 Niveles y ganar comisiones por el consumo de su red.</p>
+                </div>
+                <div class="role-card">
+                    <div class="role-icon" style="background:rgba(245,166,35,0.13); color:var(--gold);">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <h3>Incubadora</h3>
+                    <p>Capital semilla, capacitación y asesoramiento para que los miembros conviertan sus ideas en emprendimientos reales.</p>
+                </div>
+                <div class="role-card">
+                    <div class="role-icon" style="background:rgba(244,63,94,0.13); color:var(--rose);">
+                        <i class="fas fa-hand-holding-heart"></i>
+                    </div>
+                    <h3>Mano de Obra</h3>
+                    <p>Los miembros participan en la producción de los emprendimientos propios: fundas, chocolate, artesanías y más.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== HUB DE TAREAS CPA ==================== -->
+    <section class="section" id="tareas">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow gold">Nuevo · Gana dinero por tareas simples</p>
+                <h2 class="section-title">Hub de Tareas CPA</h2>
+                <p class="section-sub">Completa tareas simples desde tu celular y gana CPA real por cada acción. Comparte promociones, mira videos de proveedores, suscríbete a sus canales, lee noticias y visita productos. Cada tarea genera valor para ti y para la comunidad.</p>
+            </div>
+
+            <div class="tareas-grid">
+                <!-- Info -->
+                <div>
+                    <ul class="tareas-list" style="margin-bottom:24px;">
+                        <li><i class="fas fa-circle-check"></i> Gana de $0.10 a $0.25 por cada tarea completada</li>
+                        <li><i class="fas fa-circle-check"></i> También ganas CPA por las tareas de tu red</li>
+                        <li><i class="fas fa-circle-check"></i> Verificación automática — sin trámites</li>
+                        <li><i class="fas fa-circle-check"></i> Se acredita en tu billetera al cierre del mes</li>
+                        <li><i class="fas fa-circle-check"></i> Sistema de 3 strikes contra el fraude</li>
+                    </ul>
+                    <a href="#contacto" class="btn btn-gold">
+                        Ver tareas disponibles <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <!-- Mock panel -->
+                <div class="tareas-panel">
+                    <div class="tareas-panel-head">
+                        <div class="left">
+                            <div class="tareas-panel-icon"><i class="fas fa-mobile-screen"></i></div>
+                            <div>
+                                <p class="tag">Tareas destacadas</p>
+                                <p class="title">Esta semana</p>
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <p class="cpa-lbl">CPA total</p>
+                            <p class="cpa-val">$1.45</p>
+                        </div>
+                    </div>
+
+                    <div class="tareas-item">
+                        <div class="tareas-emoji">📤</div>
+                        <div class="body">
+                            <p class="title">Comparte la promoción 2x1</p>
+                            <p class="prov">Ferretería Pepito</p>
+                        </div>
+                        <span class="reward">+$0.25</span>
+                    </div>
+                    <div class="tareas-item">
+                        <div class="tareas-emoji">▶️</div>
+                        <div class="body">
+                            <p class="title">Mira el video de Reciclarte</p>
+                            <p class="prov">Reciclarte</p>
+                        </div>
+                        <span class="reward">+$0.15</span>
+                    </div>
+                    <div class="tareas-item">
+                        <div class="tareas-emoji">🔔</div>
+                        <div class="body">
+                            <p class="title">Suscríbete al canal de Auki</p>
+                            <p class="prov">Auki</p>
+                        </div>
+                        <span class="reward">+$0.20</span>
+                    </div>
+
+                    <p class="tareas-foot">Ejemplos ilustrativos · Verificación automática al completar</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== RED UNIVERSAL DE 3 NIVELES ==================== -->
+    <section class="section" id="red">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow emerald">Red Universal de 3 Niveles</p>
+                <h2 class="section-title">Todos ganan igual. Todos pueden llegar lejos.</h2>
+                <p class="section-sub">No importa cuándo entras ni cuánto inviertes. Todos ganan el 3% de cada uno de sus 3 niveles. La misma oportunidad para todos.</p>
+            </div>
+
+            <div class="red-grid">
+                <!-- Levels stack -->
+                <div>
+                    <div class="level-card l1">
+                        <div class="level-num l1">N1</div>
+                        <div class="body">
+                            <p class="title">Tu Primer Nivel</p>
+                            <p class="people">10 personas</p>
+                        </div>
+                        <span class="commission">3% de comisión</span>
+                    </div>
+                    <div class="arrow-down"><i class="fas fa-arrow-down"></i></div>
+
+                    <div class="level-card l2">
+                        <div class="level-num l2">N2</div>
+                        <div class="body">
+                            <p class="title">Tu Segundo Nivel</p>
+                            <p class="people">100 personas</p>
+                        </div>
+                        <span class="commission">3% de comisión</span>
+                    </div>
+                    <div class="arrow-down"><i class="fas fa-arrow-down"></i></div>
+
+                    <div class="level-card l3">
+                        <div class="level-num l3">N3</div>
+                        <div class="body">
+                            <p class="title">Tu Tercer Nivel</p>
+                            <p class="people">1.000 personas</p>
+                        </div>
+                        <span class="commission">3% de comisión</span>
+                    </div>
+
+                    <div class="red-highlight">
+                        <div class="red-highlight-icon"><i class="fas fa-coins"></i></div>
+                        <div>
+                            <p class="v">1.110 personas</p>
+                            <p class="l">en tu red completa</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right column: notes -->
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <div class="red-note">
+                        <p>
+                            Con una red completa y un consumo promedio de
+                            <strong>$250 por persona</strong>, el presupuesto de tu red sería
+                            <strong class="text-emerald">$41.700/mes</strong>. De ahí sale el 3% para cada nivel.
+                        </p>
+                    </div>
+                    <div class="red-note purple">
+                        <div class="head">
+                            <i class="fas fa-circle-info"></i>
+                            <p class="title">Presupuesto de comisiones</p>
+                        </div>
+                        <p>
+                            Base <strong>12%</strong> de las ventas de cada red · sube a
+                            <strong>13%</strong>, <strong>14%</strong> o hasta
+                            <strong class="text-gold">15% máximo</strong> si el fondo no alcanza. El sobrante
+                            va a la cartera del fundador (N0).
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== BENEFICIOS EXCLUSIVOS ==================== -->
+    <section class="section" id="beneficios">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow gold">Beneficios Exclusivos</p>
+                <h2 class="section-title">¿Qué ganas siendo parte de DimarClub?</h2>
+                <p class="section-sub">Beneficios reales, no promesas. Cada miembro accede a un ecosistema completo de servicios.</p>
+            </div>
+
+            <div class="beneficios-grid">
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-hand-holding-dollar"></i></div>
+                    <h4>Préstamos con Fondo de Garantía</h4>
+                    <p>Sin importar tu buró de crédito. Capital semilla desde $5.000 con garantía de DimarClub.</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-chart-line"></i></div>
+                    <h4>Inversión al 3% Mensual</h4>
+                    <p>Tu capital se acumula y genera utilidad mensual. Retiro después de 5 años.</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-credit-card"></i></div>
+                    <h4>Línea de Crédito del 75%</h4>
+                    <p>Sobre tus haberes por cobrar. Compra mercancía al por mayor y monta tu propio negocio.</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-truck"></i></div>
+                    <h4>Entrega a Domicilio Gratis</h4>
+                    <p>En todas tus compras del marketplace. Fuerza Delta entrega por ti.</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-wrench"></i></div>
+                    <h4>Servicios Técnicos Gratis</h4>
+                    <p>Electricidad, mecánica, sanitarios, computadoras. Solo mano de obra, tú pones los materiales.</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-truck-medical"></i></div>
+                    <h4>Ambulancia Gratis</h4>
+                    <p>Emergencias dentro de la ciudad. También auxilio mecánico y grúa para tu auto.</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-leaf"></i></div>
+                    <h4>Medicina Ancestral</h4>
+                    <p>Consultas gratuitas con terapeutas de medicina ancestral. Sin químicos, con enfoque natural.</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-graduation-cap"></i></div>
+                    <h4>Capacitación Ser-Hacer-Tener</h4>
+                    <p>Reingeniería interior y formación técnica. Aprende a gestionar tu dinero y tu vida.</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-briefcase"></i></div>
+                    <h4>Oportunidades de Trabajo</h4>
+                    <p>Cargos administrativos y operativos según tu preparación y experiencia.</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-gift"></i></div>
+                    <h4>Fundas Numeradas con Descuentos</h4>
+                    <p>Las fundas Publibags van numeradas y reemplazan a los cupones tradicionales. Descuentos exclusivos para miembros.</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-users"></i></div>
+                    <h4>Reuniones Semanales</h4>
+                    <p>Sábados 10 AM. Presentaciones de negocio, capacitación y comunidad.</p>
+                </div>
+                <div class="beneficio-card">
+                    <div class="beneficio-icon"><i class="fas fa-building"></i></div>
+                    <h4>Coworking</h4>
+                    <p>$150/mes con salón de eventos incluido. Servicios básicos, café y 10 horas de salón.</p>
+                </div>
+                <div class="beneficio-card destacado">
+                    <div class="beneficio-icon"><i class="fas fa-bullseye"></i></div>
+                    <h4>Hub de Tareas CPA <span class="tag">Destacado</span></h4>
+                    <p>Gana CPA real completando tareas simples: comparte, mira videos, suscríbete, visita productos. También ganas por las tareas de tu red.</p>
+                </div>
+            </div>
+
+            <div style="text-align:center; margin-top:32px;">
+                <a href="#contacto" class="btn btn-gold" style="padding:12px 24px;">
+                    Ver Planes <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== RANGOS DE SOCIOS OPERATIVOS ==================== -->
+    <section class="section" id="rangos">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow gold">Rangos de Socios Operativos</p>
+                <h2 class="section-title">5 rangos. Una sola meta: crecer juntos.</h2>
+                <p class="section-sub">Los socios operativos invierten desde $300 y ganan un bono adicional sobre las ventas de su red. A mayor rango, mayor bono. Todos ganan además el 3% de su red de 3 niveles.</p>
+            </div>
+
+            <div class="rangos-grid">
+                <div class="rango-card r1">
+                    <div class="rango-emoji">🔥</div>
+                    <div style="margin-top:12px;">
+                        <p class="lbl">Rango</p>
+                        <h3>Fénix</h3>
+                    </div>
+                    <p class="price">$300</p>
+                    <p class="price-l">inversión mensual</p>
+                    <div class="bono">+0.2% de bono</div>
+                    <p class="desc">El punto de entrada. Inversión mínima, misma oportunidad.</p>
+                </div>
+                <div class="rango-card r2">
+                    <div class="rango-emoji">⚡</div>
+                    <div style="margin-top:12px;">
+                        <p class="lbl">Rango</p>
+                        <h3>Delta</h3>
+                    </div>
+                    <p class="price">$600</p>
+                    <p class="price-l">inversión mensual</p>
+                    <div class="bono">+0.3% de bono</div>
+                    <p class="desc">Para quienes quieren crecer más rápido.</p>
+                </div>
+                <div class="rango-card r3">
+                    <div class="rango-emoji">💎</div>
+                    <div style="margin-top:12px;">
+                        <p class="lbl">Rango</p>
+                        <h3>Omega</h3>
+                    </div>
+                    <p class="price">$900</p>
+                    <p class="price-l">inversión mensual</p>
+                    <div class="bono">+0.4% de bono</div>
+                    <p class="desc">Mayor inversión, mayor retorno mensual.</p>
+                </div>
+                <div class="rango-card r4">
+                    <div class="rango-emoji">👑</div>
+                    <div style="margin-top:12px;">
+                        <p class="lbl">Rango</p>
+                        <h3>Sigma</h3>
+                    </div>
+                    <p class="price">$1.200</p>
+                    <p class="price-l">inversión mensual</p>
+                    <div class="bono">+0.5% de bono</div>
+                    <p class="desc">Para líderes que quieren construir patrimonio.</p>
+                </div>
+                <div class="rango-card r5">
+                    <div class="rango-emoji">🏆</div>
+                    <div style="margin-top:12px;">
+                        <p class="lbl">Rango</p>
+                        <h3>Alpha</h3>
+                    </div>
+                    <p class="price">$1.500</p>
+                    <p class="price-l">inversión mensual</p>
+                    <div class="bono">+0.6% de bono</div>
+                    <p class="desc">El rango más alto. Máximo retorno y liderazgo.</p>
+                </div>
+            </div>
+
+            <div class="rango-info">
+                <i class="fas fa-circle-info"></i>
+                <p>
+                    <strong>Todos los socios</strong> ganan el
+                    <strong class="text-emerald">3% de su Red Universal de 3 Niveles</strong>, más el
+                    <strong class="text-emerald">3% de su inversión mensual</strong>, más el
+                    <strong class="text-gold">bono según su rango</strong>, más el
+                    <strong class="text-purple">CPA de las tareas completadas</strong>.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== SISTEMA DE 6 FRASCOS ==================== -->
+    <section class="section" id="frascos">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow purple">Sistema de 6 Frascos</p>
+                <h2 class="section-title">Tu dinero, organizado y trabajando para ti</h2>
+                <p class="section-sub">Cada vez que cobras, tu dinero se divide automáticamente en 6 frascos. Tú decides los porcentajes. Nosotros te ayudamos a organizarte.</p>
+            </div>
+
+            <div class="frascos-grid">
+                <div class="frasco-card">
+                    <div class="frasco-icon" style="background:rgba(0,212,170,0.13); color:var(--emerald);">
+                        <i class="fas fa-house"></i>
+                    </div>
+                    <p class="pct" style="color:var(--emerald);">50%</p>
+                    <p class="l">Necesidades</p>
+                </div>
+                <div class="frasco-card">
+                    <div class="frasco-icon" style="background:rgba(245,166,35,0.13); color:var(--gold);">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <p class="pct" style="color:var(--gold);">10%</p>
+                    <p class="l">Libertad Financiera</p>
+                </div>
+                <div class="frasco-card">
+                    <div class="frasco-icon" style="background:rgba(168,85,247,0.13); color:var(--purple);">
+                        <i class="fas fa-piggy-bank"></i>
+                    </div>
+                    <p class="pct" style="color:var(--purple);">10%</p>
+                    <p class="l">Ahorro</p>
+                </div>
+                <div class="frasco-card">
+                    <div class="frasco-icon" style="background:rgba(244,63,94,0.13); color:var(--rose);">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <p class="pct" style="color:var(--rose);">10%</p>
+                    <p class="l">Educación</p>
+                </div>
+                <div class="frasco-card">
+                    <div class="frasco-icon" style="background:rgba(245,158,11,0.13); color:var(--amber);">
+                        <i class="fas fa-face-smile"></i>
+                    </div>
+                    <p class="pct" style="color:var(--amber);">10%</p>
+                    <p class="l">Ocio</p>
+                </div>
+                <div class="frasco-card">
+                    <div class="frasco-icon" style="background:rgba(0,212,170,0.13); color:var(--emerald);">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <p class="pct" style="color:var(--emerald);">10%</p>
+                    <p class="l">Donaciones</p>
+                </div>
+            </div>
+
+            <div class="frasco-info">
+                <i class="fas fa-sparkles"></i>
+                <p>
+                    Basado en el sistema de frascos de <strong>T. Harv Eker</strong>.
+                    Educación financiera real para todos nuestros miembros.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== STATS ==================== -->
+    <section class="section" id="stats">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow emerald">DimarClub en números</p>
+                <h2 class="section-title">Lo que estamos construyendo juntos</h2>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:rgba(0,212,170,0.13); color:var(--emerald);">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <p class="v" style="color:var(--emerald);">1.110</p>
+                    <p class="l">Miembros por red completa</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:rgba(168,85,247,0.13); color:var(--purple);">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <p class="v" style="color:var(--purple);">3</p>
+                    <p class="l">Niveles de red</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:rgba(245,166,35,0.13); color:var(--gold);">
+                        <i class="fas fa-percent"></i>
+                    </div>
+                    <p class="v" style="color:var(--gold);">3%</p>
+                    <p class="l">Por nivel</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:rgba(0,212,170,0.13); color:var(--emerald);">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <p class="v" style="color:var(--emerald);">3%</p>
+                    <p class="l">Por inversión mensual</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:rgba(168,85,247,0.13); color:var(--purple);">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <p class="v" style="color:var(--purple);">75%</p>
+                    <p class="l">Línea de crédito</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:rgba(245,166,35,0.13); color:var(--gold);">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                    <p class="v" style="color:var(--gold);">$0.10+</p>
+                    <p class="l">Por tarea CPA</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CTA + CONTACTO ==================== -->
+    <section class="cta-section" id="contacto">
+        <div class="cta-glow"></div>
+        <div class="container">
+            <div class="cta-card">
+                <h2>¿Listo para ser parte de <span class="accent">DimarClub</span>?</h2>
+                <p>Únete a la comunidad donde todos ganan. Construye tu red, emprende y crece con nosotros.</p>
+                <div class="cta-actions">
+                    <a href="#contacto" class="btn btn-gold" style="padding:14px 24px; font-weight:700;">
+                        Ver Planes <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <a href="https://wa.me/593992689844" target="_blank" rel="noopener" class="btn btn-emerald" style="padding:14px 24px; font-weight:700;">
+                        <i class="fas fa-phone"></i> Hablar por WhatsApp
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>ImpulsePymes360</h4>
+                    <ul>
+                        <li>Marketplace</li>
+                        <li>DimarClub</li>
+                        <li>PubliBags</li>
+                        <li>Fuerza Delta</li>
+                        <li>Planes</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Ecosistema</h4>
+                    <ul>
+                        <li>Socios</li>
+                        <li>Proveedores</li>
+                        <li>Mensajería B2B</li>
+                        <li>CRM</li>
+                        <li>Email Marketing</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Más servicios</h4>
+                    <ul>
+                        <li>Cooperativa</li>
+                        <li>Incubadora</li>
+                        <li>Hub de Tareas CPA</li>
+                        <li>Coworking</li>
+                        <li>Afiliados</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contacto</h4>
+                    <ul>
+                        <li>+593 99 268 9844</li>
+                        <li>info@impulsepymes360.com</li>
+                        <li>impulsepymes360.com</li>
+                        <li>Guayaquil, Ecuador</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li>Términos</li>
+                        <li>Privacidad</li>
+                        <li>Política de devoluciones</li>
+                        <li>PQRS</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span class="brand" style="font-size:18px;">
+                        <i class="fas fa-users"></i>
+                        Dimar<span class="accent">Club</span>
+                    </span>
+                    <span style="font-size:12px; color:var(--muted);">· por ImpulsePymes360</span>
+                </div>
+                <div class="footer-social">
+                    <a href="#">FB</a>
+                    <a href="#">IG</a>
+                    <a href="#">WA</a>
+                    <a href="#">YT</a>
+                </div>
+                <p class="footer-copy">© 2026 ImpulsePymes360 · Todos los derechos reservados</p>
+            </div>
+
+            <div class="footer-back">
+                <a href="#top" class="btn btn-outline" style="font-size:14px; padding:8px 16px;">
+                    <i class="fas fa-arrow-left"></i> Volver al portal
+                </a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

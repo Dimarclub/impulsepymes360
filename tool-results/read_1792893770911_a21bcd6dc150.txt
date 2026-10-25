@@ -1,0 +1,1183 @@
+     1→'use client'
+     2→
+     3→import { useEffect, useState } from 'react'
+     4→import {
+     5→  CreditCard,
+     6→  Check,
+     7→  Phone,
+     8→  Mail,
+     9→  Globe,
+    10→  Sparkles,
+    11→  ArrowRight,
+    12→  Star,
+    13→  Package,
+    14→  Truck,
+    15→  ShoppingBag,
+    16→  MapPin,
+    17→  Users,
+    18→  Palette,
+    19→  ChevronRight,
+    20→  Menu,
+    21→  X,
+    22→} from 'lucide-react'
+    23→import { useAppStore } from '@/lib/store'
+    24→
+    25→// ---------- Datos ----------
+    26→interface Plan {
+    27→  id: string
+    28→  name: string
+    29→  price: number
+    30→  pages: number
+    31→  emails: number
+    32→  products: number
+    33→  sobres: number
+    34→  qr: number
+    35→  qrProd: number
+    36→  popular: boolean
+    37→}
+    38→
+    39→interface Addon {
+    40→  id: string
+    41→  name: string
+    42→  price: number
+    43→  unit: string
+    44→  icon: 'package' | 'truck' | 'mapPin'
+    45→}
+    46→
+    47→const PLANS: Plan[] = [
+    48→  { id: 'basico', name: 'Básico', price: 122, pages: 3, emails: 1, products: 5, sobres: 11, qr: 2, qrProd: 1, popular: false },
+    49→  { id: 'emprendedor', name: 'Emprendedor', price: 253, pages: 5, emails: 3, products: 15, sobres: 25, qr: 3, qrProd: 2, popular: false },
+    50→  { id: 'comercial', name: 'Comercial', price: 363, pages: 7, emails: 5, products: 25, sobres: 35, qr: 4, qrProd: 3, popular: true },
+    51→  { id: 'premium', name: 'Premium', price: 478, pages: 10, emails: 7, products: 35, sobres: 45, qr: 5, qrProd: 4, popular: false },
+    52→  { id: 'elite', name: 'Élite', price: 592, pages: 12, emails: 10, products: 45, sobres: 56, qr: 5, qrProd: 4, popular: false },
+    53→  { id: 'corporativo', name: 'Corporativo', price: 736, pages: 15, emails: 15, products: 60, sobres: 66, qr: 6, qrProd: 5, popular: false },
+    54→]
+    55→
+    56→const ADDONS: Addon[] = [
+    57→  { id: 'sobre-individual', name: 'Sobre individual (retiro horario fijo)', price: 2.25, unit: '/ unidad', icon: 'package' },
+    58→  { id: 'entrega-express', name: 'Entrega Express (retiro y entrega inmediata)', price: 4.0, unit: '/ unidad', icon: 'truck' },
+    59→  { id: 'solo-publibags-qr', name: 'Solo espacio PubliBags con QR (sin plan integral)', price: 57.0, unit: '/ mes', icon: 'mapPin' },
+    60→]
+    61→
+    62→const INCLUDED_ALL = [
+    63→  { icon: 'globe', label: 'Dominio propio (.com / .ec)' },
+    64→  { icon: 'users', label: 'Comunidad de consumidores' },
+    65→  { icon: 'mapPin', label: 'Espacio en directorio + álbum coleccionable' },
+    66→] as const
+    67→
+    68→// ---------- Paleta oscura (mismo sistema que PubliBags) ----------
+    69→const C = {
+    70→  bg: '#0B1120',
+    71→  card: '#15203A',
+    72→  card2: '#1A2647',
+    73→  border: '#243352',
+    74→  borderLight: '#2F3F66',
+    75→  emerald: '#00D4AA',
+    76→  emeraldDark: '#00A886',
+    77→  gold: '#F5A623',
+    78→  goldDim: '#B47C18',
+    79→  purple: '#A855F7',
+    80→  text: '#F5F7FB',
+    81→  textDim: '#A9B6CB',
+    82→  muted: '#6B7FA0',
+    83→  success: '#22C55E',
+    84→  rose: '#F43F5E',
+    85→  amber: '#F59E0B',
+    86→}
+    87→
+    88→const WHATSAPP_URL =
+    89→  'https://wa.me/593992689844?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20los%20planes%20de%20ImpulsePymes360'
+    90→const WHATSAPP_DISPLAY = '+593 99 268 9844'
+    91→const EMAIL_DISPLAY = 'info@impulsepymes360.com'
+    92→const WEB_DISPLAY = 'impulsepymes360.com'
+    93→
+    94→// ---------- Helpers ----------
+    95→function scrollTo(id: string) {
+    96→  if (typeof document === 'undefined') return
+    97→  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    98→}
+    99→
+   100→function fmt(n: number) {
+   101→  return n.toLocaleString('es-EC', { minimumFractionDigits: n % 1 === 0 ? 0 : 2, maximumFractionDigits: 2 })
+   102→}
+   103→
+   104→// ---------- Componente principal ----------
+   105→export function PlanesModule() {
+   106→  const setModule = useAppStore((s) => s.setModule)
+   107→  const toast = useAppStore((s) => s.toast)
+   108→  const [mobileNav, setMobileNav] = useState(false)
+   109→
+   110→  // Inyectar Google Fonts (Outfit + DM Sans)
+   111→  useEffect(() => {
+   112→    const id = 'planes-fonts'
+   113→    if (document.getElementById(id)) return
+   114→    const link = document.createElement('link')
+   115→    link.id = id
+   116→    link.rel = 'stylesheet'
+   117→    link.href =
+   118→      'https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap'
+   119→    document.head.appendChild(link)
+   120→  }, [])
+   121→
+   122→  const choosePlan = (plan: Plan) => {
+   123→    toast(`Plan ${plan.name} agregado al carrito — $${fmt(plan.price)}/mes`, 'success')
+   124→    setTimeout(() => setModule('marketplace'), 400)
+   125→  }
+   126→  const chooseAddon = (a: Addon) => {
+   127→    toast(`${a.name} — $${fmt(a.price)}${a.unit}`, 'success')
+   128→    setTimeout(() => setModule('marketplace'), 400)
+   129→  }
+   130→
+   131→  return (
+   132→    <div
+   133→      className="planes-satellite"
+   134→      style={{
+   135→        background: C.bg,
+   136→        color: C.text,
+   137→        minHeight: '100vh',
+   138→        fontFamily: "'DM Sans', system-ui, sans-serif",
+   139→      }}
+   140→    >
+   141→      <Navbar
+   142→        mobileNav={mobileNav}
+   143→        setMobileNav={setMobileNav}
+   144→        onBack={() => setModule('marketplace')}
+   145→      />
+   146→
+   147→      <Hero onSeePlans={() => scrollTo('planes')} onWhats={() => window.open(WHATSAPP_URL, '_blank')} />
+   148→
+   149→      {/* Tabla de comparación (desktop) */}
+   150→      <ComparisonTable onChoose={choosePlan} onAddon={chooseAddon} />
+   151→
+   152→      {/* Tarjetas de plan (mobile) */}
+   153→      <PlanCards onChoose={choosePlan} />
+   154→
+   155→      {/* Todos los planes incluyen */}
+   156→      <IncludedAll />
+   157→
+   158→      {/* Add-ons */}
+   159→      <AddonsSection onChoose={chooseAddon} />
+   160→
+   161→      {/* CTA */}
+   162→      <CtaSection onWhats={() => window.open(WHATSAPP_URL, '_blank')} onSeePlans={() => setModule('marketplace')} />
+   163→
+   164→      {/* Footer */}
+   165→      <Footer onBack={() => setModule('marketplace')} />
+   166→    </div>
+   167→  )
+   168→}
+   169→
+   170→// ===================== NAVBAR =====================
+   171→function Navbar({
+   172→  mobileNav,
+   173→  setMobileNav,
+   174→  onBack,
+   175→}: {
+   176→  mobileNav: boolean
+   177→  setMobileNav: (v: boolean) => void
+   178→  onBack: () => void
+   179→}) {
+   180→  const links = [
+   181→    { href: 'planes', label: 'Planes' },
+   182→    { href: 'incluido', label: 'Incluido' },
+   183→    { href: 'addons', label: 'Add-ons' },
+   184→    { href: 'contacto', label: 'Contacto' },
+   185→  ]
+   186→  return (
+   187→    <header
+   188→      style={{
+   189→        position: 'sticky',
+   190→        top: 0,
+   191→        zIndex: 50,
+   192→        background: 'rgba(11, 17, 32, 0.92)',
+   193→        backdropFilter: 'blur(10px)',
+   194→        borderBottom: `1px solid ${C.border}`,
+   195→      }}
+   196→    >
+   197→      <div className="max-w-[1280px] mx-auto px-4 h-16 flex items-center justify-between gap-4">
+   198→        <a
+   199→          href="#top"
+   200→          style={{
+   201→            fontFamily: "'Outfit', sans-serif",
+   202→            fontWeight: 800,
+   203→            fontSize: 22,
+   204→            color: C.text,
+   205→            textDecoration: 'none',
+   206→            letterSpacing: -0.5,
+   207→          }}
+   208→        >
+   209→          IMPULSE<span style={{ color: C.gold }}>PYMES</span>360
+   210→        </a>
+   211→
+   212→        <span
+   213→          className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold"
+   214→          style={{ background: `${C.emerald}1A`, color: C.emerald, border: `1px solid ${C.emerald}44` }}
+   215→        >
+   216→          <Sparkles className="size-3" /> Soluciones para crecer
+   217→        </span>
+   218→
+   219→        <nav className="hidden lg:flex items-center gap-1">
+   220→          {links.map((l) => (
+   221→            <button
+   222→              key={l.href}
+   223→              onClick={() => scrollTo(l.href)}
+   224→              style={{
+   225→                color: C.textDim,
+   226→                fontSize: 14,
+   227→                padding: '8px 12px',
+   228→                borderRadius: 6,
+   229→                background: 'transparent',
+   230→                border: 'none',
+   231→                cursor: 'pointer',
+   232→                fontFamily: 'inherit',
+   233→                transition: 'color .15s, background .15s',
+   234→              }}
+   235→              onMouseEnter={(e) => {
+   236→                e.currentTarget.style.color = C.text
+   237→                e.currentTarget.style.background = C.card
+   238→              }}
+   239→              onMouseLeave={(e) => {
+   240→                e.currentTarget.style.color = C.textDim
+   241→                e.currentTarget.style.background = 'transparent'
+   242→              }}
+   243→            >
+   244→              {l.label}
+   245→            </button>
+   246→          ))}
+   247→        </nav>
+   248→
+   249→        <div className="flex items-center gap-2">
+   250→          <a
+   251→            href={WHATSAPP_URL}
+   252→            target="_blank"
+   253→            rel="noopener noreferrer"
+   254→            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-semibold"
+   255→            style={{ background: C.emerald, color: '#062019' }}
+   256→          >
+   257→            <Phone className="size-3.5" />
+   258→            {WHATSAPP_DISPLAY}
+   259→          </a>
+   260→          <button
+   261→            onClick={onBack}
+   262→            className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-semibold"
+   263→            style={{ background: 'transparent', color: C.gold, border: `1px solid ${C.gold}` }}
+   264→          >
+   265→            Volver al portal
+   266→          </button>
+   267→          <button
+   268→            className="lg:hidden p-2 rounded-md"
+   269→            style={{ color: C.text, background: C.card }}
+   270→            onClick={() => setMobileNav(!mobileNav)}
+   271→            aria-label="Menú"
+   272→          >
+   273→            {mobileNav ? <X className="size-5" /> : <Menu className="size-5" />}
+   274→          </button>
+   275→        </div>
+   276→      </div>
+   277→      {mobileNav && (
+   278→        <div className="lg:hidden border-t" style={{ borderColor: C.border, background: C.card }}>
+   279→          <div className="px-4 py-3 space-y-1">
+   280→            {links.map((l) => (
+   281→              <button
+   282→                key={l.href}
+   283→                onClick={() => {
+   284→                  setMobileNav(false)
+   285→                  scrollTo(l.href)
+   286→                }}
+   287→                className="block w-full text-left px-3 py-2 rounded-md text-sm"
+   288→                style={{ color: C.textDim, background: 'transparent', border: 'none', cursor: 'pointer' }}
+   289→              >
+   290→                {l.label}
+   291→              </button>
+   292→            ))}
+   293→            <a
+   294→              href={WHATSAPP_URL}
+   295→              target="_blank"
+   296→              rel="noopener noreferrer"
+   297→              className="block px-3 py-2 rounded-md text-sm font-semibold"
+   298→              style={{ color: C.emerald }}
+   299→            >
+   300→              WhatsApp: {WHATSAPP_DISPLAY}
+   301→            </a>
+   302→            <button
+   303→              onClick={() => {
+   304→                setMobileNav(false)
+   305→                onBack()
+   306→              }}
+   307→              className="block w-full text-left px-3 py-2 rounded-md text-sm font-semibold"
+   308→              style={{ color: C.gold, background: 'transparent', border: 'none', cursor: 'pointer' }}
+   309→            >
+   310→              Volver al portal
+   311→            </button>
+   312→          </div>
+   313→        </div>
+   314→      )}
+   315→    </header>
+   316→  )
+   317→}
+   318→
+   319→// ===================== HERO =====================
+   320→function Hero({ onSeePlans, onWhats }: { onSeePlans: () => void; onWhats: () => void }) {
+   321→  return (
+   322→    <section id="top" style={{ position: 'relative', overflow: 'hidden', padding: '64px 0 80px' }}>
+   323→      <div
+   324→        style={{
+   325→          position: 'absolute',
+   326→          top: -120,
+   327→          left: '50%',
+   328→          transform: 'translateX(-50%)',
+   329→          width: 720,
+   330→          height: 720,
+   331→          borderRadius: '50%',
+   332→          background: `radial-gradient(circle, ${C.gold}1A 0%, ${C.emerald}11 35%, transparent 70%)`,
+   333→          pointerEvents: 'none',
+   334→        }}
+   335→      />
+   336→      <div className="max-w-[1100px] mx-auto px-4 relative text-center">
+   337→        <div
+   338→          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-6"
+   339→          style={{ background: `${C.gold}1A`, color: C.gold, border: `1px solid ${C.gold}55` }}
+   340→        >
+   341→          <CreditCard className="size-3.5" /> Planes integrales · Ecuador
+   342→        </div>
+   343→        <h1
+   344→          style={{
+   345→            fontFamily: "'Outfit', sans-serif",
+   346→            fontWeight: 800,
+   347→            fontSize: 'clamp(34px, 5.5vw, 60px)',
+   348→            lineHeight: 1.05,
+   349→            letterSpacing: -1,
+   350→            color: C.text,
+   351→            margin: 0,
+   352→          }}
+   353→        >
+   354→          Planes para <span style={{ color: C.gold }}>impulsar</span> tu negocio
+   355→        </h1>
+   356→        <p
+   357→          style={{
+   358→            color: C.textDim,
+   359→            fontSize: 17,
+   360→            marginTop: 22,
+   361→            lineHeight: 1.55,
+   362→            maxWidth: 720,
+   363→            marginLeft: 'auto',
+   364→            marginRight: 'auto',
+   365→          }}
+   366→        >
+   367→          Un ecosistema omnicanal para multiplicar tu presencia, tus ventas y tu comunidad de consumidores.
+   368→          Sitio web, marketplace, emails, sobres Fuerza Delta y espacios PubliBags con QR en un solo plan.
+   369→        </p>
+   370→
+   371→        {/* Métricas rápidas */}
+   372→        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-9 max-w-[760px] mx-auto">
+   373→          {[
+   374→            { k: '6', v: 'planes integrales', color: C.gold },
+   375→            { k: '3', v: 'add-ons premium', color: C.emerald },
+   376→            { k: '$122', v: 'plan desde /mes', color: C.text },
+   377→            { k: '5×5cm', v: 'QR en funda PubliBags', color: C.purple },
+   378→          ].map((m) => (
+   379→            <div
+   380→              key={m.v}
+   381→              className="px-3 py-4 rounded-xl"
+   382→              style={{ background: C.card, border: `1px solid ${C.border}` }}
+   383→            >
+   384→              <div
+   385→                style={{
+   386→                  fontFamily: "'Outfit', sans-serif",
+   387→                  fontWeight: 800,
+   388→                  fontSize: 24,
+   389→                  color: m.color,
+   390→                  lineHeight: 1,
+   391→                }}
+   392→              >
+   393→                {m.k}
+   394→              </div>
+   395→              <div style={{ fontSize: 12, color: C.muted, marginTop: 6 }}>{m.v}</div>
+   396→            </div>
+   397→          ))}
+   398→        </div>
+   399→
+   400→        <div className="flex flex-wrap gap-3 mt-9 justify-center">
+   401→          <button
+   402→            onClick={onSeePlans}
+   403→            className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-semibold text-sm"
+   404→            style={{ background: C.gold, color: '#241600' }}
+   405→          >
+   406→            Ver planes <ArrowRight className="size-4" />
+   407→          </button>
+   408→          <button
+   409→            onClick={onWhats}
+   410→            className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-semibold text-sm"
+   411→            style={{ background: 'transparent', color: C.emerald, border: `1px solid ${C.emerald}` }}
+   412→          >
+   413→            <Phone className="size-4" /> WhatsApp
+   414→          </button>
+   415→        </div>
+   416→      </div>
+   417→    </section>
+   418→  )
+   419→}
+   420→
+   421→// ===================== TABLA DE COMPARACIÓN (desktop) =====================
+   422→function ComparisonTable({ onChoose, onAddon }: { onChoose: (p: Plan) => void; onAddon: (a: Addon) => void }) {
+   423→  const rows: { label: string; icon: 'globe' | 'mail' | 'package' | 'shoppingBag' | 'truck' | 'mapPin'; get: (p: Plan) => string }[] = [
+   424→    { label: 'Sitio web (páginas)', icon: 'globe', get: (p) => `${p.pages}` },
+   425→    { label: 'Emails corporativos', icon: 'mail', get: (p) => `${p.emails}` },
+   426→    { label: 'Productos marketplace', icon: 'shoppingBag', get: (p) => `${p.products}` },
+   427→    { label: 'Sobres Fuerza Delta', icon: 'truck', get: (p) => `${p.sobres}` },
+   428→    { label: 'PubliBags — QR', icon: 'mapPin', get: (p) => `${p.qr} QR` },
+   429→    { label: 'PubliBags — Productos', icon: 'package', get: (p) => `${p.qrProd} prod` },
+   430→  ]
+   431→  const iconFor = (k: string, size = 14) => {
+   432→    switch (k) {
+   433→      case 'globe':
+   434→        return <Globe className={`size-${size === 14 ? 3.5 : 4}`} />
+   435→      case 'mail':
+   436→        return <Mail className="size-3.5" />
+   437→      case 'package':
+   438→        return <Package className="size-3.5" />
+   439→      case 'shoppingBag':
+   440→        return <ShoppingBag className="size-3.5" />
+   441→      case 'truck':
+   442→        return <Truck className="size-3.5" />
+   443→      case 'mapPin':
+   444→        return <MapPin className="size-3.5" />
+   445→      default:
+   446→        return null
+   447→    }
+   448→  }
+   449→  return (
+   450→    <section id="planes" style={{ padding: '48px 0 64px' }}>
+   451→      <div className="max-w-[1280px] mx-auto px-4">
+   452→        <SectionHeading
+   453→          eyebrow="Comparativa"
+   454→          title={
+   455→            <>
+   456→              6 planes <span style={{ color: C.gold }}>integrales</span>
+   457→            </>
+   458→          }
+   459→          subtitle="Todos incluyen dominio propio, comunidad de consumidores y espacio en directorio + álbum coleccionable."
+   460→        />
+   461→
+   462→        {/* Add-ons destacados arriba */}
+   463→        <div
+   464→          className="rounded-xl overflow-hidden mb-6"
+   465→          style={{ background: C.card2, border: `1px solid ${C.gold}55` }}
+   466→        >
+   467→          <div
+   468→            style={{
+   469→              padding: '10px 16px',
+   470→              borderBottom: `1px solid ${C.gold}33`,
+   471→              display: 'flex',
+   472→              alignItems: 'center',
+   473→              gap: 8,
+   474→              background: `${C.gold}14`,
+   475→            }}
+   476→          >
+   477→            <Sparkles className="size-4" style={{ color: C.gold }} />
+   478→            <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 14, color: C.gold }}>
+   479→              Servicios adicionales (add-ons)
+   480→            </span>
+   481→          </div>
+   482→          {ADDONS.map((a) => (
+   483→            <div
+   484→              key={a.id}
+   485→              className="grid grid-cols-12 gap-3 items-center px-4 py-3"
+   486→              style={{ borderBottom: `1px solid ${C.border}` }}
+   487→            >
+   488→              <div className="col-span-12 sm:col-span-7 flex items-center gap-3">
+   489→                <div
+   490→                  className="size-9 rounded-lg flex items-center justify-center shrink-0"
+   491→                  style={{ background: `${C.gold}1F`, color: C.gold }}
+   492→                >
+   493→                  {a.icon === 'package' && <Package className="size-4" />}
+   494→                  {a.icon === 'truck' && <Truck className="size-4" />}
+   495→                  {a.icon === 'mapPin' && <MapPin className="size-4" />}
+   496→                </div>
+   497→                <span style={{ fontSize: 14, color: C.text }}>{a.name}</span>
+   498→              </div>
+   499→              <div className="col-span-7 sm:col-span-3">
+   500→                <span
+   501→                  style={{
+   502→                    fontFamily: "'Outfit', sans-serif",
+   503→                    fontWeight: 800,
+   504→                    fontSize: 22,
+   505→                    color: C.gold,
+   506→                  }}
+   507→                >
+   508→                  ${fmt(a.price)}
+   509→                </span>
+   510→                <span style={{ fontSize: 12, color: C.muted, marginLeft: 4 }}>{a.unit}</span>
+   511→              </div>
+   512→              <div className="col-span-5 sm:col-span-2 flex justify-end">
+   513→                <button
+   514→                  onClick={() => onAddon(a)}
+   515→                  className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-xs font-semibold"
+   516→                  style={{ background: C.gold, color: '#241600' }}
+   517→                >
+   518→                  Agregar <ChevronRight className="size-3" />
+   519→                </button>
+   520→              </div>
+   521→            </div>
+   522→          ))}
+   523→        </div>
+   524→
+   525→        {/* Tabla principal — solo desktop */}
+   526→        <div
+   527→          className="hidden lg:block rounded-xl overflow-hidden"
+   528→          style={{ background: C.card, border: `1px solid ${C.border}` }}
+   529→        >
+   530→          {/* Header */}
+   531→          <div className="grid" style={{ gridTemplateColumns: '220px repeat(6, 1fr)' }}>
+   532→            <div
+   533→              style={{
+   534→                padding: '18px 16px',
+   535→                borderBottom: `1px solid ${C.border}`,
+   536→                background: C.card2,
+   537→              }}
+   538→            >
+   539→              <div
+   540→                style={{
+   541→                  fontFamily: "'Outfit', sans-serif",
+   542→                  fontWeight: 700,
+   543→                  fontSize: 14,
+   544→                  color: C.textDim,
+   545→                }}
+   546→              >
+   547→                Característica
+   548→              </div>
+   549→              <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>Comparativa de planes</div>
+   550→            </div>
+   551→            {PLANS.map((p) => (
+   552→              <div
+   553→                key={p.id}
+   554→                style={{
+   555→                  padding: '18px 14px',
+   556→                  borderBottom: `1px solid ${C.border}`,
+   557→                  borderLeft: `1px solid ${C.border}`,
+   558→                  background: p.popular ? `${C.gold}10` : 'transparent',
+   559→                  position: 'relative',
+   560→                }}
+   561→              >
+   562→                {p.popular && (
+   563→                  <div
+   564→                    style={{
+   565→                      position: 'absolute',
+   566→                      top: 0,
+   567→                      left: 0,
+   568→                      right: 0,
+   569→                      padding: '3px 0',
+   570→                      textAlign: 'center',
+   571→                      fontSize: 10,
+   572→                      fontWeight: 700,
+   573→                      letterSpacing: 0.5,
+   574→                      background: C.gold,
+   575→                      color: '#241600',
+   576→                      textTransform: 'uppercase',
+   577→                    }}
+   578→                  >
+   579→                    ★ Popular
+   580→                  </div>
+   581→                )}
+   582→                <div
+   583→                  style={{
+   584→                    fontFamily: "'Outfit', sans-serif",
+   585→                    fontWeight: 800,
+   586→                    fontSize: 18,
+   587→                    color: p.popular ? C.gold : C.text,
+   588→                    marginTop: p.popular ? 18 : 0,
+   589→                  }}
+   590→                >
+   591→                  {p.name}
+   592→                </div>
+   593→                <div style={{ marginTop: 6 }}>
+   594→                  <span
+   595→                    style={{
+   596→                      fontFamily: "'Outfit', sans-serif",
+   597→                      fontWeight: 800,
+   598→                      fontSize: 26,
+   599→                      color: C.text,
+   600→                    }}
+   601→                  >
+   602→                    ${p.price}
+   603→                  </span>
+   604→                  <span style={{ fontSize: 12, color: C.muted, marginLeft: 4 }}>/mes</span>
+   605→                </div>
+   606→              </div>
+   607→            ))}
+   608→          </div>
+   609→
+   610→          {/* Filas de características */}
+   611→          {rows.map((row, idx) => (
+   612→            <div className="grid" style={{ gridTemplateColumns: '220px repeat(6, 1fr)' }} key={row.label}>
+   613→              <div
+   614→                style={{
+   615→                  padding: '14px 16px',
+   616→                  borderBottom: idx === rows.length - 1 ? 'none' : `1px solid ${C.border}`,
+   617→                  background: C.card2,
+   618→                  display: 'flex',
+   619→                  alignItems: 'center',
+   620→                  gap: 10,
+   621→                  color: C.textDim,
+   622→                  fontSize: 13,
+   623→                  fontWeight: 500,
+   624→                }}
+   625→              >
+   626→                <span style={{ color: C.emerald }}>{iconFor(row.icon)}</span>
+   627→                {row.label}
+   628→              </div>
+   629→              {PLANS.map((p, pi) => (
+   630→                <div
+   631→                  key={p.id}
+   632→                  style={{
+   633→                    padding: '14px 12px',
+   634→                    borderBottom: idx === rows.length - 1 ? 'none' : `1px solid ${C.border}`,
+   635→                    borderLeft: `1px solid ${C.border}`,
+   636→                    background: p.popular ? `${C.gold}08` : 'transparent',
+   637→                    textAlign: 'center',
+   638→                    fontFamily: "'Outfit', sans-serif",
+   639→                    fontWeight: 700,
+   640→                    fontSize: 16,
+   641→                    color: p.popular ? C.gold : C.text,
+   642→                  }}
+   643→                >
+   644→                  {row.get(p)}
+   645→                </div>
+   646→              ))}
+   647→            </div>
+   648→          ))}
+   649→
+   650→          {/* Fila CTA */}
+   651→          <div className="grid" style={{ gridTemplateColumns: '220px repeat(6, 1fr)' }}>
+   652→            <div
+   653→              style={{
+   654→                padding: '16px',
+   655→                background: C.card2,
+   656→                color: C.muted,
+   657→                fontSize: 12,
+   658→              }}
+   659→            >
+   660→              Elegir plan
+   661→            </div>
+   662→            {PLANS.map((p) => (
+   663→              <div
+   664→                key={p.id}
+   665→                style={{
+   666→                  padding: '14px 12px',
+   667→                  borderLeft: `1px solid ${C.border}`,
+   668→                  background: p.popular ? `${C.gold}10` : 'transparent',
+   669→                  textAlign: 'center',
+   670→                }}
+   671→              >
+   672→                <button
+   673→                  onClick={() => onChoose(p)}
+   674→                  className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-xs font-bold w-full justify-center"
+   675→                  style={{
+   676→                    background: p.popular ? C.gold : C.emerald,
+   677→                    color: p.popular ? '#241600' : '#062019',
+   678→                  }}
+   679→                >
+   680→                  Elegir <ArrowRight className="size-3" />
+   681→                </button>
+   682→              </div>
+   683→            ))}
+   684→          </div>
+   685→        </div>
+   686→      </div>
+   687→    </section>
+   688→  )
+   689→}
+   690→
+   691→// ===================== TARJETAS DE PLAN (mobile) =====================
+   692→function PlanCards({ onChoose }: { onChoose: (p: Plan) => void }) {
+   693→  return (
+   694→    <section className="lg:hidden" style={{ padding: '8px 0 48px' }}>
+   695→      <div className="max-w-[1280px] mx-auto px-4">
+   696→        <div className="grid sm:grid-cols-2 gap-4">
+   697→          {PLANS.map((p) => (
+   698→            <div
+   699→              key={p.id}
+   700→              className="rounded-xl overflow-hidden"
+   701→              style={{
+   702→                background: C.card,
+   703→                border: `1px solid ${p.popular ? C.gold : C.border}`,
+   704→                position: 'relative',
+   705→              }}
+   706→            >
+   707→              {p.popular && (
+   708→                <div
+   709→                  style={{
+   710→                    padding: '5px 0',
+   711→                    textAlign: 'center',
+   712→                    fontSize: 10,
+   713→                    fontWeight: 700,
+   714→                    letterSpacing: 0.5,
+   715→                    background: C.gold,
+   716→                    color: '#241600',
+   717→                    textTransform: 'uppercase',
+   718→                  }}
+   719→                >
+   720→                  ★ Popular
+   721→                </div>
+   722→              )}
+   723→              <div className="p-5">
+   724→                <div className="flex items-baseline justify-between mb-1">
+   725→                  <h3
+   726→                    style={{
+   727→                      fontFamily: "'Outfit', sans-serif",
+   728→                      fontWeight: 800,
+   729→                      fontSize: 20,
+   730→                      color: p.popular ? C.gold : C.text,
+   731→                      margin: 0,
+   732→                    }}
+   733→                  >
+   734→                    {p.name}
+   735→                  </h3>
+   736→                  {p.popular && <Star className="size-4" style={{ color: C.gold, fill: C.gold }} />}
+   737→                </div>
+   738→                <div className="mb-4">
+   739→                  <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 30, color: C.text }}>
+   740→                    ${p.price}
+   741→                  </span>
+   742→                  <span style={{ fontSize: 13, color: C.muted, marginLeft: 4 }}>/mes</span>
+   743→                </div>
+   744→
+   745→                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 16px' }}>
+   746→                  <FeatureRow icon="globe" label="Sitio web" value={`${p.pages} páginas`} />
+   747→                  <FeatureRow icon="mail" label="Emails" value={`${p.emails}`} />
+   748→                  <FeatureRow icon="shoppingBag" label="Marketplace" value={`${p.products} productos`} />
+   749→                  <FeatureRow icon="truck" label="Sobres Fuerza Delta" value={`${p.sobres}`} />
+   750→                  <FeatureRow icon="mapPin" label="PubliBags" value={`${p.qr} QR + ${p.qrProd} prod`} />
+   751→                  <FeatureRow icon="check" label="Dominio + comunidad" value="Incluido" />
+   752→                </ul>
+   753→
+   754→                <button
+   755→                  onClick={() => onChoose(p)}
+   756→                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-md text-sm font-bold w-full"
+   757→                  style={{
+   758→                    background: p.popular ? C.gold : C.emerald,
+   759→                    color: p.popular ? '#241600' : '#062019',
+   760→                  }}
+   761→                >
+   762→                  Elegir plan <ArrowRight className="size-4" />
+   763→                </button>
+   764→              </div>
+   765→            </div>
+   766→          ))}
+   767→        </div>
+   768→      </div>
+   769→    </section>
+   770→  )
+   771→}
+   772→
+   773→function FeatureRow({
+   774→  icon,
+   775→  label,
+   776→  value,
+   777→}: {
+   778→  icon: string
+   779→  label: string
+   780→  value: string
+   781→}) {
+   782→  const iconEl =
+   783→    icon === 'globe' ? (
+   784→      <Globe className="size-3.5" />
+   785→    ) : icon === 'mail' ? (
+   786→      <Mail className="size-3.5" />
+   787→    ) : icon === 'shoppingBag' ? (
+   788→      <ShoppingBag className="size-3.5" />
+   789→    ) : icon === 'truck' ? (
+   790→      <Truck className="size-3.5" />
+   791→    ) : icon === 'mapPin' ? (
+   792→      <MapPin className="size-3.5" />
+   793→    ) : (
+   794→      <Check className="size-3.5" />
+   795→    )
+   796→  return (
+   797→    <li
+   798→      style={{
+   799→        display: 'flex',
+   800→        alignItems: 'center',
+   801→        justifyContent: 'space-between',
+   802→        padding: '7px 0',
+   803→        borderBottom: `1px solid ${C.border}`,
+   804→        fontSize: 13,
+   805→      }}
+   806→    >
+   807→      <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: C.textDim }}>
+   808→        <span style={{ color: C.emerald }}>{iconEl}</span>
+   809→        {label}
+   810→      </span>
+   811→      <span style={{ color: C.text, fontWeight: 600 }}>{value}</span>
+   812→    </li>
+   813→  )
+   814→}
+   815→
+   816→// ===================== TODOS LOS PLANES INCLUYEN =====================
+   817→function IncludedAll() {
+   818→  const items = [
+   819→    { icon: 'globe', title: 'Dominio propio', desc: 'Tu marca online con .com o .ec incluido en cada plan.' },
+   820→    { icon: 'users', title: 'Comunidad de consumidores', desc: 'Acceso a la red DimarClub con miles de compradores activos.' },
+   821→    { icon: 'palette', title: 'Directorio + álbum', desc: 'Espacio en directorio público y álbum coleccionable digital.' },
+   822→  ]
+   823→  const iconFor = (k: string) => {
+   824→    if (k === 'globe') return <Globe className="size-5" />
+   825→    if (k === 'users') return <Users className="size-5" />
+   826→    return <Palette className="size-5" />
+   827→  }
+   828→  return (
+   829→    <section id="incluido" style={{ padding: '48px 0', background: `${C.card2}55` }}>
+   830→      <div className="max-w-[1100px] mx-auto px-4">
+   831→        <SectionHeading
+   832→          eyebrow="Incluido en todos"
+   833→          title={
+   834→            <>
+   835→              Todo plan trae <span style={{ color: C.emerald }}>esto</span>
+   836→            </>
+   837→          }
+   838→          subtitle="Tres pilares del ecosistema ImpulsePymes360 disponibles desde el plan Básico."
+   839→        />
+   840→        <div className="grid sm:grid-cols-3 gap-4 mt-8">
+   841→          {items.map((it) => (
+   842→            <div
+   843→              key={it.title}
+   844→              className="rounded-xl p-5"
+   845→              style={{ background: C.card, border: `1px solid ${C.border}` }}
+   846→            >
+   847→              <div
+   848→                className="size-10 rounded-lg flex items-center justify-center mb-3"
+   849→                style={{ background: `${C.emerald}1F`, color: C.emerald }}
+   850→              >
+   851→                {iconFor(it.icon)}
+   852→              </div>
+   853→              <h4
+   854→                style={{
+   855→                  fontFamily: "'Outfit', sans-serif",
+   856→                  fontWeight: 700,
+   857→                  fontSize: 16,
+   858→                  color: C.text,
+   859→                  margin: '0 0 6px',
+   860→                }}
+   861→              >
+   862→                {it.title}
+   863→              </h4>
+   864→              <p style={{ fontSize: 13, color: C.textDim, lineHeight: 1.5, margin: 0 }}>{it.desc}</p>
+   865→            </div>
+   866→          ))}
+   867→        </div>
+   868→        <ul
+   869→          className="mt-6 grid sm:grid-cols-2 gap-2 max-w-[820px] mx-auto"
+   870→          style={{ listStyle: 'none', padding: 0 }}
+   871→        >
+   872→          {INCLUDED_ALL.map((it) => (
+   873→            <li
+   874→              key={it.label}
+   875→              className="flex items-center gap-2 px-3 py-2 rounded-md"
+   876→              style={{ background: C.card, border: `1px solid ${C.border}`, fontSize: 13, color: C.textDim }}
+   877→            >
+   878→              <Check className="size-4" style={{ color: C.emerald }} />
+   879→              {it.label}
+   880→            </li>
+   881→          ))}
+   882→        </ul>
+   883→      </div>
+   884→    </section>
+   885→  )
+   886→}
+   887→
+   888→// ===================== ADD-ONS (mobile-friendly) =====================
+   889→function AddonsSection({ onChoose }: { onChoose: (a: Addon) => void }) {
+   890→  return (
+   891→    <section id="addons" style={{ padding: '48px 0' }}>
+   892→      <div className="max-w-[1100px] mx-auto px-4">
+   893→        <SectionHeading
+   894→          eyebrow="Add-ons"
+   895→          title={
+   896→            <>
+   897→              Servicios <span style={{ color: C.gold }}>adicionales</span>
+   898→            </>
+   899→          }
+   900→          subtitle="Complementos unitarios para potenciar tu operación logística y publicitaria."
+   901→        />
+   902→        <div className="grid sm:grid-cols-3 gap-4 mt-8">
+   903→          {ADDONS.map((a) => (
+   904→            <div
+   905→              key={a.id}
+   906→              className="rounded-xl p-5"
+   907→              style={{ background: C.card, border: `1px solid ${C.border}` }}
+   908→            >
+   909→              <div className="flex items-start justify-between mb-3">
+   910→                <div
+   911→                  className="size-10 rounded-lg flex items-center justify-center"
+   912→                  style={{ background: `${C.gold}1F`, color: C.gold }}
+   913→                >
+   914→                  {a.icon === 'package' && <Package className="size-5" />}
+   915→                  {a.icon === 'truck' && <Truck className="size-5" />}
+   916→                  {a.icon === 'mapPin' && <MapPin className="size-5" />}
+   917→                </div>
+   918→                <span
+   919→                  className="text-[11px] font-bold px-2 py-1 rounded"
+   920→                  style={{ background: `${C.gold}1A`, color: C.gold }}
+   921→                >
+   922→                  Add-on
+   923→                </span>
+   924→              </div>
+   925→              <h4
+   926→                style={{
+   927→                  fontFamily: "'Outfit', sans-serif",
+   928→                  fontWeight: 700,
+   929→                  fontSize: 15,
+   930→                  color: C.text,
+   931→                  margin: '0 0 8px',
+   932→                  minHeight: 40,
+   933→                }}
+   934→              >
+   935→                {a.name}
+   936→              </h4>
+   937→              <div className="mb-4">
+   938→                <span style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 24, color: C.gold }}>
+   939→                  ${fmt(a.price)}
+   940→                </span>
+   941→                <span style={{ fontSize: 12, color: C.muted, marginLeft: 4 }}>{a.unit}</span>
+   942→              </div>
+   943→              <button
+   944→                onClick={() => onChoose(a)}
+   945→                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md text-xs font-bold w-full"
+   946→                style={{ background: C.gold, color: '#241600' }}
+   947→              >
+   948→                Agregar <ChevronRight className="size-3" />
+   949→              </button>
+   950→            </div>
+   951→          ))}
+   952→        </div>
+   953→      </div>
+   954→    </section>
+   955→  )
+   956→}
+   957→
+   958→// ===================== CTA =====================
+   959→function CtaSection({ onWhats, onSeePlans }: { onWhats: () => void; onSeePlans: () => void }) {
+   960→  return (
+   961→    <section id="contacto" style={{ padding: '64px 0' }}>
+   962→      <div className="max-w-[920px] mx-auto px-4">
+   963→        <div
+   964→          className="rounded-2xl p-8 sm:p-10 text-center relative overflow-hidden"
+   965→          style={{ background: C.card, border: `1px solid ${C.borderLight}` }}
+   966→        >
+   967→          <div
+   968→            style={{
+   969→              position: 'absolute',
+   970→              top: -120,
+   971→              left: '50%',
+   972→              transform: 'translateX(-50%)',
+   973→              width: 500,
+   974→              height: 500,
+   975→              borderRadius: '50%',
+   976→              background: `radial-gradient(circle, ${C.gold}22 0%, transparent 65%)`,
+   977→              pointerEvents: 'none',
+   978→            }}
+   979→          />
+   980→          <div className="relative">
+   981→            <div
+   982→              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-5"
+   983→              style={{ background: `${C.emerald}1A`, color: C.emerald, border: `1px solid ${C.emerald}55` }}
+   984→            >
+   985→              <Sparkles className="size-3.5" /> Hablemos
+   986→            </div>
+   987→            <h2
+   988→              style={{
+   989→                fontFamily: "'Outfit', sans-serif",
+   990→                fontWeight: 800,
+   991→                fontSize: 'clamp(28px, 4vw, 40px)',
+   992→                color: C.text,
+   993→                margin: '0 0 12px',
+   994→                letterSpacing: -0.5,
+   995→              }}
+   996→            >
+   997→              ¿Listo para <span style={{ color: C.gold }}>crecer</span>?
+   998→            </h2>
+   999→            <p style={{ color: C.textDim, fontSize: 16, maxWidth: 580, margin: '0 auto 28px', lineHeight: 1.55 }}>
+  1000→              Te asesoramos por WhatsApp para elegir el plan ideal según tu rubro y ciudad.
+  1001→              Activación en menos de 24h.
+  1002→            </p>
+  1003→            <div className="flex flex-wrap gap-3 justify-center">
+  1004→              <button
+  1005→                onClick={onWhats}
+  1006→                className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-semibold text-sm"
+  1007→                style={{ background: C.emerald, color: '#062019' }}
+  1008→              >
+  1009→                <Phone className="size-4" /> WhatsApp {WHATSAPP_DISPLAY}
+  1010→              </button>
+  1011→              <a
+  1012→                href={`mailto:${EMAIL_DISPLAY}`}
+  1013→                className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-semibold text-sm"
+  1014→                style={{ background: 'transparent', color: C.gold, border: `1px solid ${C.gold}` }}
+  1015→              >
+  1016→                <Mail className="size-4" /> {EMAIL_DISPLAY}
+  1017→              </a>
+  1018→              <button
+  1019→                onClick={onSeePlans}
+  1020→                className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-semibold text-sm"
+  1021→                style={{ background: 'transparent', color: C.textDim, border: `1px solid ${C.borderLight}` }}
+  1022→              >
+  1023→                Ir al marketplace <ArrowRight className="size-4" />
+  1024→              </button>
+  1025→            </div>
+  1026→          </div>
+  1027→        </div>
+  1028→      </div>
+  1029→    </section>
+  1030→  )
+  1031→}
+  1032→
+  1033→// ===================== FOOTER =====================
+  1034→function Footer({ onBack }: { onBack: () => void }) {
+  1035→  return (
+  1036→    <footer
+  1037→      style={{
+  1038→        borderTop: `1px solid ${C.border}`,
+  1039→        background: C.card2,
+  1040→        padding: '36px 0 28px',
+  1041→        marginTop: 'auto',
+  1042→      }}
+  1043→    >
+  1044→      <div className="max-w-[1280px] mx-auto px-4">
+  1045→        <div className="grid sm:grid-cols-3 gap-6">
+  1046→          <div>
+  1047→            <div
+  1048→              style={{
+  1049→                fontFamily: "'Outfit', sans-serif",
+  1050→                fontWeight: 800,
+  1051→                fontSize: 20,
+  1052→                color: C.text,
+  1053→                marginBottom: 8,
+  1054→              }}
+  1055→            >
+  1056→              IMPULSE<span style={{ color: C.gold }}>PYMES</span>360
+  1057→            </div>
+  1058→            <p style={{ fontSize: 13, color: C.textDim, lineHeight: 1.55, margin: 0, maxWidth: 320 }}>
+  1059→              Ecosistema omnicanal para Pymes en Ecuador: marketplace, sitio web, emails, logística y
+  1060→              publicidad en fundas ecológicas.
+  1061→            </p>
+  1062→          </div>
+  1063→          <div>
+  1064→            <div
+  1065→              style={{
+  1066→                fontFamily: "'Outfit', sans-serif",
+  1067→                fontWeight: 700,
+  1068→                fontSize: 13,
+  1069→                color: C.text,
+  1070→                marginBottom: 10,
+  1071→                textTransform: 'uppercase',
+  1072→                letterSpacing: 0.5,
+  1073→              }}
+  1074→            >
+  1075→              Contacto
+  1076→            </div>
+  1077→            <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: 13, color: C.textDim, lineHeight: 1.8 }}>
+  1078→              <li className="flex items-center gap-2">
+  1079→                <Mail className="size-3.5" style={{ color: C.emerald }} /> {EMAIL_DISPLAY}
+  1080→              </li>
+  1081→              <li className="flex items-center gap-2">
+  1082→                <Phone className="size-3.5" style={{ color: C.emerald }} /> {WHATSAPP_DISPLAY}
+  1083→              </li>
+  1084→              <li className="flex items-center gap-2">
+  1085→                <Globe className="size-3.5" style={{ color: C.emerald }} /> {WEB_DISPLAY}
+  1086→              </li>
+  1087→            </ul>
+  1088→          </div>
+  1089→          <div>
+  1090→            <div
+  1091→              style={{
+  1092→                fontFamily: "'Outfit', sans-serif",
+  1093→                fontWeight: 700,
+  1094→                fontSize: 13,
+  1095→                color: C.text,
+  1096→                marginBottom: 10,
+  1097→                textTransform: 'uppercase',
+  1098→                letterSpacing: 0.5,
+  1099→              }}
+  1100→            >
+  1101→              Explora
+  1102→            </div>
+  1103→            <div className="flex flex-col gap-2">
+  1104→              <button
+  1105→                onClick={onBack}
+  1106→                className="inline-flex items-center gap-1.5 text-sm font-semibold w-fit"
+  1107→                style={{ background: 'transparent', color: C.gold, border: `1px solid ${C.gold}`, padding: '8px 14px', borderRadius: 6, cursor: 'pointer', fontFamily: 'inherit' }}
+  1108→              >
+  1109→                <ArrowRight className="size-4" /> Volver al portal
+  1110→              </button>
+  1111→              <a
+  1112→                href={WHATSAPP_URL}
+  1113→                target="_blank"
+  1114→                rel="noopener noreferrer"
+  1115→                className="inline-flex items-center gap-1.5 text-sm font-semibold w-fit"
+  1116→                style={{ background: C.emerald, color: '#062019', padding: '8px 14px', borderRadius: 6 }}
+  1117→              >
+  1118→                <Phone className="size-4" /> WhatsApp
+  1119→              </a>
+  1120→            </div>
+  1121→          </div>
+  1122→        </div>
+  1123→        <div
+  1124→          style={{
+  1125→            marginTop: 28,
+  1126→            paddingTop: 18,
+  1127→            borderTop: `1px solid ${C.border}`,
+  1128→            display: 'flex',
+  1129→            alignItems: 'center',
+  1130→            justifyContent: 'space-between',
+  1131→            flexWrap: 'wrap',
+  1132→            gap: 10,
+  1133→            fontSize: 12,
+  1134→            color: C.muted,
+  1135→          }}
+  1136→        >
+  1137→          <span>© {new Date().getFullYear()} ImpulsePymes360 · Ecuador</span>
+  1138→          <span>Planes integrales + add-ons · Hecho con 💛 en Guayaquil</span>
+  1139→        </div>
+  1140→      </div>
+  1141→    </footer>
+  1142→  )
+  1143→}
+  1144→
+  1145→// ===================== SECTION HEADING =====================
+  1146→function SectionHeading({
+  1147→  eyebrow,
+  1148→  title,
+  1149→  subtitle,
+  1150→}: {
+  1151→  eyebrow: string
+  1152→  title: React.ReactNode
+  1153→  subtitle?: string
+  1154→}) {
+  1155→  return (
+  1156→    <div className="text-center mb-2">
+  1157→      <div
+  1158→        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold mb-3"
+  1159→        style={{ background: `${C.gold}1A`, color: C.gold, border: `1px solid ${C.gold}33` }}
+  1160→      >
+  1161→        <Sparkles className="size-3" /> {eyebrow}
+  1162→      </div>
+  1163→      <h2
+  1164→        style={{
+  1165→          fontFamily: "'Outfit', sans-serif",
+  1166→          fontWeight: 800,
+  1167→          fontSize: 'clamp(26px, 4vw, 38px)',
+  1168→          color: C.text,
+  1169→          margin: '0 0 10px',
+  1170→          letterSpacing: -0.5,
+  1171→        }}
+  1172→      >
+  1173→        {title}
+  1174→      </h2>
+  1175→      {subtitle && (
+  1176→        <p style={{ color: C.textDim, fontSize: 15, maxWidth: 620, margin: '0 auto', lineHeight: 1.5 }}>
+  1177→          {subtitle}
+  1178→        </p>
+  1179→      )}
+  1180→    </div>
+  1181→  )
+  1182→}
+  1183→

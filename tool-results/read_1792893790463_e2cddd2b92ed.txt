@@ -1,0 +1,977 @@
+     1→'use client'
+     2→
+     3→import { useEffect, useState, useCallback } from 'react'
+     4→import {
+     5→  Card,
+     6→  CardContent,
+     7→  CardHeader,
+     8→  CardTitle,
+     9→  CardDescription,
+    10→  CardFooter,
+    11→} from '@/components/ui/card'
+    12→import { Button } from '@/components/ui/button'
+    13→import { Input } from '@/components/ui/input'
+    14→import { Badge } from '@/components/ui/badge'
+    15→import { Skeleton } from '@/components/ui/skeleton'
+    16→import { Separator } from '@/components/ui/separator'
+    17→import {
+    18→  Tooltip,
+    19→  TooltipContent,
+    20→  TooltipProvider,
+    21→  TooltipTrigger,
+    22→} from '@/components/ui/tooltip'
+    23→import {
+    24→  Store,
+    25→  Users,
+    26→  Truck,
+    27→  Globe,
+    28→  ShoppingBag,
+    29→  LayoutTemplate,
+    30→  Sparkles,
+    31→  BadgeCheck,
+    32→  ExternalLink,
+    33→  QrCode,
+    34→  TrendingUp,
+    35→  Eye,
+    36→  MousePointerClick,
+    37→  MapPin,
+    38→  Phone,
+    39→  Wallet,
+    40→  CreditCard,
+    41→  Calendar,
+    42→  ArrowRight,
+    43→  RefreshCw,
+    44→  PlusCircle,
+    45→  Settings2,
+    46→  Image as ImageIcon,
+    47→  Loader2,
+    48→  LogIn,
+    49→  Package,
+    50→} from 'lucide-react'
+    51→import type { Provider, AdEdition, Plan } from '@/lib/types'
+    52→import { useAppStore } from '@/lib/store'
+    53→
+    54→// ---------- Helpers ----------
+    55→
+    56→const usd = (n: number) => `$${(n || 0).toFixed(2)}`
+    57→
+    58→const fmtDate = (iso?: string | null) => {
+    59→  if (!iso) return '—'
+    60→  try {
+    61→    return new Date(iso).toLocaleDateString('es-EC', { day: '2-digit', month: 'short', year: 'numeric' })
+    62→  } catch {
+    63→    return '—'
+    64→  }
+    65→}
+    66→
+    67→const fmtDateTime = (iso?: string | null) => {
+    68→  if (!iso) return 'Sin escaneos aún'
+    69→  try {
+    70→    return new Date(iso).toLocaleString('es-EC', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+    71→  } catch {
+    72→    return '—'
+    73→  }
+    74→}
+    75→
+    76→const QR_TYPE_LABELS: Record<string, string> = {
+    77→  WEBSITE: 'Sitio Web',
+    78→  PRODUCT: 'Producto',
+    79→  PROMO: 'Promoción',
+    80→  WHATSAPP: 'WhatsApp',
+    81→  EDITION: 'Edición',
+    82→}
+    83→
+    84→const QR_TYPE_COLORS: Record<string, string> = {
+    85→  WEBSITE: 'bg-emerald-100 text-emerald-700',
+    86→  PRODUCT: 'bg-amber-100 text-amber-700',
+    87→  PROMO: 'bg-orange-100 text-orange-700',
+    88→  WHATSAPP: 'bg-green-100 text-green-700',
+    89→  EDITION: 'bg-rose-100 text-rose-700',
+    90→}
+    91→
+    92→const SUB_LABELS: Record<string, string> = {
+    93→  ACTIVE: 'Activa',
+    94→  PAST_DUE: 'Pago pendiente',
+    95→  CANCELLED: 'Cancelada',
+    96→  TRIALING: 'Prueba',
+    97→}
+    98→
+    99→const SUB_COLORS: Record<string, string> = {
+   100→  ACTIVE: 'bg-emerald-100 text-emerald-700',
+   101→  PAST_DUE: 'bg-amber-100 text-amber-700',
+   102→  CANCELLED: 'bg-red-100 text-red-700',
+   103→  TRIALING: 'bg-sky-100 text-sky-700',
+   104→}
+   105→
+   106→// ---------- Elementos ImpulsePymes360 ----------
+   107→
+   108→interface ElementoImpulse {
+   109→  key: string
+   110→  name: string
+   111→  desc: string
+   112→  icon: typeof Store
+   113→  // plan flags
+   114→  flag?: 'hasWebExpress' | 'hasDirectorio' | 'hasLogistica' | 'hasSocial'
+   115→  alwaysActive?: boolean
+   116→}
+   117→
+   118→const ELEMENTOS: ElementoImpulse[] = [
+   119→  {
+   120→    key: 'impulso360',
+   121→    name: 'Impulso360',
+   122→    desc: 'Marketplace B2C con red de afiliados de 3 niveles. Tus productos llegan a miles de compradores.',
+   123→    icon: Store,
+   124→    alwaysActive: true,
+   125→  },
+   126→  {
+   127→    key: 'dimarclub',
+   128→    name: 'Dimarclub',
+   129→    desc: 'Comunidad de afiliados que promocionan tus productos a cambio de comisión por venta.',
+   130→    icon: Users,
+   131→    alwaysActive: true,
+   132→  },
+   133→  {
+   134→    key: 'fuerza-delta',
+   135→    name: 'Fuerza Delta',
+   136→    desc: 'Logística última milla con mensajeros verificados. Entregas same-day en tu ciudad.',
+   137→    icon: Truck,
+   138→    flag: 'hasLogistica',
+   139→  },
+   140→  {
+   141→    key: 'directorio360',
+   142→    name: 'Directorio360',
+   143→    desc: 'Directorio de proveedores verificados con filtros por categoría y ciudad.',
+   144→    icon: Globe,
+   145→    flag: 'hasDirectorio',
+   146→  },
+   147→  {
+   148→    key: 'publibags',
+   149→    name: 'PubliBags',
+   150→    desc: 'Publicidad impresa en bolsas ecológicas distribuidas en supermercados y farmacias.',
+   151→    icon: ShoppingBag,
+   152→    alwaysActive: true,
+   153→  },
+   154→  {
+   155→    key: 'web-express',
+   156→    name: 'Web Express',
+   157→    desc: 'Sitio web profesional listo en minutos con tu propio dominio /w/tu-negocio.',
+   158→    icon: LayoutTemplate,
+   159→    flag: 'hasWebExpress',
+   160→  },
+   161→]
+   162→
+   163→// ---------- Stats card ----------
+   164→
+   165→function StatCard({
+   166→  icon: Icon,
+   167→  label,
+   168→  value,
+   169→  accent = 'emerald',
+   170→}: {
+   171→  icon: typeof Store
+   172→  label: string
+   173→  value: string | number
+   174→  accent?: 'emerald' | 'amber' | 'rose' | 'muted'
+   175→}) {
+   176→  const colors: Record<string, string> = {
+   177→    emerald: 'bg-emerald-100 text-emerald-700',
+   178→    amber: 'bg-amber-100 text-amber-700',
+   179→    rose: 'bg-rose-100 text-rose-700',
+   180→    muted: 'bg-muted text-muted-foreground',
+   181→  }
+   182→  return (
+   183→    <Card className="overflow-hidden">
+   184→      <CardContent className="p-4 flex items-center gap-3">
+   185→        <div className={`grid place-items-center size-10 rounded-lg shrink-0 ${colors[accent]}`}>
+   186→          <Icon className="size-5" />
+   187→        </div>
+   188→        <div className="min-w-0">
+   189→          <div className="text-2xl font-bold text-foreground leading-none truncate">{value}</div>
+   190→          <div className="text-xs text-muted-foreground mt-1 truncate">{label}</div>
+   191→        </div>
+   192→      </CardContent>
+   193→    </Card>
+   194→  )
+   195→}
+   196→
+   197→// ---------- Mini-card del hero (5 elementos) ----------
+   198→
+   199→function MiniElementCard({
+   200→  icon: Icon,
+   201→  name,
+   202→  status,
+   203→  index,
+   204→}: {
+   205→  icon: typeof Store
+   206→  name: string
+   207→  status: 'active' | 'inactive'
+   208→  index: number
+   209→}) {
+   210→  return (
+   211→    <Card
+   212→      className="relative overflow-hidden border-border/60 hover:border-primary/40 hover:shadow-sm transition-all"
+   213→      style={{ animationDelay: `${index * 50}ms` }}
+   214→    >
+   215→      <CardContent className="p-3 sm:p-4 flex flex-col items-center text-center gap-2">
+   216→        <div className={`grid place-items-center size-9 rounded-lg ${
+   217→          status === 'active'
+   218→            ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white'
+   219→            : 'bg-muted text-muted-foreground'
+   220→        }`}>
+   221→          <Icon className="size-4.5" />
+   222→        </div>
+   223→        <div className="text-xs font-semibold text-foreground leading-tight">{name}</div>
+   224→        <Badge
+   225→          variant="secondary"
+   226→          className={`text-[10px] px-1.5 py-0 ${
+   227→            status === 'active'
+   228→              ? 'bg-emerald-100 text-emerald-700'
+   229→              : 'bg-muted text-muted-foreground'
+   230→          }`}
+   231→        >
+   232→          {status === 'active' ? '● Activo' : '○ Inactivo'}
+   233→        </Badge>
+   234→      </CardContent>
+   235→    </Card>
+   236→  )
+   237→}
+   238→
+   239→// ---------- Card de elemento del grid de 6 ----------
+   240→
+   241→function ElementCard({
+   242→  elemento,
+   243→  active,
+   244→}: {
+   245→  elemento: ElementoImpulse
+   246→  active: boolean
+   247→}) {
+   248→  const Icon = elemento.icon
+   249→  return (
+   250→    <Card className={`overflow-hidden transition-all ${active ? 'border-primary/40 bg-primary/[0.03]' : 'opacity-70'}`}>
+   251→      <CardHeader className="pb-3">
+   252→        <div className="flex items-start justify-between gap-2">
+   253→          <div className={`grid place-items-center size-10 rounded-lg ${
+   254→            active
+   255→              ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white'
+   256→              : 'bg-muted text-muted-foreground'
+   257→          }`}>
+   258→            <Icon className="size-5" />
+   259→          </div>
+   260→          <Badge
+   261→            variant="secondary"
+   262→            className={
+   263→              active
+   264→                ? 'bg-emerald-100 text-emerald-700'
+   265→                : 'bg-muted text-muted-foreground'
+   266→            }
+   267→          >
+   268→            {active ? 'Activo' : 'Inactivo'}
+   269→          </Badge>
+   270→        </div>
+   271→        <CardTitle className="text-base mt-2">{elemento.name}</CardTitle>
+   272→        <CardDescription className="text-xs leading-relaxed">{elemento.desc}</CardDescription>
+   273→      </CardHeader>
+   274→    </Card>
+   275→  )
+   276→}
+   277→
+   278→// ---------- Skeletons ----------
+   279→
+   280→function LoadingSkeleton() {
+   281→  return (
+   282→    <div className="space-y-6">
+   283→      <Skeleton className="h-32 w-full rounded-2xl" />
+   284→      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+   285→        {Array.from({ length: 6 }).map((_, i) => (
+   286→          <Skeleton key={i} className="h-28 rounded-xl" />
+   287→        ))}
+   288→      </div>
+   289→      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+   290→        {Array.from({ length: 4 }).map((_, i) => (
+   291→          <Skeleton key={i} className="h-20 rounded-xl" />
+   292→        ))}
+   293→      </div>
+   294→      <div className="grid lg:grid-cols-2 gap-4">
+   295→        <Skeleton className="h-64 rounded-xl" />
+   296→        <Skeleton className="h-64 rounded-xl" />
+   297→      </div>
+   298→    </div>
+   299→  )
+   300→}
+   301→
+   302→// ---------- Empty state: sin proveedor ----------
+   303→
+   304→function NoProviderState() {
+   305→  const setModule = useAppStore((s) => s.setModule)
+   306→  return (
+   307→    <Card className="overflow-hidden border-dashed border-2 border-primary/30 bg-gradient-to-br from-primary/[0.04] to-accent/[0.04]">
+   308→      <CardContent className="p-8 sm:p-12 text-center">
+   309→        <div className="mx-auto grid place-items-center size-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-amber-500 text-white shadow-lg mb-4">
+   310→          <Sparkles className="size-8" />
+   311→        </div>
+   312→        <h3 className="text-xl sm:text-2xl font-bold text-foreground">Aún no tienes un negocio activo</h3>
+   313→        <p className="text-muted-foreground mt-2 max-w-md mx-auto text-sm">
+   314→          Completa el onboarding de ImpulsePymes360 y en menos de 5 minutos tendrás tu
+   315→          proveedor, sitio Web Express, código QR y espacios PubliBags listos.
+   316→        </p>
+   317→        <Button
+   318→          size="lg"
+   319→          className="mt-6 bg-gradient-to-r from-emerald-600 to-amber-600 hover:from-emerald-700 hover:to-amber-700 text-white"
+   320→          onClick={() => setModule('impulse-wizard')}
+   321→        >
+   322→          <PlusCircle className="size-4.5 mr-2" />
+   323→          Comenzar onboarding
+   324→        </Button>
+   325→        <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground">
+   326→          <Badge variant="outline" className="bg-background">6 pasos guiados</Badge>
+   327→          <Badge variant="outline" className="bg-background">5 elementos omnicanal</Badge>
+   328→          <Badge variant="outline" className="bg-background">Pago mensual</Badge>
+   329→        </div>
+   330→      </CardContent>
+   331→    </Card>
+   332→  )
+   333→}
+   334→
+   335→// ---------- No autenticado ----------
+   336→
+   337→function UnauthenticatedState() {
+   338→  return (
+   339→    <Card className="overflow-hidden border-amber-200 bg-amber-50">
+   340→      <CardContent className="p-8 sm:p-12 text-center">
+   341→        <div className="mx-auto grid place-items-center size-14 rounded-full bg-amber-100 text-amber-600 mb-4">
+   342→          <LogIn className="size-6" />
+   343→        </div>
+   344→        <h3 className="text-xl font-bold text-foreground">Inicia sesión para ver tu panel</h3>
+   345→        <p className="text-muted-foreground mt-2 max-w-md mx-auto text-sm">
+   346→          El panel ImpulsePymes360 requiere que inicias sesión con tu cuenta de proveedor.
+   347→          Si aún no tienes cuenta, comienza el onboarding y la crearemos por ti.
+   348→        </p>
+   349→      </CardContent>
+   350→    </Card>
+   351→  )
+   352→}
+   353→
+   354→// ---------- Card de QR ----------
+   355→
+   356→function QRCard({ qr, websiteUrl }: { qr: NonNullable<Provider['qrCodes']>[number]; websiteUrl: string }) {
+   357→  const targetUrl = qr.targetUrl?.startsWith('http')
+   358→    ? qr.targetUrl
+   359→    : `${typeof window !== 'undefined' ? window.location.origin : ''}${qr.targetUrl || websiteUrl}`
+   360→  const qrImg = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(targetUrl)}&size=160x160`
+   361→  return (
+   362→    <Card className="overflow-hidden">
+   363→      <CardContent className="p-4 flex gap-4">
+   364→        <div className="shrink-0">
+   365→          <div className="size-24 rounded-lg bg-white border p-1.5">
+   366→            { }
+   367→            <img src={qrImg} alt={`QR ${qr.code}`} className="size-full object-contain" />
+   368→          </div>
+   369→        </div>
+   370→        <div className="min-w-0 flex-1">
+   371→          <div className="flex items-center gap-2 flex-wrap">
+   372→            <code className="text-sm font-mono font-semibold text-foreground">{qr.code}</code>
+   373→            <Badge className={QR_TYPE_COLORS[qr.type] || 'bg-muted text-muted-foreground'}>
+   374→              {QR_TYPE_LABELS[qr.type] || qr.type}
+   375→            </Badge>
+   376→          </div>
+   377→          <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+   378→            <div>
+   379→              <div className="text-muted-foreground">Escaneos</div>
+   380→              <div className="font-semibold text-foreground flex items-center gap-1">
+   381→                <MousePointerClick className="size-3 text-emerald-600" />
+   382→                {qr.scans}
+   383→              </div>
+   384→            </div>
+   385→            <div>
+   386→              <div className="text-muted-foreground">Únicos</div>
+   387→              <div className="font-semibold text-foreground">{qr.uniqueScans}</div>
+   388→            </div>
+   389→          </div>
+   390→          <div className="mt-2 text-xs text-muted-foreground">
+   391→            Último: {fmtDateTime(qr.lastScanAt)}
+   392→          </div>
+   393→        </div>
+   394→      </CardContent>
+   395→    </Card>
+   396→  )
+   397→}
+   398→
+   399→// ---------- Componente principal ----------
+   400→
+   401→export function ImpulseModule() {
+   402→  const setModule = useAppStore((s) => s.setModule)
+   403→  const toast = useAppStore((s) => s.toast)
+   404→  const [provider, setProvider] = useState<Provider | null | undefined>(undefined) // undefined=loading, null=no hay
+   405→  const [editions, setEditions] = useState<AdEdition[]>([])
+   406→  const [authChecked, setAuthChecked] = useState(false)
+   407→  const [refreshing, setRefreshing] = useState(false)
+   408→
+   409→  const fetchData = useCallback(async (silent = false) => {
+   410→    if (!silent) setRefreshing(true)
+   411→    try {
+   412→      const [meRes, edRes] = await Promise.all([
+   413→        fetch('/api/impulse/me', { cache: 'no-store' }),
+   414→        fetch('/api/impulse/editions', { cache: 'no-store' }),
+   415→      ])
+   416→      if (meRes.status === 401) {
+   417→        setAuthChecked(true)
+   418→        setProvider(null)
+   419→        return
+   420→      }
+   421→      if (meRes.ok) {
+   422→        const me = await meRes.json()
+   423→        setProvider(me || null)
+   424→        setAuthChecked(true)
+   425→      } else {
+   426→        setProvider(null)
+   427→        setAuthChecked(true)
+   428→      }
+   429→      if (edRes.ok) {
+   430→        const eds = await edRes.json()
+   431→        setEditions(Array.isArray(eds) ? eds : [])
+   432→      }
+   433→    } catch {
+   434→      if (!silent) toast('No se pudo cargar el panel', 'error')
+   435→    } finally {
+   436→      setRefreshing(false)
+   437→    }
+   438→  }, [toast])
+   439→
+   440→  useEffect(() => {
+   441→    fetchData()
+   442→  }, [fetchData])
+   443→
+   444→  // Loading inicial
+   445→  if (provider === undefined && !authChecked) {
+   446→    return (
+   447→      <div className="space-y-4">
+   448→        <HeroHeader loading />
+   449→        <LoadingSkeleton />
+   450→      </div>
+   451→    )
+   452→  }
+   453→
+   454→  // No autenticado
+   455→  if (authChecked && provider === null && editions.length === 0) {
+   456→    return (
+   457→      <div className="space-y-4">
+   458→        <HeroHeader loading={false} />
+   459→        <UnauthenticatedState />
+   460→      </div>
+   461→    )
+   462→  }
+   463→
+   464→  // Sin provider pero autenticado (puede ser CLIENT, AFFILIATE, etc.)
+   465→  if (provider === null) {
+   466→    return (
+   467→      <div className="space-y-4">
+   468→        <HeroHeader loading={false} />
+   469→        <NoProviderState />
+   470→      </div>
+   471→    )
+   472→  }
+   473→
+   474→  // Provider activo
+   475→  const plan = provider.subscription?.plan
+   476→  const isActive = (e: ElementoImpulse) =>
+   477→    e.alwaysActive || (e.flag ? Boolean((plan as any)?.[e.flag]) : true)
+   478→
+   479→  const totalQrScans = (provider.qrCodes || []).reduce((sum, q) => sum + (q.scans || 0), 0)
+   480→  const webViews = provider.website?.views || 0
+   481→  const adSpacesCount = (provider.adSpaces || []).length
+   482→
+   483→  return (
+   484→    <div className="space-y-6">
+   485→      {/* Hero header */}
+   486→      <HeroHeader
+   487→        loading={false}
+   488→        onRefresh={() => fetchData(true)}
+   489→        refreshing={refreshing}
+   490→      />
+   491→
+   492→      {/* 5 mini-cards de elementos */}
+   493→      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+   494→        {ELEMENTOS.map((el, i) => (
+   495→          <MiniElementCard
+   496→            key={el.key}
+   497→            icon={el.icon}
+   498→            name={el.name}
+   499→            status={isActive(el) ? 'active' : 'inactive'}
+   500→            index={i}
+   501→          />
+   502→        ))}
+   503→      </div>
+   504→
+   505→      {/* Stats row */}
+   506→      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+   507→        <StatCard icon={Package} label="Productos publicados" value="—" accent="emerald" />
+   508→        <StatCard icon={Eye} label="Vistas Web Express" value={webViews} accent="amber" />
+   509→        <StatCard icon={QrCode} label="Escaneos QR totales" value={totalQrScans} accent="rose" />
+   510→        <StatCard icon={ShoppingBag} label="Espacios PubliBags" value={adSpacesCount} accent="muted" />
+   511→      </div>
+   512→
+   513→      {/* Grid principal: provider + subscription */}
+   514→      <div className="grid lg:grid-cols-2 gap-4">
+   515→        {/* Provider info card */}
+   516→        <Card className="overflow-hidden">
+   517→          <CardHeader className="bg-gradient-to-br from-primary/5 to-accent/5 pb-4">
+   518→            <div className="flex items-start justify-between gap-2">
+   519→              <CardTitle className="text-base flex items-center gap-2">
+   520→                <Store className="size-4 text-emerald-600" />
+   521→                Información del negocio
+   522→              </CardTitle>
+   523→              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setModule('impulse-wizard')}>
+   524→                <Settings2 className="size-3.5 mr-1" />
+   525→                Editar
+   526→              </Button>
+   527→            </div>
+   528→          </CardHeader>
+   529→          <CardContent className="p-4 space-y-4">
+   530→            <div className="flex items-start gap-4">
+   531→              <div className="size-16 rounded-xl bg-muted overflow-hidden shrink-0 border">
+   532→                {provider.logoUrl ? (
+   533→                   
+   534→                  <img src={provider.logoUrl} alt={provider.companyName} className="size-full object-cover" />
+   535→                ) : (
+   536→                  <div className="size-full grid place-items-center text-muted-foreground">
+   537→                    <Store className="size-7" />
+   538→                  </div>
+   539→                )}
+   540→              </div>
+   541→              <div className="min-w-0 flex-1">
+   542→                <div className="flex items-center gap-2 flex-wrap">
+   543→                  <h3 className="text-lg font-bold text-foreground truncate">{provider.companyName}</h3>
+   544→                  {provider.verified && (
+   545→                    <BadgeCheck className="size-4.5 text-emerald-600 shrink-0" />
+   546→                  )}
+   547→                </div>
+   548→                <div className="text-sm text-muted-foreground mt-0.5">
+   549→                  {provider.category || 'Sin categoría'}
+   550→                </div>
+   551→                <div className="mt-2 flex flex-wrap gap-2">
+   552→                  <Badge variant="outline" className="text-xs">
+   553→                    <MapPin className="size-3 mr-1" />
+   554→                    {provider.city || '—'}
+   555→                  </Badge>
+   556→                  <Badge
+   557→                    variant="secondary"
+   558→                    className={
+   559→                      provider.status === 'ACTIVE'
+   560→                        ? 'bg-emerald-100 text-emerald-700'
+   561→                        : 'bg-amber-100 text-amber-700'
+   562→                    }
+   563→                  >
+   564→                    {provider.status === 'ACTIVE' ? 'Activo' : provider.status}
+   565→                  </Badge>
+   566→                </div>
+   567→              </div>
+   568→            </div>
+   569→            <Separator />
+   570→            <div className="grid grid-cols-2 gap-3 text-sm">
+   571→              {provider.phone && (
+   572→                <div className="flex items-center gap-2">
+   573→                  <Phone className="size-3.5 text-muted-foreground shrink-0" />
+   574→                  <span className="text-muted-foreground text-xs">Tel:</span>
+   575→                  <span className="font-medium text-foreground truncate">{provider.phone}</span>
+   576→                </div>
+   577→              )}
+   578→              {provider.taxId && (
+   579→                <div className="flex items-center gap-2">
+   580→                  <CreditCard className="size-3.5 text-muted-foreground shrink-0" />
+   581→                  <span className="text-muted-foreground text-xs">RUC:</span>
+   582→                  <span className="font-medium text-foreground truncate">{provider.taxId}</span>
+   583→                </div>
+   584→              )}
+   585→            </div>
+   586→            {provider.description && (
+   587→              <p className="text-sm text-muted-foreground line-clamp-2">{provider.description}</p>
+   588→            )}
+   589→            <div className="flex items-center gap-2 p-2 rounded-md bg-muted/40">
+   590→              <Globe className="size-4 text-emerald-600 shrink-0" />
+   591→              <code className="text-xs text-foreground truncate flex-1">
+   592→                /w/{provider.websiteSlug}
+   593→              </code>
+   594→              <Button
+   595→                size="sm"
+   596→                variant="ghost"
+   597→                className="h-7 text-xs"
+   598→                onClick={() => window.open(`/w/${provider.websiteSlug}`, '_blank')}
+   599→              >
+   600→                <ExternalLink className="size-3.5" />
+   601→              </Button>
+   602→            </div>
+   603→          </CardContent>
+   604→        </Card>
+   605→
+   606→        {/* Subscription card */}
+   607→        <Card className="overflow-hidden">
+   608→          <CardHeader className="bg-gradient-to-br from-primary/5 to-accent/5 pb-4">
+   609→            <CardTitle className="text-base flex items-center gap-2">
+   610→              <CreditCard className="size-4 text-amber-600" />
+   611→              Suscripción
+   612→            </CardTitle>
+   613→          </CardHeader>
+   614→          <CardContent className="p-4 space-y-4">
+   615→            {plan ? (
+   616→              <>
+   617→                <div className="flex items-start justify-between gap-3">
+   618→                  <div>
+   619→                    <div className="text-2xl font-bold text-foreground">{plan.displayName}</div>
+   620→                    <div className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{plan.description}</div>
+   621→                  </div>
+   622→                  <Badge
+   623→                    variant="secondary"
+   624→                    className={SUB_COLORS[provider.subscription?.status || 'ACTIVE'] || 'bg-muted'}
+   625→                  >
+   626→                    {SUB_LABELS[provider.subscription?.status || 'ACTIVE'] || provider.subscription?.status}
+   627→                  </Badge>
+   628→                </div>
+   629→                <div className="flex items-end gap-1">
+   630→                  <span className="text-3xl font-bold text-foreground">{usd(plan.price)}</span>
+   631→                  <span className="text-sm text-muted-foreground mb-1">/mes</span>
+   632→                </div>
+   633→                <Separator />
+   634→                <div className="grid grid-cols-2 gap-3 text-sm">
+   635→                  <div>
+   636→                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+   637→                      <Calendar className="size-3" /> Próximo cobro
+   638→                    </div>
+   639→                    <div className="font-medium text-foreground mt-0.5">
+   640→                      {fmtDate(provider.subscription?.nextBillingDate)}
+   641→                    </div>
+   642→                  </div>
+   643→                  <div>
+   644→                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+   645→                      <Wallet className="size-3" /> Comisión afiliados
+   646→                    </div>
+   647→                    <div className="font-medium text-foreground mt-0.5">
+   648→                      {provider.affiliateRate}%
+   649→                    </div>
+   650→                  </div>
+   651→                </div>
+   652→                <div className="grid grid-cols-3 gap-2 text-xs text-center">
+   653→                  <div className="rounded-md bg-muted/40 p-2">
+   654→                    <div className="font-semibold text-foreground">{plan.maxProducts}</div>
+   655→                    <div className="text-muted-foreground">Productos</div>
+   656→                  </div>
+   657→                  <div className="rounded-md bg-muted/40 p-2">
+   658→                    <div className="font-semibold text-foreground">{plan.maxAdSpaces}</div>
+   659→                    <div className="text-muted-foreground">PubliBags</div>
+   660→                  </div>
+   661→                  <div className="rounded-md bg-muted/40 p-2">
+   662→                    <div className="font-semibold text-foreground">{plan.maxShipments}</div>
+   663→                    <div className="text-muted-foreground">Envíos/mes</div>
+   664→                  </div>
+   665→                </div>
+   666→              </>
+   667→            ) : (
+   668→              <div className="text-sm text-muted-foreground py-8 text-center">
+   669→                No hay suscripción activa
+   670→              </div>
+   671→            )}
+   672→          </CardContent>
+   673→          <CardFooter className="px-4 pb-4 pt-0">
+   674→            <Button variant="outline" className="w-full" onClick={() => setModule('impulse-wizard')}>
+   675→              <TrendingUp className="size-4 mr-2" />
+   676→              Cambiar plan
+   677→            </Button>
+   678→          </CardFooter>
+   679→        </Card>
+   680→      </div>
+   681→
+   682→      {/* Web Express + QR codes */}
+   683→      <div className="grid lg:grid-cols-2 gap-4">
+   684→        {/* Web Express card */}
+   685→        <Card className="overflow-hidden">
+   686→          <CardHeader className="pb-3">
+   687→            <div className="flex items-start justify-between gap-2">
+   688→              <div>
+   689→                <CardTitle className="text-base flex items-center gap-2">
+   690→                  <LayoutTemplate className="size-4 text-emerald-600" />
+   691→                  Sitio Web Express
+   692→                </CardTitle>
+   693→                <CardDescription className="text-xs">
+   694→                  Tu tienda online lista en minutos
+   695→                </CardDescription>
+   696→              </div>
+   697→              {provider.website && (
+   698→                <Badge className={provider.website.published ? 'bg-emerald-100 text-emerald-700' : 'bg-muted text-muted-foreground'}>
+   699→                  {provider.website.published ? 'Publicado' : 'Borrador'}
+   700→                </Badge>
+   701→              )}
+   702→            </div>
+   703→          </CardHeader>
+   704→          <CardContent className="p-4 pt-0">
+   705→            {provider.website ? (
+   706→              <div className="space-y-3">
+   707→                <div className="flex items-center gap-3">
+   708→                  <div
+   709→                    className="size-12 rounded-lg shrink-0 border"
+   710→                    style={{
+   711→                      background: `linear-gradient(135deg, ${provider.website.primaryColor} 0%, ${provider.website.accentColor} 100%)`,
+   712→                    }}
+   713→                  />
+   714→                  <div className="min-w-0 flex-1">
+   715→                    <div className="font-semibold text-foreground capitalize truncate">
+   716→                      Plantilla {provider.website.template}
+   717→                    </div>
+   718→                    <div className="text-xs text-muted-foreground truncate">
+   719→                      /w/{provider.website.slug}
+   720→                    </div>
+   721→                  </div>
+   722→                </div>
+   723→                {provider.website.heroTitle && (
+   724→                  <div className="text-sm font-medium text-foreground line-clamp-2">
+   725→                    {provider.website.heroTitle}
+   726→                  </div>
+   727→                )}
+   728→                <div className="grid grid-cols-2 gap-2 text-xs">
+   729→                  <div className="rounded-md bg-muted/40 p-2">
+   730→                    <div className="text-muted-foreground flex items-center gap-1">
+   731→                      <Eye className="size-3" /> Vistas
+   732→                    </div>
+   733→                    <div className="font-semibold text-foreground mt-0.5">{provider.website.views}</div>
+   734→                  </div>
+   735→                  <div className="rounded-md bg-muted/40 p-2">
+   736→                    <div className="text-muted-foreground flex items-center gap-1">
+   737→                      <Globe className="size-3" /> URL
+   738→                    </div>
+   739→                    <div className="font-semibold text-foreground mt-0.5 truncate">/w/{provider.website.slug}</div>
+   740→                  </div>
+   741→                </div>
+   742→              </div>
+   743→            ) : (
+   744→              <div className="text-sm text-muted-foreground py-4 text-center">
+   745→                Tu plan no incluye Web Express.
+   746→              </div>
+   747→            )}
+   748→          </CardContent>
+   749→          {provider.website && (
+   750→            <CardFooter className="px-4 pb-4 pt-0 gap-2">
+   751→              <Button
+   752→                variant="outline"
+   753→                className="flex-1"
+   754→                onClick={() => window.open(`/w/${provider.websiteSlug}`, '_blank')}
+   755→              >
+   756→                <ExternalLink className="size-4 mr-1.5" />
+   757→                Ver sitio
+   758→              </Button>
+   759→              <Button
+   760→                variant="default"
+   761→                className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+   762→                onClick={() => setModule('web-express')}
+   763→              >
+   764→                <Settings2 className="size-4 mr-1.5" />
+   765→                Editar
+   766→              </Button>
+   767→            </CardFooter>
+   768→          )}
+   769→        </Card>
+   770→
+   771→        {/* QR Codes card */}
+   772→        <Card className="overflow-hidden">
+   773→          <CardHeader className="pb-3">
+   774→            <CardTitle className="text-base flex items-center gap-2">
+   775→              <QrCode className="size-4 text-amber-600" />
+   776→              Códigos QR
+   777→            </CardTitle>
+   778→            <CardDescription className="text-xs">
+   779→              {(provider.qrCodes || []).length} código(s) activo(s) · {totalQrScans} escaneos totales
+   780→            </CardDescription>
+   781→          </CardHeader>
+   782→          <CardContent className="p-4 pt-0">
+   783→            {(provider.qrCodes || []).length === 0 ? (
+   784→              <div className="text-sm text-muted-foreground py-6 text-center">
+   785→                <QrCode className="size-8 mx-auto opacity-40 mb-2" />
+   786→                No tienes códigos QR todavía.
+   787→              </div>
+   788→            ) : (
+   789→              <div className="space-y-3 max-h-72 overflow-y-auto scroll-thin pr-1">
+   790→                {(provider.qrCodes || []).map((qr) => (
+   791→                  <QRCard key={qr.id} qr={qr} websiteUrl={`/w/${provider.websiteSlug}`} />
+   792→                ))}
+   793→              </div>
+   794→            )}
+   795→          </CardContent>
+   796→        </Card>
+   797→      </div>
+   798→
+   799→      {/* PubliBags spaces card */}
+   800→      <Card className="overflow-hidden">
+   801→        <CardHeader className="pb-3">
+   802→          <div className="flex items-start justify-between gap-2 flex-wrap">
+   803→            <div>
+   804→              <CardTitle className="text-base flex items-center gap-2">
+   805→                <ShoppingBag className="size-4 text-rose-600" />
+   806→                Espacios PubliBags
+   807→              </CardTitle>
+   808→              <CardDescription className="text-xs">
+   809→                {adSpacesCount} espacio(s) comprado(s) en ediciones activas
+   810→              </CardDescription>
+   811→            </div>
+   812→            <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-200">
+   813→              {editions.filter((e) => e.status === 'OPEN').length} edición(es) abierta(s)
+   814→            </Badge>
+   815→          </div>
+   816→        </CardHeader>
+   817→        <CardContent className="p-4 pt-0">
+   818→          {adSpacesCount === 0 ? (
+   819→            <div className="text-sm text-muted-foreground py-6 text-center">
+   820→              <ShoppingBag className="size-8 mx-auto opacity-40 mb-2" />
+   821→              No tienes espacios PubliBags comprados.
+   822→              <Button
+   823→                size="sm"
+   824→                variant="outline"
+   825→                className="ml-2"
+   826→                onClick={() => setModule('impulse-wizard')}
+   827→              >
+   828→                Reservar ahora
+   829→              </Button>
+   830→            </div>
+   831→          ) : (
+   832→            <div className="space-y-3">
+   833→              {(provider.adSpaces || []).map((space) => {
+   834→                const editionName = (space as any).edition?.name || 'Edición'
+   835→                const editionCity = (space as any).edition?.city || ''
+   836→                return (
+   837→                  <div
+   838→                    key={space.id}
+   839→                    className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-muted/30 transition-colors"
+   840→                  >
+   841→                    <div className="grid place-items-center size-10 rounded-lg bg-gradient-to-br from-rose-500 to-amber-500 text-white shrink-0">
+   842→                      <span className="text-xs font-bold">#{space.position}</span>
+   843→                    </div>
+   844→                    <div className="min-w-0 flex-1">
+   845→                      <div className="font-medium text-foreground text-sm truncate">
+   846→                        {editionName} {editionCity && <span className="text-muted-foreground">· {editionCity}</span>}
+   847→                      </div>
+   848→                      <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
+   849→                        <Badge variant="outline" className="text-[10px] py-0">
+   850→                          {space.type === 'QR' ? 'QR' : space.type === 'IMAGE' ? 'Imagen' : space.type}
+   851→                        </Badge>
+   852→                        <span>{usd(space.price)}</span>
+   853→                      </div>
+   854→                    </div>
+   855→                    <Badge
+   856→                      variant="secondary"
+   857→                      className={
+   858→                        space.status === 'SOLD'
+   859→                          ? 'bg-emerald-100 text-emerald-700'
+   860→                          : space.status === 'RESERVED'
+   861→                            ? 'bg-amber-100 text-amber-700'
+   862→                            : 'bg-muted text-muted-foreground'
+   863→                      }
+   864→                    >
+   865→                      {space.status === 'SOLD' ? 'Comprado' : space.status === 'RESERVED' ? 'Reservado' : 'Disponible'}
+   866→                    </Badge>
+   867→                  </div>
+   868→                )
+   869→              })}
+   870→            </div>
+   871→          )}
+   872→        </CardContent>
+   873→      </Card>
+   874→
+   875→      {/* Grid de 6 elementos con descripción */}
+   876→      <div>
+   877→        <div className="flex items-center justify-between mb-3">
+   878→          <div>
+   879→            <h2 className="text-lg font-semibold text-foreground">Ecosistema ImpulsePymes360</h2>
+   880→            <p className="text-xs text-muted-foreground">
+   881→              6 elementos omnicanal trabajando juntos para tu negocio
+   882→            </p>
+   883→          </div>
+   884→        </div>
+   885→        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+   886→          {ELEMENTOS.map((el) => (
+   887→            <ElementCard key={el.key} elemento={el} active={isActive(el)} />
+   888→          ))}
+   889→        </div>
+   890→      </div>
+   891→
+   892→      {/* CTA bottom */}
+   893→      <Card className="overflow-hidden border-dashed bg-gradient-to-br from-emerald-50 to-amber-50 dark:from-emerald-950/20 dark:to-amber-950/20">
+   894→        <CardContent className="p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+   895→          <div>
+   896→            <h3 className="font-semibold text-foreground">¿Quieres ampliar tu presencia?</h3>
+   897→            <p className="text-sm text-muted-foreground mt-1">
+   898→              Cambia de plan o reserva más espacios PubliBags desde el wizard de configuración.
+   899→            </p>
+   900→          </div>
+   901→          <Button
+   902→            variant="outline"
+   903→            className="shrink-0 border-primary/40 text-primary hover:bg-primary/10"
+   904→            onClick={() => setModule('impulse-wizard')}
+   905→          >
+   906→            Configurar de nuevo
+   907→            <ArrowRight className="size-4 ml-2" />
+   908→          </Button>
+   909→        </CardContent>
+   910→      </Card>
+   911→    </div>
+   912→  )
+   913→}
+   914→
+   915→// ---------- Hero header ----------
+   916→
+   917→function HeroHeader({
+   918→  loading,
+   919→  onRefresh,
+   920→  refreshing,
+   921→}: {
+   922→  loading: boolean
+   923→  onRefresh?: () => void
+   924→  refreshing?: boolean
+   925→}) {
+   926→  return (
+   927→    <Card className="overflow-hidden border-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-amber-600 text-white">
+   928→      <CardContent className="p-6 sm:p-8 relative">
+   929→        {/* Patrón decorativo */}
+   930→        <div className="absolute inset-0 opacity-10" aria-hidden>
+   931→          <div className="absolute -top-10 -right-10 size-48 rounded-full bg-white" />
+   932→          <div className="absolute -bottom-12 -left-8 size-32 rounded-full bg-white" />
+   933→        </div>
+   934→        <div className="relative flex items-start justify-between gap-4 flex-wrap">
+   935→          <div className="min-w-0">
+   936→            <Badge className="bg-white/20 text-white border-0 backdrop-blur mb-2">
+   937→              <Sparkles className="size-3 mr-1" />
+   938→              Sistema omnicanal
+   939→            </Badge>
+   940→            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+   941→              ImpulsePymes360
+   942→            </h1>
+   943→            <p className="text-white/80 mt-1 text-sm sm:text-base max-w-xl">
+   944→              El sistema omnicanal que impulsa tu negocio: marketplace, comunidad, logística,
+   945→              directorio, publicidad impresa y sitio web — todo en uno.
+   946→            </p>
+   947→          </div>
+   948→          {onRefresh && (
+   949→            <TooltipProvider>
+   950→              <Tooltip>
+   951→                <TooltipTrigger asChild>
+   952→                  <Button
+   953→                    variant="secondary"
+   954→                    size="sm"
+   955→                    onClick={onRefresh}
+   956→                    disabled={refreshing || loading}
+   957→                    className="bg-white/15 text-white border-white/20 hover:bg-white/25 backdrop-blur"
+   958→                  >
+   959→                    {refreshing ? (
+   960→                      <Loader2 className="size-4 animate-spin" />
+   961→                    ) : (
+   962→                      <RefreshCw className="size-4" />
+   963→                    )}
+   964→                  </Button>
+   965→                </TooltipTrigger>
+   966→                <TooltipContent>Actualizar</TooltipContent>
+   967→              </Tooltip>
+   968→            </TooltipProvider>
+   969→          )}
+   970→        </div>
+   971→      </CardContent>
+   972→    </Card>
+   973→  )
+   974→}
+   975→
+   976→export default ImpulseModule
+   977→

@@ -1386,3 +1386,37 @@ Stage Summary:
 - Each status transition notifies the buyer automatically.
 - Drag-and-drop works on desktop, mobile fallback "Asignar" button with Select dialog.
 - The courier-app is mobile-first dark themed (matches the satellite sites aesthetic).
+
+---
+Task ID: 26-generate-editable-html
+Agent: full-stack-developer (generate editable HTML files)
+Task: Generar 5 archivos HTML standalone (uno por sitio satélite) que el usuario pueda editar en VS Code — contenido editable (texto, precios, colores, secciones), para luego integrarse al proyecto.
+
+Work Log:
+- Leído worklog.md y los 5 archivos TSX fuente: publibags.tsx, fuerza-delta.tsx, dimarclub.tsx, planes.tsx, impulse.tsx (este último usado como fuente para impulsepymes360.html ya que el módulo se llama ImpulseModule pero representa el ecosistema ImpulsePymes360)
+- Leído src/lib/bag-plan.ts para entender la estructura de paneles
+- Creado directorio /home/z/my-project/editable-html/
+- Generado editable-html/publibags.html (63KB, 1428 líneas) — incluye todas las secciones: Navbar, Hero (con "Convertimos cada bolso en publicidad que viaja por tu ciudad" + 79 espacios + $67), Anatomía (5 paneles: Frente 28, Posterior 28, Base 8, Tapa solapa 8, Correa 7), Cómo funciona (4 pasos), Plano en vivo (toggle + 5 paneles con 79 celdas coloreadas), Ventajas (6 cards), Impacto ecológico (4 stats), Propuesta DimarClub (12 beneficios), Red Universal, CTA Planes, Contacto, Footer. Usa $67, 79 espacios, 10×5 cm.
+- Generado editable-html/fuerza-delta.html (48KB, 1162 líneas) — incluye: Navbar, Hero ($1.75), Tarifas (3 cards: Plan 5 $2.25, Plan 10 $2.00, Plan 15 $1.75 con badge "Mejor precio"), App Deltas + Micro-distribuidores (2 cards), CTA 16+, Beneficios del Plan (9 items), Propuesta DimarClub (12 beneficios — añadida según instrucciones), Red Universal (añadida según instrucciones), Contacto, Footer
+- Generado editable-html/dimarclub.html (60KB, 1409 líneas) — incluye: Navbar, Hero (con texto nuevo "Somos una comunidad de emprendedores Prosumidores..."), ¿Qué es? (4 roles), Hub Tareas CPA (con mock visual y 3 tareas de ejemplo), Red Universal 3 Niveles (1.110 personas, $41.700/mes, 12%-15% presupuesto), Beneficios (13 cards, con "Hub de Tareas CPA" marcado como destacado), Rangos (5: Fénix $300, Delta $600, Omega $900, Sigma $1.200, Alpha $1.500), Frascos (6), Stats (6), CTA+Contacto, Footer
+- Generado editable-html/planes.html (60KB, 1350 líneas) — incluye: Navbar, Hero, Tabla de comparación desktop (6 planes: Básico $122, Emprendedor $253, Comercial $363 ⭐Popular, Premium $478, Élite $592, Corporativo $736 con 6 filas de features), tarjetas móviles (6 cards), 3 add-ons (Sobre $2.25, Express $4.00, PubliBags QR $67), IncludedAll section (3 cards + 3 chips), CTA, Contacto, Footer
+- Generado editable-html/impulsepymes360.html (34KB, 815 líneas) — incluye: Navbar, Hero ("El sistema que impulsa tu negocio"), 9 ecosystem cards (DimarClub, Incubadora, WebExpress, Impulso360, Enlace Express, PubliBags con "79 espacios de 10×5cm por $67", Fuerza Delta, DimarPost, Hub de Tareas), Afiliados section (Red Universal 3 niveles con 1.110 personas y tabla 12%-15%), CTA Planes, Footer
+- Verificada estructura HTML de los 5 archivos con script Python: todos tienen DOCTYPE, html, head, body, <style>, Google Fonts, Font Awesome; todas las etiquetas <section>, <div>, <footer> balanceadas (open == close)
+- Verificado contenido clave con substring match: todos los precios ($67, $1.75, $2.25, $2.00, $122-$736, $300-$1.500) y textos requeridos ("79 espacios", "10×5 cm", "Prosumidores", "1.110", "$41.700", "12%", "15%", "Fénix", "Alpha") presentes
+- Ejecutado `bun run lint` — 0 errores (los HTML están en carpeta separada y los TSX no fueron modificados)
+- Verificado con `git status` que los TSX fuente NO fueron modificados — solo se crearon los 5 HTML nuevos en editable-html/
+
+Stage Summary:
+- 5 archivos HTML standalone creados en /home/z/my-project/editable-html/:
+  • publibags.html (63KB, 1428 líneas)
+  • fuerza-delta.html (48KB, 1162 líneas)
+  • dimarclub.html (60KB, 1409 líneas)
+  • planes.html (60KB, 1350 líneas)
+  • impulsepymes360.html (34KB, 815 líneas)
+- Cada archivo es 100% standalone: solo depende de Google Fonts + Font Awesome CDN; todo CSS embebido en <style> con variables CSS (--bg, --emerald, --gold, etc.) para edición rápida de colores
+- Dark theme idéntico al live site (#0B1120 background, #00D4AA emerald, #F5A623 gold, #A855F7 purple)
+- Cada sección marcada con comentarios HTML claros (<!-- ===== HERO ===== -->, <!-- ===== PROPUESTA DIMARCLUB ===== -->) para navegación fácil — pensando en la mala visión del usuario
+- Sin JavaScript, sin React, sin fetch — puro HTML estático que abre en cualquier navegador
+- Sin minificar — HTML legible y bien indentado para edición cómoda en VS Code
+- Todos los valores numéricos actualizados según las instrucciones: $67 / 79 espacios / 10×5 cm / $1.75 / $122-$736 / $300-$1.500 / 1.110 personas / $41.700/mes / 12%-15% presupuesto
+- Los archivos están listos para que el usuario edite texto, precios, colores (variables CSS) y borre secciones no deseadas (Propuesta DimarClub / Red Universal en PubliBags y Fuerza Delta están incluidas a propósito para que el usuario decida si las mantiene)

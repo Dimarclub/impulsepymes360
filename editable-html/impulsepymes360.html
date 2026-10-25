@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImpulsePymes360 | El sistema que impulsa tu negocio</title>
+
+    <!-- ===== Google Fonts: Outfit + DM Sans ===== -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- ===== Font Awesome 6.5 ===== -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        /* ============================================================
+           PALETA DE COLORES — Modifica estos valores para cambiar
+           los colores de toda la página rápidamente.
+           ============================================================ */
+        :root {
+            --bg: #0B1120;
+            --bg2: #070C18;
+            --card: #15203A;
+            --card2: #1A2647;
+            --border: #243352;
+            --borderLight: #2F3F66;
+            --emerald: #00D4AA;
+            --emeraldDark: #00A886;
+            --gold: #F5A623;
+            --goldDim: #B47C18;
+            --purple: #A855F7;
+            --text: #E8EDF5;
+            --textDim: #A0AEC8;
+            --muted: #6B7FA0;
+            --success: #22C55E;
+            --rose: #F43F5E;
+            --amber: #F59E0B;
+        }
+
+        /* ===== Reset ===== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', system-ui, sans-serif;
+            line-height: 1.5;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        a { color: inherit; text-decoration: none; }
+        ul { list-style: none; }
+        img { max-width: 100%; display: block; }
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+
+        /* ===== Layout helpers ===== */
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
+        .section { padding: 56px 0; }
+        .section-head { max-width: 720px; margin-bottom: 32px; }
+        .section-head.center { margin-left: auto; margin-right: auto; text-align: center; }
+        .eyebrow {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--emerald);
+        }
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: clamp(26px, 4vw, 38px);
+            color: var(--text);
+            line-height: 1.15;
+            letter-spacing: -0.5px;
+        }
+        .section-title .accent-emerald { color: var(--emerald); }
+        .section-title .accent-gold { color: var(--gold); }
+        .section-title .accent-purple { color: var(--purple); }
+        .section-sub {
+            color: var(--textDim);
+            font-size: 15px;
+            margin-top: 12px;
+            line-height: 1.55;
+        }
+        .section-head.center .section-sub { max-width: 620px; margin-left: auto; margin-right: auto; }
+
+        /* ===== Buttons ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-family: inherit;
+            text-decoration: none;
+        }
+        .btn-emerald { background: var(--emerald); color: #062019; }
+        .btn-outline { background: transparent; color: var(--text); border-color: var(--borderLight); }
+        .btn-gold { background: var(--gold); color: #241600; }
+        .btn-purple { background: var(--purple); color: #fff; }
+
+        /* ===== Navbar ===== */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: rgba(11, 17, 32, 0.92);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+        .navbar-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 16px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .brand {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 22px;
+            color: var(--text);
+            letter-spacing: -0.5px;
+        }
+        .brand .accent-gold { color: var(--gold); }
+        .nav-links {
+            display: none;
+            align-items: center;
+            gap: 4px;
+        }
+        .nav-links a {
+            color: var(--textDim);
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: color .15s, background .15s;
+        }
+        .nav-links a:hover { color: var(--text); background: var(--card); }
+        .nav-actions { display: flex; align-items: center; gap: 8px; }
+        .btn-wa {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            background: var(--emerald);
+            color: #062019;
+        }
+        .btn-planes {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            background: transparent;
+            color: var(--gold);
+            border: 1px solid var(--gold);
+        }
+        @media (min-width: 768px) { .btn-wa { display: inline-flex; } }
+        @media (min-width: 1024px) { .nav-links { display: flex; } .btn-planes { display: inline-flex; } }
+
+        /* ===== Hero ===== */
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: 80px 0 100px;
+        }
+        .hero-glow {
+            position: absolute;
+            top: -120px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,212,170,0.13) 0%, rgba(245,166,35,0.07) 35%, transparent 70%);
+            pointer-events: none;
+        }
+        .hero .container { position: relative; text-align: center; max-width: 900px; }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(0,212,170,0.1);
+            color: var(--emerald);
+            border: 1px solid rgba(0,212,170,0.33);
+            margin-bottom: 24px;
+        }
+        .hero h1 {
+            font-weight: 800;
+            font-size: clamp(36px, 6vw, 64px);
+            line-height: 1.05;
+            letter-spacing: -1.5px;
+            color: var(--text);
+        }
+        .hero h1 .accent { color: var(--emerald); }
+        .hero-desc {
+            color: var(--textDim);
+            font-size: 18px;
+            margin-top: 22px;
+            line-height: 1.55;
+            max-width: 680px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .hero-cta {
+            display: flex; flex-wrap: wrap; gap: 12px;
+            margin-top: 36px;
+            justify-content: center;
+        }
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 48px;
+            max-width: 760px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        @media (min-width: 640px) { .hero-stats { grid-template-columns: repeat(4, 1fr); } }
+        .hero-stat {
+            padding: 16px;
+            border-radius: 12px;
+            background: var(--card);
+            border: 1px solid var(--border);
+        }
+        .hero-stat .v {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 24px;
+            line-height: 1;
+        }
+        .hero-stat .l { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+        /* ===== Ecosystem grid (9 cards) ===== */
+        .ecosystem-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        @media (min-width: 640px) { .ecosystem-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .ecosystem-grid { grid-template-columns: repeat(3, 1fr); } }
+        .eco-card {
+            border-radius: 16px;
+            padding: 24px;
+            background: linear-gradient(135deg, var(--card) 0%, var(--card2) 100%);
+            border: 1px solid var(--borderLight);
+            transition: transform .15s, border-color .15s;
+            position: relative;
+            overflow: hidden;
+        }
+        .eco-card:hover { transform: translateY(-2px); }
+        .eco-card-head {
+            display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px;
+        }
+        .eco-icon {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .eco-icon.emerald { background: rgba(0,212,170,0.13); color: var(--emerald); }
+        .eco-icon.gold { background: rgba(245,166,35,0.13); color: var(--gold); }
+        .eco-icon.purple { background: rgba(168,85,247,0.13); color: var(--purple); }
+        .eco-icon.rose { background: rgba(244,63,94,0.13); color: var(--rose); }
+        .eco-icon.amber { background: rgba(245,158,11,0.13); color: var(--amber); }
+        .eco-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .eco-tag.emerald { background: rgba(0,212,170,0.13); color: var(--emerald); }
+        .eco-tag.gold { background: rgba(245,166,35,0.13); color: var(--gold); }
+        .eco-tag.purple { background: rgba(168,85,247,0.13); color: var(--purple); }
+        .eco-tag.rose { background: rgba(244,63,94,0.13); color: var(--rose); }
+        .eco-tag.amber { background: rgba(245,158,11,0.13); color: var(--amber); }
+
+        .eco-card h3 {
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        .eco-card p {
+            font-size: 13.5px;
+            color: var(--textDim);
+            line-height: 1.5;
+            margin-bottom: 14px;
+        }
+        .eco-card p strong { color: var(--text); }
+        .eco-card .price {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            background: var(--bg);
+            color: var(--gold);
+            border: 1px solid var(--border);
+        }
+
+        /* ===== Afiliados / Red Universal ===== */
+        .afiliados-banner {
+            border-radius: 16px;
+            padding: 40px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(168,85,247,0.13) 0%, rgba(0,212,170,0.07) 100%);
+            border: 1px solid rgba(168,85,247,0.33);
+        }
+        @media (min-width: 1024px) { .afiliados-banner { grid-template-columns: 1fr 1fr; } }
+        .afiliados-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(168,85,247,0.13);
+            color: var(--purple);
+            border: 1px solid rgba(168,85,247,0.33);
+            margin-bottom: 12px;
+        }
+        .afiliados-banner h2 {
+            font-weight: 800;
+            font-size: clamp(24px, 3vw, 32px);
+            color: var(--text);
+            line-height: 1.15;
+        }
+        .afiliados-banner p { color: var(--textDim); font-size: 15px; margin-top: 12px; line-height: 1.55; }
+        .afiliados-banner p strong { color: var(--text); }
+
+        .afiliados-stats { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+        .afiliados-stat {
+            border-radius: 8px;
+            padding: 10px 14px;
+            background: var(--card);
+            border: 1px solid var(--border);
+        }
+        .afiliados-stat .l { font-size: 11px; color: var(--muted); }
+        .afiliados-stat .v { font-size: 18px; font-weight: 700; }
+
+        .afiliados-pct {
+            border-radius: 12px;
+            padding: 20px;
+            background: rgba(168,85,247,0.06);
+            border: 1px solid rgba(168,85,247,0.2);
+        }
+        .afiliados-pct .title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--purple);
+            margin-bottom: 12px;
+        }
+        .afiliados-pct .bar-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .afiliados-pct .bar-row:last-child { border-bottom: none; }
+        .afiliados-pct .bar-row .l { font-size: 13px; color: var(--textDim); }
+        .afiliados-pct .bar-row .v {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 18px;
+        }
+
+        /* ===== CTA Planes ===== */
+        .cta-planes {
+            padding: 80px 0;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+        .cta-glow {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px; height: 400px;
+            background: radial-gradient(ellipse, rgba(0,212,170,0.15) 0%, rgba(245,166,35,0.07) 30%, transparent 70%);
+            pointer-events: none;
+        }
+        .cta-planes .container { position: relative; }
+        .cta-planes h2 {
+            font-weight: 800;
+            font-size: clamp(32px, 5vw, 52px);
+            color: var(--text);
+            line-height: 1.1;
+            letter-spacing: -1px;
+        }
+        .cta-planes h2 .accent { color: var(--emerald); }
+        .cta-planes p {
+            color: var(--textDim);
+            font-size: 17px;
+            margin-top: 18px;
+            max-width: 620px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.55;
+        }
+        .cta-planes .btn {
+            margin-top: 32px;
+            padding: 18px 32px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        /* ===== Footer ===== */
+        footer {
+            background: var(--bg2);
+            border-top: 1px solid var(--border);
+            padding: 48px 0 24px;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+        @media (min-width: 768px) { .footer-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (min-width: 1024px) { .footer-grid { grid-template-columns: repeat(5, 1fr); } }
+        .footer-col h4 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .footer-col li { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+        .footer-bottom {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        @media (min-width: 640px) { .footer-bottom { flex-direction: row; } }
+        .footer-social { display: flex; gap: 12px; }
+        .footer-social a {
+            width: 32px; height: 32px;
+            border-radius: 999px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            background: var(--card);
+            color: var(--textDim);
+            border: 1px solid var(--border);
+        }
+        .footer-copy { font-size: 12px; color: var(--muted); }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== NAVBAR ==================== -->
+    <header class="navbar">
+        <div class="navbar-inner">
+            <a href="#top" class="brand">IMPULSE<span class="accent-gold">PYMES</span>360</a>
+            <nav class="nav-links">
+                <a href="#ecosistema">Ecosistema</a>
+                <a href="#afiliados">Afiliados</a>
+                <a href="#cta-planes">Planes</a>
+                <a href="#footer">Contacto</a>
+            </nav>
+            <div class="nav-actions">
+                <a href="https://wa.me/593992689844" target="_blank" rel="noopener" class="btn-wa">
+                    <i class="fas fa-phone" style="font-size:14px;"></i> +593 99 268 9844
+                </a>
+                <a href="#cta-planes" class="btn-planes">Ver planes</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== HERO ==================== -->
+    <section class="hero" id="top">
+        <div class="hero-glow"></div>
+        <div class="container">
+            <span class="hero-badge">
+                <i class="fas fa-sparkles"></i> Ecosistema omnicanal · Ecuador
+            </span>
+            <h1>El <span class="accent">sistema</span> que impulsa tu negocio</h1>
+            <p class="hero-desc">
+                Marketplace, comunidad de consumidores, logística última milla, publicidad en fundas ecológicas,
+                sitio web profesional y mucho más — todo integrado en un solo lugar. ImpulsePymes360 es el motor
+                que conecta tu marca con miles de clientes en Ecuador.
+            </p>
+
+            <div class="hero-cta">
+                <a href="#ecosistema" class="btn btn-emerald" style="padding:14px 24px;">
+                    Conoce el ecosistema <i class="fas fa-arrow-right"></i>
+                </a>
+                <a href="https://wa.me/593992689844" target="_blank" rel="noopener" class="btn btn-outline" style="padding:14px 24px;">
+                    <i class="fas fa-phone"></i> Hablar por WhatsApp
+                </a>
+            </div>
+
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="v" style="color:var(--gold);">9</div>
+                    <div class="l">servicios integrados</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="v" style="color:var(--emerald);">1.110</div>
+                    <div class="l">afiliados por red</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="v" style="color:var(--purple);">3 niveles</div>
+                    <div class="l">red universal</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="v" style="color:var(--text);">$122</div>
+                    <div class="l">plan desde /mes</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== ECOSISTEMA (9 cards) ==================== -->
+    <section class="section" id="ecosistema">
+        <div class="container">
+            <div class="section-head center">
+                <p class="eyebrow">Ecosistema ImpulsePymes360</p>
+                <h2 class="section-title">9 servicios que trabajan <span class="accent-emerald">juntos</span> por tu negocio</h2>
+                <p class="section-sub">Cada servicio del ecosistema está diseñado para potenciar los demás. Contrátalos juntos en un plan integral o por separado según tu necesidad.</p>
+            </div>
+
+            <div class="ecosystem-grid">
+
+                <!-- 1. DimarClub -->
+                <div class="eco-card" style="border-color: rgba(168,85,247,0.33);">
+                    <div class="eco-card-head">
+                        <div class="eco-icon purple"><i class="fas fa-users"></i></div>
+                        <span class="eco-tag purple">Comunidad</span>
+                    </div>
+                    <h3>DimarClub</h3>
+                    <p>Comunidad de emprendedores <strong>Prosumidores</strong> con Red Universal de 3 Niveles. Consumir, recomendar, emprender y crecer en un solo lugar.</p>
+                </div>
+
+                <!-- 2. Incubadora -->
+                <div class="eco-card" style="border-color: rgba(245,166,35,0.33);">
+                    <div class="eco-card-head">
+                        <div class="eco-icon gold"><i class="fas fa-seedling"></i></div>
+                        <span class="eco-tag gold">Incubación</span>
+                    </div>
+                    <h3>Incubadora</h3>
+                    <p>Capital semilla, capacitación y asesoramiento para que los miembros conviertan sus ideas en emprendimientos reales y rentables.</p>
+                </div>
+
+                <!-- 3. WebExpress -->
+                <div class="eco-card" style="border-color: rgba(0,212,170,0.33);">
+                    <div class="eco-card-head">
+                        <div class="eco-icon emerald"><i class="fas fa-window-maximize"></i></div>
+                        <span class="eco-tag emerald">Sitio web</span>
+                    </div>
+                    <h3>WebExpress</h3>
+                    <p>Sitio web profesional listo en minutos con tu propio dominio <strong>/w/tu-negocio</strong>. Plantillas personalizables, hosting incluido.</p>
+                </div>
+
+                <!-- 4. Impulso360 -->
+                <div class="eco-card" style="border-color: rgba(0,212,170,0.33);">
+                    <div class="eco-card-head">
+                        <div class="eco-icon emerald"><i class="fas fa-store"></i></div>
+                        <span class="eco-tag emerald">Marketplace</span>
+                    </div>
+                    <h3>Impulso360</h3>
+                    <p>Marketplace B2C con red de afiliados de 3 niveles. Tus productos llegan a miles de compradores activos en toda la red DimarClub.</p>
+                </div>
+
+                <!-- 5. Enlace Express -->
+                <div class="eco-card" style="border-color: rgba(245,158,11,0.33);">
+                    <div class="eco-card-head">
+                        <div class="eco-icon amber"><i class="fas fa-headset"></i></div>
+                        <span class="eco-tag amber">Call Center</span>
+                    </div>
+                    <h3>Enlace Express</h3>
+                    <p>Call Center + Vendedores P2P que impulsan tus ventas. Incluido GRATIS cuando contratas 16+ entregas diarias de Fuerza Delta.</p>
+                </div>
+
+                <!-- 6. PubliBags -->
+                <div class="eco-card" style="border-color: rgba(244,63,94,0.33);">
+                    <div class="eco-card-head">
+                        <div class="eco-icon rose"><i class="fas fa-bag-shopping"></i></div>
+                        <span class="eco-tag rose">Publicidad</span>
+                    </div>
+                    <h3>PubliBags</h3>
+                    <p>Publicidad impresa en bolsos ecológicos que circulan por toda la ciudad. <strong>79 espacios de 10×5cm</strong> con QR medible.</p>
+                    <span class="price">$67 / espacio · pago único</span>
+                </div>
+
+                <!-- 7. Fuerza Delta -->
+                <div class="eco-card" style="border-color: rgba(0,212,170,0.33);">
+                    <div class="eco-card-head">
+                        <div class="eco-icon emerald"><i class="fas fa-truck"></i></div>
+                        <span class="eco-tag emerald">Logística</span>
+                    </div>
+                    <h3>Fuerza Delta</h3>
+                    <p>Logística última milla con mensajeros verificados. Tarifas planas desde <strong>$1.75 por entrega</strong> con Plan 15. App Deltas + micro-distribuidores.</p>
+                </div>
+
+                <!-- 8. DimarPost -->
+                <div class="eco-card" style="border-color: rgba(168,85,247,0.33);">
+                    <div class="eco-card-head">
+                        <div class="eco-icon purple"><i class="fas fa-newspaper"></i></div>
+                        <span class="eco-tag purple">Contenido</span>
+                    </div>
+                    <h3>DimarPost</h3>
+                    <p>Estudio social y automatización de contenido. Diseña, programa y publica en todas tus redes sociales desde un solo panel inteligente.</p>
+                </div>
+
+                <!-- 9. Hub de Tareas -->
+                <div class="eco-card" style="border-color: rgba(245,166,35,0.33);">
+                    <div class="eco-card-head">
+                        <div class="eco-icon gold"><i class="fas fa-bullseye"></i></div>
+                        <span class="eco-tag gold">CPA</span>
+                    </div>
+                    <h3>Hub de Tareas</h3>
+                    <p>Centro de tareas CPA donde los afiliados ganan <strong>$0.10 a $0.25</strong> por acción completada. Comparte, mira videos, suscríbete y gana.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== AFILIADOS — RED UNIVERSAL ==================== -->
+    <section class="section" id="afiliados">
+        <div class="container">
+            <div class="section-head">
+                <p class="eyebrow" style="color:var(--purple);">Programa de Afiliados</p>
+                <h2 class="section-title">Red Universal de <span class="accent-purple">3 Niveles</span></h2>
+                <p class="section-sub">Todos ganan igual. No importa cuándo entras ni cuánto inviertes. Construye tu red de 1.110 personas y gana comisiones mes a mes.</p>
+            </div>
+
+            <div class="afiliados-banner">
+                <div>
+                    <span class="afiliados-badge">
+                        <i class="fas fa-network-wired"></i> 1.110 personas en tu red completa
+                    </span>
+                    <h2>Tu red completa genera un presupuesto de $41.700/mes</h2>
+                    <p>
+                        Cada miembro puede construir su <strong>Red Universal de 3 Niveles</strong>: 10 personas en N1,
+                        100 en N2 y 1.000 en N3. Con un consumo promedio de <strong>$250 por persona</strong>, el
+                        presupuesto mensual de tu red es de <strong>$41.700</strong>. De ahí sale la comisión para cada nivel.
+                    </p>
+                    <div class="afiliados-stats">
+                        <div class="afiliados-stat">
+                            <p class="l">N1 (tu padrino)</p>
+                            <p class="v" style="color:var(--emerald);">10 personas</p>
+                        </div>
+                        <div class="afiliados-stat">
+                            <p class="l">N2</p>
+                            <p class="v" style="color:var(--purple);">100 personas</p>
+                        </div>
+                        <div class="afiliados-stat">
+                            <p class="l">N3</p>
+                            <p class="v" style="color:var(--gold);">1.000 personas</p>
+                        </div>
+                        <div class="afiliados-stat">
+                            <p class="l">Total</p>
+                            <p class="v" style="color:var(--text);">1.110 personas</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="afiliados-pct">
+                    <p class="title"><i class="fas fa-circle-info"></i> Presupuesto de comisiones</p>
+                    <p style="font-size:13px; color:var(--textDim); line-height:1.55; margin-bottom:14px;">
+                        La base de comisiones es el <strong style="color:var(--text);">12%</strong> de las ventas de cada
+                        red, y sube automáticamente si el fondo no alcanza. El sobrante va a la cartera del fundador (N0).
+                    </p>
+                    <div class="bar-row">
+                        <span class="l">Base fija</span>
+                        <span class="v" style="color:var(--text);">12%</span>
+                    </div>
+                    <div class="bar-row">
+                        <span class="l">Si no alcanza — nivel 1</span>
+                        <span class="v" style="color:var(--amber);">13%</span>
+                    </div>
+                    <div class="bar-row">
+                        <span class="l">Si no alcanza — nivel 2</span>
+                        <span class="v" style="color:var(--gold);">14%</span>
+                    </div>
+                    <div class="bar-row">
+                        <span class="l">Máximo posible</span>
+                        <span class="v" style="color:var(--gold);">15%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align:center; margin-top:32px;">
+                <a href="#cta-planes" class="btn btn-purple" style="padding:14px 24px;">
+                    Conocer los planes <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== CTA PLANES ==================== -->
+    <section class="cta-planes" id="cta-planes">
+        <div class="cta-glow"></div>
+        <div class="container">
+            <h2>Empieza hoy con un plan <span class="accent">integral</span></h2>
+            <p>
+                Desde <strong style="color:var(--text);">$122/mes</strong> tienes dominio propio, marketplace, sitio web,
+                emails, sobres Fuerza Delta y espacios PubliBags con QR. 6 planes para cada etapa de tu negocio.
+            </p>
+            <a href="#footer" class="btn btn-emerald">
+                Ver todos los planes <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer id="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>ImpulsePymes360</h4>
+                    <ul>
+                        <li>Marketplace</li>
+                        <li>DimarClub</li>
+                        <li>PubliBags</li>
+                        <li>Fuerza Delta</li>
+                        <li>Planes</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Ecosistema</h4>
+                    <ul>
+                        <li>DimarClub</li>
+                        <li>Incubadora</li>
+                        <li>WebExpress</li>
+                        <li>Impulso360</li>
+                        <li>Enlace Express</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Más servicios</h4>
+                    <ul>
+                        <li>PubliBags</li>
+                        <li>Fuerza Delta</li>
+                        <li>DimarPost</li>
+                        <li>Hub de Tareas</li>
+                        <li>Afiliados</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contacto</h4>
+                    <ul>
+                        <li>+593 99 268 9844</li>
+                        <li>info@impulsepymes360.com</li>
+                        <li>impulsepymes360.com</li>
+                        <li>Guayaquil, Ecuador</li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li>Términos</li>
+                        <li>Privacidad</li>
+                        <li>Política de devoluciones</li>
+                        <li>PQRS</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span class="brand" style="font-size:18px;">IMPULSE<span class="accent-gold">PYMES</span>360</span>
+                </div>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+                <p class="footer-copy">© 2026 ImpulsePymes360 · Hecho con 💛 en Guayaquil, Ecuador</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
