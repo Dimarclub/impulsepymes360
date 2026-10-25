@@ -33,6 +33,7 @@ import { FuerzaDeltaModule } from '@/components/dimar/modules/fuerza-delta'
 import { DimarClubModule } from '@/components/dimar/modules/dimarclub'
 import { CourierAppModule } from '@/components/dimar/modules/courier-app'
 import { PubliBagsModule } from '@/components/dimar/modules/publibags'
+import { ImpulsePymes360Module } from '@/components/dimar/modules/impulsepymes360'
 import { CooperativaModule } from '@/components/dimar/modules/cooperativa'
 import { SupplierBackofficeModule } from '@/components/dimar/modules/supplier-backoffice'
 import { AffiliateBackofficeModule } from '@/components/dimar/modules/affiliate-backoffice'
@@ -110,6 +111,7 @@ function HomeContent() {
       case 'dimarclub': return <DimarClubModule />
       case 'courier-app': return <CourierAppModule />
       case 'publibags': return <PubliBagsModule />
+      case 'impulsepymes360': return <ImpulsePymes360Module />
       case 'cooperativa': return <CooperativaModule />
       case 'supplier-backoffice': return <SupplierBackofficeModule />
       case 'affiliate-backoffice': return <AffiliateBackofficeModule />

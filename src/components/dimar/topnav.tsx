@@ -123,7 +123,7 @@ export function TopNav() {
         {/* Fila 1 */}
         <div className="border-b bg-gradient-to-r from-primary to-accent text-primary-foreground">
           <div className="max-w-[1320px] mx-auto px-4 flex items-center gap-4 h-9">
-            <button onClick={() => setModule('marketplace')} className="flex items-center gap-2 shrink-0" aria-label="Inicio">
+            <button onClick={() => setModule('impulsepymes360')} className="flex items-center gap-2 shrink-0" aria-label="Inicio">
               {siteLogo ? (
                 <img src={siteLogo} alt="ImpulsePymes360" className="h-7 w-auto object-contain" style={{ maxHeight: '28px' }} />
               ) : (
@@ -230,7 +230,7 @@ export function TopNav() {
                 </div>
               )}
             </div>
-            {navItem('Inicio', 'marketplace', Home)}
+            {navItem('Inicio', 'impulsepymes360', Home)}
             {canAccessModule(displayUser?.role, 'affiliates') && (
               <button onClick={() => setModule('affiliates')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'affiliates' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><Users className="size-4" />Comunidad</button>
             )}
@@ -335,7 +335,7 @@ export function TopNav() {
                   {categories.map((cat) => <button key={cat.id} onClick={() => selectCategory(cat.id)} className="w-full text-left px-3 py-1 text-sm hover:bg-muted rounded-md">{cat.name}</button>)}
                 </div>
               )}
-              {navItem('Inicio', 'marketplace', Home)}
+              {navItem('Inicio', 'impulsepymes360', Home)}
               {canAccessModule(displayUser?.role, 'affiliates') && navItem('Comunidad', 'affiliates', Users)}
               {navItem('Grid 360', 'grid', Grid3x3)}
               {navItem('Plano Bolso', 'bag-plan', Package)}

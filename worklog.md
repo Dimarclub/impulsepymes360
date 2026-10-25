@@ -1420,3 +1420,81 @@ Stage Summary:
 - Sin minificar — HTML legible y bien indentado para edición cómoda en VS Code
 - Todos los valores numéricos actualizados según las instrucciones: $67 / 79 espacios / 10×5 cm / $1.75 / $122-$736 / $300-$1.500 / 1.110 personas / $41.700/mes / 12%-15% presupuesto
 - Los archivos están listos para que el usuario edite texto, precios, colores (variables CSS) y borre secciones no deseadas (Propuesta DimarClub / Red Universal en PubliBags y Fuerza Delta están incluidas a propósito para que el usuario decida si las mantiene)
+
+---
+Task ID: 27-impulsepymes360-portal-v2
+Agent: full-stack-developer (impulsepymes360 portal v2)
+Task: Recrear el módulo portal ImpulsePymes360 (umbrella/home) perdido en el reset del sandbox, usando el patrón oscuro de PubliBags como satellite canónico, más el wiring completo (types, permissions, page.tsx, topnav.tsx).
+
+Work Log:
+- Leído worklog.md (contexto de Task 1 fundación + Task 11 patrón PubliBags satellite) y referencias obligatorias: src/components/dimar/modules/publibags.tsx (paleta C, inyección Google Fonts Outfit+DM Sans, Section wrapper, Navbar/Footer, scrollTo), src/lib/types.ts y src/lib/permissions.ts para wiring.
+- Creado src/components/dimar/modules/impulsepymes360.tsx (~700 líneas, 'use client'):
+  - Paleta C idéntica a publibags (bg #0B1120, card #15203A, border #243352, emerald #00D4AA, gold #F5A623, purple #A855F7, rose #F43F5E, amber #F59E0B) + colores extra para los 9 elementos (cyan #22D3EE, pink #EC4899, sky #60A5FA).
+  - Inyección Google Fonts (Outfit + DM Sans) vía useEffect con id único 'impulsepymes360-fonts'.
+  - WHATSAPP_URL/WHATSAPP_DISPLAY = +593 99 268 9844, CONTACT_EMAIL = info@impulsepymes360.com.
+  - Componente ImpulsePymes360Module: navbar sticky + hero + 9 elementos + CTA mid + CTA planes + footer.
+  - Navbar: logo "IMPULSE**PYMES**360" (PYMES en esmeralda) + badge "Sistema Integral" + nav links (Elementos/Planes/Contacto) + botón WhatsApp (esmeralda) + botón "Ver Planes" (gold) + hamburger móvil.
+  - Hero: badge "🚀 Sistema de comercialización integral y omnicanal" + H1 "El sistema que **impulsa** tu negocio" (impulsa en esmeralda) + intro paragraph EXACTO del usuario ("ImpulsePymes360 es un sistema de comercialización integral y omnicanal diseñado para impulsar las ventas y el posicionamiento de pequeñas y medianas empresas tanto en el mercado digital como en el mercado físico.") + 3 CTAs ("Descubrir los elementos" → scroll #elementos, "Ver Planes" → setModule('planes'), "Hablar por WhatsApp" → wa.me) + visual con número "9" gigante + grid de 9 chips coloreados con los iconos de cada elemento.
+  - Sección "9 elementos" (id="elementos"): grid responsive sm:2 lg:3, cada card con badge numerado en esquina + icono coloreado + título + descripción EXACTA del usuario + botón "Descubrir →" (o "Próximamente" para clasificados) que navega al módulo correcto:
+    1 Comunidad de consumidores (purple) → dimarclub
+    2 Sitio web profesional (cyan) → web-express
+    3 Tienda online Marketplace B2C 24/7 (emerald) → marketplace
+    4 Directorio digital (amber) → directorio
+    5 Anuncios clasificados (rose) → marketplace + toast "Próximamente: anuncios clasificados"
+    6 Mensajería y logística (gold) → fuerza-delta
+    7 Social Media (pink) → social-studio
+    8 Programador de campañas (sky) → social-automation
+    9 Publicidad física y móvil PubliBags (emerald) → publibags
+  - CTA mid planes: barra con beneficios (Una sola cuota mensual / Activa los 9 elementos / Sin costos ocultos) + botón "Ver Planes Integrales" → setModule('planes').
+  - CTA Planes (id="planes"): H2 "¿Listo para **activar todos los elementos**?" + texto "Contrata un plan integral y accede a los 9 elementos del ecosistema con una sola cuota mensual. Desde $122/mes." + botón grande → setModule('planes').
+  - Footer: 5 columnas (ImpulsePymes360 / Ecosistema / Más Servicios / Contacto / Legal) + social (FB/IG/WA/YT) + copyright "© 2026 ImpulsePymes360 · Todos los derechos reservados" + botón "Volver al portal" → setModule('marketplace').
+  - Hover: card lift -translate-y-1 + border cambia al color del elemento.
+- Wiring realizado:
+  - src/lib/types.ts: añadido `'impulsepymes360'` al union ModuleId (después de `'dimarclub'`).
+  - src/lib/permissions.ts: añadido `'impulsepymes360'` a CLIENT, AFFILIATE, SUPPLIER, PARTNER + a PUBLIC_MODULES.
+  - src/app/page.tsx: import ImpulsePymes360Module + case 'impulsepymes360' en renderModule.
+  - src/components/dimar/topnav.tsx: logo button (aria-label="Inicio") → setModule('impulsepymes360'); navItem('Inicio',...) en desktop (línea 233) y móvil (línea 338) cambiados de 'marketplace' a 'impulsepymes360'.
+- Corregido typo detectado por ESLint: línea 525 `fontFamily: "'Outfit', sans-serif'` → `"'Outfit', sans-serif"` (comilla simple sobrante).
+- Verificado bun run lint: 0 errors, 0 warnings (EXIT=0).
+- Revisado dev.log: sin errores relacionados con el nuevo módulo; servidor dev activo en puerto 3000.
+
+Stage Summary:
+- Portal ImpulsePymes360 recreado con tema oscuro (mismo lenguaje visual que PubliBags/DimarClub/FuerzaDelta).
+- Hero muestra el NUEVO intro text exacto solicitado por el usuario.
+- Los 9 elementos renderizados con descripciones EXACTAS y navegación correcta a cada submódulo (dimarclub, web-express, marketplace, directorio, fuerza-delta, social-studio, social-automation, publibags) + toast "Próximamente" para clasificados.
+- CTA Planes → módulo 'planes'. Footer "Volver al portal" → 'marketplace'. Logo + botón "Inicio" del topnav → 'impulsepymes360'.
+- Paleta esmeralda + gold + purple + rose (sin indigo como primario). 100% responsive (mobile-first, sm/md/lg breakpoints). Texto en español (Ecuador).
+- Lint limpio (0/0). Sin build, sin restart dev server. Listo para preview en el panel derecho / "Open in New Tab".
+
+---
+Task ID: 27-impulsepymes360-portal-v2 (main agent verification)
+Agent: main (Z.ai Code)
+Task: Recreate ImpulsePymes360 portal with user's new concept text (9 elementos)
+
+Work Log:
+- User provided a new concept text for the ImpulsePymes360 portal home page describing the system as "un sistema de comercialización integral y omnicanal" + 9 specific bullets (comunidad, sitio web, marketplace, directorio, clasificados, mensajería, social media, programador de campañas, publicidad física/móvil).
+- The previous impulsepymes360.tsx module (from Task 19) was lost in a sandbox reset — needed recreation.
+- Delegated to subagent: recreated impulsepymes360.tsx (~700 lines) with the new text + restored all wiring (types.ts, permissions.ts, page.tsx, topnav.tsx logo+Inicio button → impulsepymes360).
+
+Verification with Agent Browser:
+- Click "Inicio" → opens the portal ✅
+- Hero shows: "sistema de comercialización integral" + "impulsa tu negocio" ✅
+- All 9 elementos present with their exact descriptions:
+  * Comunidad de potenciales consumidores
+  * Sitio web profesional
+  * Tienda online Marketplace
+  * Directorio digital
+  * Anuncios clasificados
+  * Mensajería y logística
+  * Social Media
+  * Programador de campañas
+  * Publicidad física y móvil
+- "Ver Planes" button present ✅
+- No console errors ✅
+- Lint: 0 errors, 0 warnings ✅
+
+Stage Summary:
+- Portal ImpulsePymes360 recreated with the user's new concept text.
+- 9 elementos del sistema como cards, cada uno con su descripción exacta y botón "Descubrir" que navega al módulo correspondiente.
+- El botón "Inicio" + el logo abren el portal (no el marketplace).
+- Wiring restaurado: types.ts, permissions.ts, page.tsx, topnav.tsx.

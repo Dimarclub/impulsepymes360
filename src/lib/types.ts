@@ -24,6 +24,7 @@ export type ModuleId =
   | 'planes'
   | 'fuerza-delta'
   | 'dimarclub'
+  | 'impulsepymes360'
   | 'directorio'
   | 'fuerza'
   | 'automatizacion'
