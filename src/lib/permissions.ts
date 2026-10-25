@@ -6,7 +6,7 @@ export const ROLE_MODULES: Record<UserRole, ModuleId[] | '*'> = {
 
   CLIENT: ['impulsepymes360', 'marketplace', 'affiliates', 'benefits', 'grid', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'alertas', 'directorio'],
   AFFILIATE: ['impulsepymes360', 'marketplace', 'affiliates', 'benefits', 'social-bio', 'grid', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'affiliate-backoffice', 'alertas', 'directorio'],
-  SUPPLIER: ['impulsepymes360', 'marketplace', 'suppliers', 'logistics', 'web-express', 'publibags', 'bag-plan', 'planes', 'fuerza-delta', 'dimarclub', 'directorio', 'social', 'social-studio', 'social-bio', 'social-automation', 'impulse', 'impulse-wizard', 'grid', 'supplier-backoffice', 'cooperativa', 'alertas'],
+  SUPPLIER: ['impulsepymes360', 'marketplace', 'suppliers', 'logistics', 'web-express', 'publibags', 'bag-plan', 'planes', 'fuerza-delta', 'directorio', 'social', 'social-studio', 'social-bio', 'social-automation', 'impulse', 'impulse-wizard', 'grid', 'supplier-backoffice', 'alertas'],
   COURIER: ['marketplace', 'courier-app', 'fuerza'],
   PARTNER: ['impulsepymes360', 'marketplace', 'partners', 'benefits', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'partner-backoffice', 'directorio'],
 }

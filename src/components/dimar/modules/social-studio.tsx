@@ -32,7 +32,7 @@ import {
   Image as ImageIcon, MoreVertical, Pencil, Trash2, Eye, Heart,
   MousePointerClick, Package, Search, Check, ChevronDown,
   Instagram, Facebook, Music2, Twitter, MessageCircle, Linkedin,
-  Youtube, Send as SendIcon, AtSign, Wand2, Library, Plus, AlertCircle,
+  Youtube, Send as SendIcon, AtSign, Wand2, Library, Plus, AlertCircle, Copy,
   type LucideIcon,
 } from 'lucide-react'
 import {
@@ -299,6 +299,7 @@ interface PostCardProps {
 }
 
 function PostCard({ post, onPublish, onEdit, onDelete, publishing }: PostCardProps) {
+  const toast = useAppStore((s) => s.toast)
   const mediaUrls: string[] = useMemo(() => {
     if (!post.mediaUrls) return []
     try {
@@ -340,12 +341,27 @@ function PostCard({ post, onPublish, onEdit, onDelete, publishing }: PostCardPro
                   <MoreVertical className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuContent align="end" className="w-48">
                 {canPublish && (
                   <DropdownMenuItem onClick={() => onPublish(post)} disabled={publishing}>
                     <Send className="size-4" /> Publicar ahora
                   </DropdownMenuItem>
                 )}
+                <DropdownMenuItem onClick={() => {
+                  const text = `${post.caption}\n\n${(post.accounts || []).map((a: any) => a.account?.handle).filter(Boolean).join(' ')}`
+                  const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`
+                  window.open(waUrl, '_blank')
+                  toast('Abriendo WhatsApp para compartir…', 'info')
+                }}>
+                  <MessageCircle className="size-4" /> Compartir por WhatsApp
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {
+                  const text = `${post.caption}\n\n${(post.accounts || []).map((a: any) => a.account?.handle).filter(Boolean).join(' ')}`
+                  navigator.clipboard.writeText(text)
+                  toast('Contenido copiado al portapapeles', 'success')
+                }}>
+                  <Copy className="size-4" /> Copiar contenido
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onEdit(post)}>
                   <Pencil className="size-4" /> Editar
                 </DropdownMenuItem>

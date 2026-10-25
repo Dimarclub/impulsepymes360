@@ -38,13 +38,12 @@ export function SupplierBackofficeModule() {
     <div className="space-y-6 p-4 md:p-6 lg:p-8 max-w-[1320px] mx-auto">
       <div>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Backoffice del Proveedor</h1>
-        <p className="text-muted-foreground text-sm mt-1">Gestiona tu tienda, afiliados, marketing y tareas</p>
+        <p className="text-muted-foreground text-sm mt-1">Gestiona tu tienda, marketing, logística y tareas</p>
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 max-w-3xl">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 max-w-3xl">
           <TabsTrigger value="overview"><Store className="size-4 md:mr-1.5" /><span className="hidden md:inline">Resumen</span></TabsTrigger>
-          <TabsTrigger value="affiliates"><Users className="size-4 md:mr-1.5" /><span className="hidden md:inline">Afiliados</span></TabsTrigger>
           <TabsTrigger value="marketing"><Megaphone className="size-4 md:mr-1.5" /><span className="hidden md:inline">Marketing</span></TabsTrigger>
           <TabsTrigger value="logistics"><Truck className="size-4 md:mr-1.5" /><span className="hidden md:inline">Logística</span></TabsTrigger>
           <TabsTrigger value="tasks"><CheckCircle2 className="size-4 md:mr-1.5" /><span className="hidden md:inline">Tareas</span></TabsTrigger>
@@ -52,7 +51,6 @@ export function SupplierBackofficeModule() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-4"><OverviewTab /></TabsContent>
-        <TabsContent value="affiliates" className="mt-4"><AffiliatesTab /></TabsContent>
         <TabsContent value="marketing" className="mt-4"><MarketingTab /></TabsContent>
         <TabsContent value="logistics" className="mt-4"><LogisticsTab /></TabsContent>
         <TabsContent value="tasks" className="mt-4"><TasksTab /></TabsContent>
@@ -93,19 +91,6 @@ function OverviewTab() {
             <Button variant="outline" className="w-full justify-start" onClick={() => setModule('logistics')}><TrendingUp className="size-4 mr-2" /> Ver pedidos y envíos</Button>
             <Button variant="outline" className="w-full justify-start" onClick={() => setModule('grid')}><QrCode className="size-4 mr-2" /> Grid publicitario</Button>
             <Button variant="outline" className="w-full justify-start" onClick={() => setModule('social-studio')}><Megaphone className="size-4 mr-2" /> Content Studio IA</Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader><CardTitle className="text-base">Mi código de afiliado</CardTitle></CardHeader>
-          <CardContent>
-            <div className="rounded-lg bg-primary/5 border p-4 text-center">
-              <p className="text-xs text-muted-foreground mb-1">Comparte este código para registrar afiliados</p>
-              <p className="text-2xl font-bold text-primary font-mono">{currentUser?.affiliateCode || '—'}</p>
-              <Button className="mt-3" size="sm" onClick={() => { navigator.clipboard.writeText(currentUser?.affiliateCode || ''); useAppStore.getState().toast('Código copiado', 'success') }}>
-                <Copy className="size-4 mr-1" /> Copiar código
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>
