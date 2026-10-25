@@ -231,9 +231,19 @@ export function TopNav() {
               )}
             </div>
             {navItem('Inicio', 'impulsepymes360', Home)}
-            {canAccessModule(displayUser?.role, 'affiliates') && (
-              <button onClick={() => setModule('affiliates')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'affiliates' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><Users className="size-4" />Comunidad</button>
-            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', (activeModule === 'affiliates' || activeModule === 'dimarclub' || activeModule === 'cooperativa' || activeModule === 'directorio') ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><Users className="size-4" />Comunidad<ChevronDown className="size-3" /></button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuLabel>Comunidad DimarClub</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setModule('dimarclub')}><Users className="size-4 mr-2" /> DimarClub (sitio)</DropdownMenuItem>
+                {canAccessModule(displayUser?.role, 'affiliates') && <DropdownMenuItem onClick={() => setModule('affiliates')}><Network className="size-4 mr-2" /> Mi Red de Afiliados</DropdownMenuItem>}
+                {canAccessModule(displayUser?.role, 'cooperativa') && <DropdownMenuItem onClick={() => setModule('cooperativa')}><PiggyBank className="size-4 mr-2" /> Cooperativa</DropdownMenuItem>}
+                {canAccessModule(displayUser?.role, 'directorio') && <DropdownMenuItem onClick={() => setModule('directorio')}><MapPin className="size-4 mr-2" /> Directorio</DropdownMenuItem>}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md text-foreground hover:text-primary hover:bg-muted/60 transition-colors"><Store className="size-4" />Proveedor<ChevronDown className="size-3" /></button>
@@ -251,7 +261,6 @@ export function TopNav() {
             <button onClick={() => setModule('publibags')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'publibags' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><ShoppingBag className="size-4" />PubliBags</button>
             <button onClick={() => setModule('planes')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300', activeModule === 'planes' && 'ring-2 ring-amber-400')}><CreditCard className="size-4" />Planes</button>
             <button onClick={() => setModule('fuerza-delta')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'fuerza-delta' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><Truck className="size-4" />Logística</button>
-            <button onClick={() => setModule('dimarclub')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'dimarclub' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><Users className="size-4" />Dimarclub</button>
             {displayUser?.role === 'SUPPLIER' && (
               <button onClick={() => setModule('supplier-backoffice')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors', activeModule === 'supplier-backoffice' ? 'text-primary bg-primary/10' : 'text-primary hover:bg-primary/5')}><Store className="size-4" />Mi Backoffice</button>
             )}
@@ -263,12 +272,6 @@ export function TopNav() {
             )}
             {displayUser?.role === 'COURIER' && (
               <button onClick={() => setModule('courier-app')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors', activeModule === 'courier-app' ? 'text-primary bg-primary/10' : 'text-primary hover:bg-primary/5')}><Bike className="size-4" />Mi App Delta</button>
-            )}
-            {(displayUser?.role === 'CLIENT' || displayUser?.role === 'AFFILIATE' || displayUser?.role === 'PARTNER' || displayUser?.role === 'ADMIN' || displayUser?.role === 'SUPPLIER') && (
-              <button onClick={() => setModule('directorio')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'directorio' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><MapPin className="size-4" />Directorio</button>
-            )}
-            {(displayUser?.role === 'CLIENT' || displayUser?.role === 'AFFILIATE' || displayUser?.role === 'PARTNER' || displayUser?.role === 'ADMIN') && (
-              <button onClick={() => setModule('cooperativa')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'cooperativa' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><PiggyBank className="size-4" />Cooperativa</button>
             )}
             {displayUser?.role === 'ADMIN' && (
               <>
@@ -334,12 +337,14 @@ export function TopNav() {
                 </div>
               )}
               {navItem('Inicio', 'impulsepymes360', Home)}
-              {canAccessModule(displayUser?.role, 'affiliates') && navItem('Comunidad', 'affiliates', Users)}
+              {navItem('DimarClub', 'dimarclub', Users)}
+              {canAccessModule(displayUser?.role, 'affiliates') && navItem('Mi Red de Afiliados', 'affiliates', Network)}
+              {canAccessModule(displayUser?.role, 'cooperativa') && navItem('Cooperativa', 'cooperativa', PiggyBank)}
+              {canAccessModule(displayUser?.role, 'directorio') && navItem('Directorio', 'directorio', MapPin)}
               {navItem('Tienda', 'marketplace', Grid3x3)}
               {navItem('PubliBags', 'publibags', ShoppingBag)}
               {navItem('Planes', 'planes', CreditCard)}
               {navItem('Logística', 'fuerza-delta', Truck)}
-              {navItem('Dimarclub', 'dimarclub', Users)}
               <a href="https://dimarclub.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md hover:bg-muted"><Sparkles className="size-4" /> Sitio externo</a>
               {navItem('Proveedor', 'suppliers', Store)}
             </div>
