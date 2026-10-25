@@ -56,12 +56,11 @@ const PLANS: Plan[] = [
 const ADDONS: Addon[] = [
   { id: 'sobre-individual', name: 'Sobre individual (retiro horario fijo)', price: 2.25, unit: '/ unidad', icon: 'package' },
   { id: 'entrega-express', name: 'Entrega Express (retiro y entrega inmediata)', price: 4.0, unit: '/ unidad', icon: 'truck' },
-  { id: 'solo-publibags-qr', name: 'Solo espacio PubliBags con QR (sin plan integral)', price: 57.0, unit: '/ mes', icon: 'mapPin' },
+  { id: 'solo-publibags-qr', name: 'Solo espacio PubliBags con QR (sin plan integral)', price: 67.0, unit: '/ mes', icon: 'mapPin' },
 ]
 
 const INCLUDED_ALL = [
   { icon: 'globe', label: 'Dominio propio (.com / .ec)' },
-  { icon: 'users', label: 'Comunidad de consumidores' },
   { icon: 'mapPin', label: 'Espacio en directorio + álbum coleccionable' },
 ] as const
 
@@ -364,7 +363,7 @@ function Hero({ onSeePlans, onWhats }: { onSeePlans: () => void; onWhats: () => 
             marginRight: 'auto',
           }}
         >
-          Un ecosistema omnicanal para multiplicar tu presencia, tus ventas y tu comunidad de consumidores.
+          Un ecosistema omnicanal para multiplicar tu presencia y tus ventas.
           Sitio web, marketplace, emails, sobres Fuerza Delta y espacios PubliBags con QR en un solo plan.
         </p>
 
@@ -456,7 +455,7 @@ function ComparisonTable({ onChoose, onAddon }: { onChoose: (p: Plan) => void; o
               6 planes <span style={{ color: C.gold }}>integrales</span>
             </>
           }
-          subtitle="Todos incluyen dominio propio, comunidad de consumidores y espacio en directorio + álbum coleccionable."
+          subtitle="Todos incluyen dominio propio y espacio en directorio + álbum coleccionable."
         />
 
         {/* Add-ons destacados arriba */}
@@ -748,7 +747,7 @@ function PlanCards({ onChoose }: { onChoose: (p: Plan) => void }) {
                   <FeatureRow icon="shoppingBag" label="Marketplace" value={`${p.products} productos`} />
                   <FeatureRow icon="truck" label="Sobres Fuerza Delta" value={`${p.sobres}`} />
                   <FeatureRow icon="mapPin" label="PubliBags" value={`${p.qr} QR + ${p.qrProd} prod`} />
-                  <FeatureRow icon="check" label="Dominio + comunidad" value="Incluido" />
+                  <FeatureRow icon="check" label="Dominio propio" value="Incluido" />
                 </ul>
 
                 <button
@@ -817,7 +816,6 @@ function FeatureRow({
 function IncludedAll() {
   const items = [
     { icon: 'globe', title: 'Dominio propio', desc: 'Tu marca online con .com o .ec incluido en cada plan.' },
-    { icon: 'users', title: 'Comunidad de consumidores', desc: 'Acceso a la red DimarClub con miles de compradores activos.' },
     { icon: 'palette', title: 'Directorio + álbum', desc: 'Espacio en directorio público y álbum coleccionable digital.' },
   ]
   const iconFor = (k: string) => {
