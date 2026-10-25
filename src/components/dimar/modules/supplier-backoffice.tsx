@@ -18,9 +18,13 @@ import {
   Tabs, TabsContent, TabsList, TabsTrigger,
 } from '@/components/ui/tabs'
 import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
+import {
   Store, Users, Share2, Camera, Gift, QrCode, TrendingUp, Wallet,
   CheckCircle2, Loader2, Plus, Link2, Copy, Store as StoreIcon,
   Package, MessageSquare, Megaphone, Star, ArrowRight, Zap,
+  Truck, MapPin, User, Phone, ClipboardList, Send,
 } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
@@ -38,10 +42,11 @@ export function SupplierBackofficeModule() {
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 max-w-3xl">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 max-w-3xl">
           <TabsTrigger value="overview"><Store className="size-4 md:mr-1.5" /><span className="hidden md:inline">Resumen</span></TabsTrigger>
           <TabsTrigger value="affiliates"><Users className="size-4 md:mr-1.5" /><span className="hidden md:inline">Afiliados</span></TabsTrigger>
           <TabsTrigger value="marketing"><Megaphone className="size-4 md:mr-1.5" /><span className="hidden md:inline">Marketing</span></TabsTrigger>
+          <TabsTrigger value="logistics"><Truck className="size-4 md:mr-1.5" /><span className="hidden md:inline">Logística</span></TabsTrigger>
           <TabsTrigger value="tasks"><CheckCircle2 className="size-4 md:mr-1.5" /><span className="hidden md:inline">Tareas</span></TabsTrigger>
           <TabsTrigger value="tools"><Zap className="size-4 md:mr-1.5" /><span className="hidden md:inline">Herramientas</span></TabsTrigger>
         </TabsList>
@@ -49,6 +54,7 @@ export function SupplierBackofficeModule() {
         <TabsContent value="overview" className="mt-4"><OverviewTab /></TabsContent>
         <TabsContent value="affiliates" className="mt-4"><AffiliatesTab /></TabsContent>
         <TabsContent value="marketing" className="mt-4"><MarketingTab /></TabsContent>
+        <TabsContent value="logistics" className="mt-4"><LogisticsTab /></TabsContent>
         <TabsContent value="tasks" className="mt-4"><TasksTab /></TabsContent>
         <TabsContent value="tools" className="mt-4"><ToolsTab /></TabsContent>
       </Tabs>
@@ -384,6 +390,277 @@ function TasksTab() {
           )}
         </CardContent>
       </Card>
+    </div>
+  )
+}
+
+// ============ LOGÍSTICA (solicitar servicio de envío) ============
+const LOGISTICS_STATUS_LABELS: Record<string, string> = {
+  PENDING: 'Por asignar',
+  ASSIGNED: 'Asignado',
+  PICKED_UP: 'Recogido',
+  IN_TRANSIT: 'En camino',
+  DELIVERED: 'Entregado',
+  FAILED: 'Fallido',
+}
+
+const LOGISTICS_STATUS_BADGES: Record<string, string> = {
+  PENDING: 'bg-amber-100 text-amber-700 border-amber-300',
+  ASSIGNED: 'bg-sky-100 text-sky-700 border-sky-300',
+  PICKED_UP: 'bg-violet-100 text-violet-700 border-violet-300',
+  IN_TRANSIT: 'bg-orange-100 text-orange-700 border-orange-300',
+  DELIVERED: 'bg-emerald-100 text-emerald-700 border-emerald-300',
+  FAILED: 'bg-red-100 text-red-700 border-red-300',
+}
+
+const TASK_TYPE_LABEL: Record<string, string> = {
+  SOBRE: 'Sobre',
+  CARGA: 'Carga',
+  EXPRESS: 'Express',
+  MICRODISTRIBUCION: 'Microdist.',
+}
+
+function LogisticsTab() {
+  const toast = useAppStore((s) => s.toast)
+  const setModule = useAppStore((s) => s.setModule)
+  const [form, setForm] = useState({
+    taskType: 'SOBRE' as 'SOBRE' | 'CARGA',
+    pickupAddress: '',
+    deliveryAddress: '',
+    recipientName: '',
+    recipientPhone: '',
+    notes: '',
+  })
+  const [submitting, setSubmitting] = useState(false)
+  const [deliveries, setDeliveries] = useState<any[]>([])
+  const [loadingList, setLoadingList] = useState(true)
+
+  const fetchDeliveries = useCallback(async () => {
+    setLoadingList(true)
+    try {
+      const res = await fetch('/api/deliveries/request')
+      const d = await res.json()
+      if (res.ok && d?.deliveries) setDeliveries(d.deliveries)
+      else setDeliveries([])
+    } catch {
+      setDeliveries([])
+    } finally {
+      setLoadingList(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchDeliveries() }, [fetchDeliveries])
+
+  const submit = async () => {
+    if (!form.pickupAddress.trim() || !form.deliveryAddress.trim()) {
+      toast('Completa las direcciones de recogida y entrega', 'error')
+      return
+    }
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/deliveries/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          taskType: form.taskType,
+          pickupAddress: form.pickupAddress.trim(),
+          deliveryAddress: form.deliveryAddress.trim(),
+          recipientName: form.recipientName.trim() || undefined,
+          recipientPhone: form.recipientPhone.trim() || undefined,
+          notes: form.notes.trim() || undefined,
+        }),
+      })
+      const d = await res.json()
+      if (!res.ok) {
+        toast(d?.error || 'Error al enviar la solicitud', 'error')
+        return
+      }
+      toast('Solicitud enviada. El Delta Master asignará un mensajero pronto.', 'success')
+      setForm({
+        taskType: 'SOBRE',
+        pickupAddress: '',
+        deliveryAddress: '',
+        recipientName: '',
+        recipientPhone: '',
+        notes: '',
+      })
+      fetchDeliveries()
+    } catch {
+      toast('Error de red al enviar la solicitud', 'error')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Banner informativo: solo el Delta Master asigna mensajeros */}
+      <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-950/20 p-3 flex items-start gap-3">
+        <ClipboardList className="size-5 text-amber-600 shrink-0 mt-0.5" />
+        <div className="text-sm">
+          <p className="font-medium text-amber-900 dark:text-amber-200">¿Cómo funciona el servicio de logística?</p>
+          <p className="text-amber-700 dark:text-amber-300 mt-0.5">
+            Tú solicitas el envío y el <strong>Delta Master</strong> (administrador) asigna un mensajero.
+            Recibirás el nombre del mensajero en cuanto sea asignado.
+          </p>
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-4">
+        {/* Formulario */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Truck className="size-5 text-primary" /> Solicitar servicio de logística
+            </CardTitle>
+            <CardDescription>
+              ¿Necesitas enviar un sobre o carga? Solicita el servicio y nuestro Delta Master asignará un mensajero.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Tipo de envío */}
+            <div className="space-y-1.5">
+              <Label>Tipo de envío <span className="text-destructive">*</span></Label>
+              <Select value={form.taskType} onValueChange={(v) => setForm({ ...form, taskType: v as 'SOBRE' | 'CARGA' })}>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="SOBRE">Sobre (documentos, sobres pequeños)</SelectItem>
+                  <SelectItem value="CARGA">Carga (paquetes, bultos)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Dirección de recogida */}
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-1.5"><MapPin className="size-3.5 text-muted-foreground" /> Dirección de recogida <span className="text-destructive">*</span></Label>
+              <Input
+                value={form.pickupAddress}
+                onChange={(e) => setForm({ ...form, pickupAddress: e.target.value })}
+                placeholder="Ej. Av. Amazonas N34-451, Quito"
+              />
+            </div>
+
+            {/* Dirección de entrega */}
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-1.5"><MapPin className="size-3.5 text-muted-foreground" /> Dirección de entrega <span className="text-destructive">*</span></Label>
+              <Input
+                value={form.deliveryAddress}
+                onChange={(e) => setForm({ ...form, deliveryAddress: e.target.value })}
+                placeholder="Ej. Calle Bolívar 12-34, Guayaquil"
+              />
+            </div>
+
+            {/* Destinatario */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1.5"><User className="size-3.5 text-muted-foreground" /> Nombre del destinatario</Label>
+                <Input
+                  value={form.recipientName}
+                  onChange={(e) => setForm({ ...form, recipientName: e.target.value })}
+                  placeholder="Opcional"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1.5"><Phone className="size-3.5 text-muted-foreground" /> Teléfono del destinatario</Label>
+                <Input
+                  value={form.recipientPhone}
+                  onChange={(e) => setForm({ ...form, recipientPhone: e.target.value })}
+                  placeholder="Opcional"
+                />
+              </div>
+            </div>
+
+            {/* Notas */}
+            <div className="space-y-1.5">
+              <Label>Notas</Label>
+              <Textarea
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                placeholder="Descripción del contenido, instrucciones especiales..."
+                rows={3}
+              />
+            </div>
+
+            <Button
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+              onClick={submit}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <><Loader2 className="size-4 mr-1.5 animate-spin" /> Enviando...</>
+              ) : (
+                <><Send className="size-4 mr-1.5" /> Enviar solicitud</>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Tus solicitudes recientes */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <ClipboardList className="size-5 text-primary" /> Tus solicitudes recientes
+            </CardTitle>
+            <CardDescription>Solicitudes de logística que has creado</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loadingList ? (
+              <div className="space-y-2">
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+                <Skeleton className="h-16 w-full" />
+              </div>
+            ) : deliveries.length === 0 ? (
+              <div className="text-center py-10 text-sm text-muted-foreground">
+                <Truck className="size-10 mx-auto mb-2 opacity-30" />
+                No tienes solicitudes de logística todavía.
+                <br />Crea la primera con el formulario de la izquierda.
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-[28rem] overflow-y-auto pr-1">
+                {deliveries.map((d) => {
+                  const st = d.status || 'PENDING'
+                  const stLabel = LOGISTICS_STATUS_LABELS[st] || st
+                  const stBadge = LOGISTICS_STATUS_BADGES[st] || 'bg-muted text-muted-foreground border-border'
+                  const courierName = d.courier?.user?.name
+                  return (
+                    <div key={d.id} className="rounded-lg border p-3 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Badge variant="outline" className="shrink-0">
+                            {TASK_TYPE_LABEL[d.taskType] || d.taskType}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground font-mono truncate">
+                            {d.order?.orderNumber || '—'}
+                          </span>
+                        </div>
+                        <Badge variant="outline" className={cn('shrink-0', stBadge)}>{stLabel}</Badge>
+                      </div>
+                      <div className="text-sm">
+                        <p className="flex items-start gap-1.5">
+                          <MapPin className="size-3.5 text-muted-foreground shrink-0 mt-0.5" />
+                          <span className="truncate">{d.deliveryAddress || '—'}</span>
+                        </p>
+                        {courierName && (
+                          <p className="flex items-center gap-1.5 mt-1 text-emerald-700 dark:text-emerald-300">
+                            <User className="size-3.5 shrink-0" /> Mensajero: <strong>{courierName}</strong>
+                          </p>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {d.createdAt ? new Date(d.createdAt).toLocaleString('es-EC', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+            <Button variant="ghost" size="sm" className="w-full mt-3" onClick={() => setModule('logistics')}>
+              <Truck className="size-4 mr-1.5" /> Ver tablero de logística
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

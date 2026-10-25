@@ -1498,3 +1498,55 @@ Stage Summary:
 - 9 elementos del sistema como cards, cada uno con su descripción exacta y botón "Descubrir" que navega al módulo correspondiente.
 - El botón "Inicio" + el logo abren el portal (no el marketplace).
 - Wiring restaurado: types.ts, permissions.ts, page.tsx, topnav.tsx.
+
+---
+Task ID: 28-supplier-logistics-request
+Agent: full-stack-developer (supplier logistics form)
+Task: Permitir que un proveedor solicite un servicio de logística (sobre/carga) desde su backoffice — el Delta Master (admin) sigue siendo el único que asigna mensajeros.
+
+Work Log:
+- Leído worklog.md (especialmente Task 17-logistics-flow) para entender el flujo end-to-end order → Delivery PENDING → admin arrastra a courier → courier app, y prisma/schema.prisma (Delivery.orderId es @unique y obligatorio).
+- Leído src/app/api/deliveries/route.ts (GET=ADMIN/COURIER, POST=ADMIN), src/app/api/deliveries/[id]/route.ts (PATCH assign/status/sign/incident/release), src/app/api/orders/route.ts (patrón de creación de Order + auto-Delivery), src/lib/security/auth.ts (requireRole), y src/components/dimar/modules/supplier-backoffice.tsx (módulo con 5 tabs).
+- Creado src/app/api/deliveries/request/route.ts con POST + GET:
+  * POST: requireRole('SUPPLIER','ADMIN'). Body: { taskType, pickupAddress, deliveryAddress, notes?, recipientName?, recipientPhone? }. Valida taskType ∈ {SOBRE, CARGA} y ambas direcciones obligatorias. Como Delivery.orderId es @unique y obligatorio, crea un Order mínimo (orderNumber='LOG-'+4 dígitos, userId=proveedor, subtotal/commission/total=0, status='CONFIRMED', paymentStatus='N/A', paymentMethod='LOGISTICA', shippingAddress=deliveryAddress) — distinto prefijo de los pedidos del marketplace ('DM-'). Luego crea Delivery(status='PENDING', taskType, pickupAddress, deliveryAddress, notes que combina destinatario+tel+notas+nombre del proveedor). Si falla el Delivery, borra el Order huérfano (best-effort). Notifica a todos los ADMIN (Delta Master) con type 'ORDER_RECEIVED', title 'Nueva solicitud de logística', message 'El proveedor {name} solicita enviar un {sobre/carga} a {deliveryAddress}. Requiere asignar mensajero.', link '/?module=logistics'. Retorna { ok: true, delivery } con status 201.
+  * GET: requireRole('SUPPLIER','ADMIN'). Filtra deliveries donde order.userId = user.id AND order.orderNumber startsWith 'LOG-' (solo solicitudes de logística independientes, no pedidos del marketplace). Include order { orderNumber, createdAt } + courier.user.name. Ordena por createdAt desc, take 50. Retorna { ok: true, deliveries }.
+- Modificado src/components/dimar/modules/supplier-backoffice.tsx:
+  * Añadidos imports: Select* de @/components/ui/select, e iconos Truck/MapPin/User/Phone/ClipboardList/Send de lucide-react.
+  * TabsList cambió de grid-cols-5 a grid-cols-6 y se añadió el TabsTrigger "Logística" (icono Truck). Añadido TabsContent value="logistics" con <LogisticsTab/>.
+  * Nuevo componente LogisticsTab con: banner informativo (amber) que explica que el Delta Master asigna el mensajero; grid lg:grid-cols-2 con formulario (card "Solicitar servicio de logística") a la izquierda y "Tus solicitudes recientes" a la derecha.
+  * Formulario: Select SOBRE/CARGA, Inputs pickupAddress/deliveryAddress (obligatorios, con asterisco rojo), Inputs recipientName/recipientPhone (opcionales), Textarea notes. Botón "Enviar solicitud" emerald (bg-emerald-600 hover:bg-emerald-700) con estado loading (Loader2 spin). POST a /api/deliveries/request. En éxito: toast success "Solicitud enviada. El Delta Master asignará un mensajero pronto." + reset form + refrescar lista. En error: toast error.
+  * Lista de solicitudes recientes: fetch GET /api/deliveries/request al montar. Skeleton mientras carga. Empty state con icono Truck. Lista con max-h-[28rem] overflow-y-auto. Cada item: badge tipo (Sobre/Carga), orderNumber mono truncado, badge estado con colores matching logistics module (PENDING amber, ASSIGNED sky, PICKED_UP violet, IN_TRANSIT orange, DELIVERED emerald, FAILED red), dirección de entrega, mensajero asignado (si existe, emerald), fecha en es-EC. Botón ghost "Ver tablero de logística" que abre el módulo logistics.
+- Verificación de seguridad: PATCH /api/deliveries/[id] action 'assign' (línea 81-83) ya exige user.role === 'ADMIN' desde Task 17 — los proveedores (SUPPLIER) reciben 403 "Solo un admin puede asignar mensajeros". 'release' también exige ADMIN. 'status'/'sign'/'incident' exigen ADMIN o el courier asignado (que el proveedor no es). Por tanto, los proveedores NO pueden asignar mensajeros — solo el Delta Master. Sin cambios necesarios.
+- Ejecutado `bun run lint` → 0 errores, 0 warnings.
+
+Stage Summary:
+- Nuevo endpoint /api/deliveries/request (POST + GET) operacional, aislado de los pedidos del marketplace mediante prefijo 'LOG-' en orderNumber.
+- Tab "Logística" añadida al backoffice del proveedor (ahora 6 tabs: Resumen, Afiliados, Marketing, Logística, Tareas, Herramientas) con formulario completo + lista de solicitudes recientes con scroll.
+- El flujo completo funciona: proveedor llena formulario → POST crea Order mínimo + Delivery(PENDING) + notifica admins → el delivery aparece en Logística "Por asignar" (porque status=PENDING) → Delta Master arrastra a courier → courier entrega. Proveedor ve el nombre del mensajero en su lista una vez asignado.
+- Restricción de seguridad confirmada: suppliers NO pueden asignar couriers (PATCH assign exige ADMIN). Solo el Delta Master asigna.
+- Líneas: deliveries/request/route.ts=148, supplier-backoffice.tsx creció de 434 a 706 líneas (+272 por LogisticsTab con form + lista).
+
+---
+Task ID: 28-supplier-logistics-request (main agent verification)
+Agent: main (Z.ai Code)
+Task: Fix bag-plan.tsx old values (297/141/$20) + add supplier logistics request form + verify supplier can't assign couriers
+
+Work Log:
+- User reported: PubliBags grid still showed old quantities (297/141/$20) + described the correct logistics flow (Delta Master assigns, not suppliers) + suppliers should be able to request logistics services.
+- Fix 1 — bag-plan.tsx (visualizer): found and fixed 6 hardcoded old values:
+  * "297 espacios" → {BAG_TOTAL_SPACES} (79)
+  * "297 × $20" → {BAG_TOTAL_SPACES} × ${BAG_SPACE_PRICE} (79 × $67)
+  * 3 occurrences of "$20" → ${BAG_SPACE_PRICE} ($67)
+  * BAG_TOTAL_SPACES * 20 → BAG_TOTAL_SPACES * BAG_SPACE_PRICE in potential calculation
+  * Added BAG_SPACE_PRICE to imports
+- Fix 2 — Delegated to subagent: created logistics request flow for suppliers:
+  * New API: POST /api/deliveries/request (creates dummy Order LOG-XXXX + Delivery PENDING + notifies admins)
+  * New API: GET /api/deliveries/request (lists supplier's own logistics requests)
+  * New "Logística" tab in supplier-backoffice.tsx (6th tab): form (tipo SOBRE/CARGA + addresses + recipient + notes) + recent requests list with status badges
+  * Verified: suppliers CANNOT assign couriers (PATCH assign requires ADMIN role — already enforced from Task 17)
+- Lint: 0 errors, 0 warnings ✅
+
+Stage Summary:
+- bag-plan.tsx visualizer now shows 79 espacios × $67 (no more 297/141/$20).
+- Supplier backoffice has a new "Logística" tab where suppliers can request logistics services (sobre/carga) that go to the Delta Master's "Por asignar" queue.
+- The correct flow is enforced: supplier requests → Delta Master assigns courier → courier delivers. Suppliers cannot assign couriers.

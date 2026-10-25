@@ -75,6 +75,7 @@ import { cn } from '@/lib/utils'
 import {
   BAG_PANELS,
   BAG_TOTAL_SPACES,
+  BAG_SPACE_PRICE,
   panelForPosition,
   rowColForPosition,
   sponsorColor,
@@ -256,7 +257,7 @@ export function BagPlanModule() {
       else if (s.status === 'RESERVED') reserved++
       else if (s.status === 'SOLD') { sold++; revenue += s.price || 0 }
     }
-    const newStats = { total: (stats?.total || BAG_TOTAL_SPACES), available, reserved, sold, revenue, potential: (stats?.potential || BAG_TOTAL_SPACES * 20) }
+    const newStats = { total: (stats?.total || BAG_TOTAL_SPACES), available, reserved, sold, revenue, potential: (stats?.potential || BAG_TOTAL_SPACES * BAG_SPACE_PRICE) }
     if (editionView === 'next') {
       setData({ ...data, nextSpaces: next, nextStats: newStats })
     } else {
@@ -363,7 +364,7 @@ export function BagPlanModule() {
             <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 flex items-start gap-2">
               <Printer className="size-4 mt-0.5 shrink-0" />
               <span>
-                Esta campaña ya está <strong>impresa</strong>. Visualización de solo lectura — todos los 297 espacios están vendidos a patrocinadores.
+                Esta campaña ya está <strong>impresa</strong>. Visualización de solo lectura — todos los {BAG_TOTAL_SPACES} espacios están vendidos a patrocinadores.
               </span>
             </div>
           )}
@@ -961,7 +962,7 @@ function DashboardTab({
               <span className="text-xs font-medium">Potencial</span>
             </div>
             <p className="text-2xl font-bold mt-1">{fmtUsd(stats.potential)}</p>
-            <p className="text-xs text-muted-foreground">297 × $20</p>
+            <p className="text-xs text-muted-foreground">{BAG_TOTAL_SPACES} × ${BAG_SPACE_PRICE}</p>
           </CardContent>
         </Card>
         <Card>
@@ -1166,7 +1167,7 @@ function SpaceEditorDialog({
                 ¡Eres socio PubliBags!
               </div>
               <p className="text-xs text-emerald-700">
-                Tu $20 se convirtió en aporte de capital. Genera 5% interés mensual compuesto.
+                Tu ${BAG_SPACE_PRICE} se convirtió en aporte de capital. Genera 5% interés mensual compuesto.
               </p>
               <Separator className="bg-emerald-200" />
               <div className="grid grid-cols-2 gap-2 text-xs">
@@ -1310,7 +1311,7 @@ function SpaceEditorDialog({
               {!isReadOnly && currentUser && isAvailable && (
                 <>
                   <div className="w-full text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded p-2">
-                    <strong>Tu $20 se convierte en aporte de capital.</strong> Genera 5% interés mensual compuesto. Tu red de afiliados gana comisiones.
+                    <strong>Tu ${BAG_SPACE_PRICE} se convierte en aporte de capital.</strong> Genera 5% interés mensual compuesto. Tu red de afiliados gana comisiones.
                   </div>
                   <Button variant="outline" onClick={() => patch('reserve')} disabled={saving}>
                     <Clock className="size-4 mr-1.5" /> Reservar
@@ -1330,7 +1331,7 @@ function SpaceEditorDialog({
               {!isReadOnly && currentUser && isReserved && (
                 <>
                   <div className="w-full text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded p-2">
-                    <strong>Tu $20 se convierte en aporte de capital.</strong> Genera 5% interés mensual compuesto. Tu red de afiliados gana comisiones.
+                    <strong>Tu ${BAG_SPACE_PRICE} se convierte en aporte de capital.</strong> Genera 5% interés mensual compuesto. Tu red de afiliados gana comisiones.
                   </div>
                   <Button variant="outline" onClick={() => patch('release')} disabled={saving}>
                     <XCircle className="size-4 mr-1.5" /> Liberar
