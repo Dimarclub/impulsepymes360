@@ -247,7 +247,6 @@ export function TopNav() {
                 <DropdownMenuItem onClick={() => setModule('suppliers')}><Store className="size-4 mr-2" /> Proveedores</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <button onClick={() => toast('Próximamente: Alquiler de departamentos', 'info')} className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md text-foreground hover:text-primary hover:bg-muted/60 transition-colors"><Building2 className="size-4" />Alquiler</button>
             <button onClick={() => setModule('marketplace')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'marketplace' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><Grid3x3 className="size-4" />Tienda</button>
             <button onClick={() => setModule('publibags')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'publibags' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><ShoppingBag className="size-4" />PubliBags</button>
             <button onClick={() => setModule('planes')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300', activeModule === 'planes' && 'ring-2 ring-amber-400')}><CreditCard className="size-4" />Planes</button>
@@ -343,7 +342,6 @@ export function TopNav() {
               {navItem('Dimarclub', 'dimarclub', Users)}
               <a href="https://dimarclub.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md hover:bg-muted"><Sparkles className="size-4" /> Sitio externo</a>
               {navItem('Proveedor', 'suppliers', Store)}
-              <button onClick={() => toast('Próximamente', 'info')} className="w-full flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md hover:bg-muted text-left"><Building2 className="size-4" /> Alquiler</button>
             </div>
           </div>
         )}
