@@ -59,16 +59,35 @@ export function FuerzaDeltaModule() {
   const toast = useAppStore((s) => s.toast)
   const [mobileNav, setMobileNav] = useState(false)
 
-  // Inyectar Google Fonts (Outfit + DM Sans)
+  // Inyectar Google Fonts (Outfit + DM Sans) + animación del hero
   useEffect(() => {
     const id = 'fuerza-delta-fonts'
-    if (document.getElementById(id)) return
-    const link = document.createElement('link')
-    link.id = id
-    link.rel = 'stylesheet'
-    link.href =
-      'https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap'
-    document.head.appendChild(link)
+    if (!document.getElementById(id)) {
+      const link = document.createElement('link')
+      link.id = id
+      link.rel = 'stylesheet'
+      link.href =
+        'https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap'
+      document.head.appendChild(link)
+    }
+    const styleId = 'fuerza-delta-anim'
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style')
+      style.id = styleId
+      style.textContent = `
+        @keyframes fd-slide {
+          0% { transform: translateX(40px) scale(1.05); }
+          50% { transform: translateX(-40px) scale(1.05); }
+          100% { transform: translateX(40px) scale(1.05); }
+        }
+        .fd-slide-track { overflow: hidden; position: relative; }
+        .fd-slide-img {
+          animation: fd-slide 8s ease-in-out infinite;
+          width: 100%; height: auto; display: block;
+        }
+      `
+      document.head.appendChild(style)
+    }
   }, [])
 
   const onSolicitar = (planName: string) => {
@@ -347,63 +366,37 @@ function Hero({ onSeeTarifas, onWhats }: { onSeeTarifas: () => void; onWhats: ()
             </div>
           </div>
 
-          {/* Hero visual */}
+          {/* Hero visual — imagen del mensajero con animación derecha→izquierda */}
           <div className="relative">
             <div
-              className="rounded-2xl p-8 flex flex-col items-center justify-center text-center"
+              className="rounded-2xl overflow-hidden"
               style={{
-                background: `linear-gradient(135deg, ${C.card} 0%, ${C.card2} 100%)`,
                 border: `1px solid ${C.borderLight}`,
-                minHeight: 320,
+                background: C.card,
               }}
             >
-              <p
-                style={{
-                  color: C.muted,
-                  fontSize: 12,
-                  letterSpacing: 2,
-                  textTransform: 'uppercase',
-                }}
-              >
-                Tarifa plana · Plan 15
-              </p>
-              <p
-                style={{
-                  fontFamily: "'Outfit', sans-serif",
-                  fontWeight: 900,
-                  fontSize: 'clamp(80px, 14vw, 140px)',
-                  lineHeight: 1,
-                  color: C.gold,
-                  marginTop: 8,
-                }}
-              >
-                $1.75
-              </p>
-              <p
-                style={{
-                  color: C.textDim,
-                  fontSize: 15,
-                  marginTop: 4,
-                  maxWidth: 320,
-                }}
-              >
-                por entrega · pago diario anticipado · 1 a 15 entregas al día
-              </p>
-              <div className="flex flex-wrap justify-center gap-2 w-full mt-6">
-                {['Pago diario', 'Sin contratos', 'Recogida incluida'].map((chip) => (
-                  <span
-                    key={chip}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold"
-                    style={{
-                      background: `${C.emerald}1A`,
-                      color: C.emerald,
-                      border: `1px solid ${C.emerald}55`,
-                    }}
-                  >
-                    <Check className="size-3" /> {chip}
-                  </span>
-                ))}
+              <div className="fd-slide-track">
+                <img
+                  src="/images/fuerza-delta-hero.png"
+                  alt="Mensajero Fuerza Delta en moto con camisa oficial"
+                  className="fd-slide-img"
+                />
               </div>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2 w-full mt-3">
+              {['Pago diario', 'Sin contratos', 'Recogida incluida'].map((chip) => (
+                <span
+                  key={chip}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold"
+                  style={{
+                    background: `${C.emerald}1A`,
+                    color: C.emerald,
+                    border: `1px solid ${C.emerald}55`,
+                  }}
+                >
+                  <Check className="size-3" /> {chip}
+                </span>
+              ))}
             </div>
           </div>
         </div>
