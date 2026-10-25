@@ -241,7 +241,6 @@ export function TopNav() {
                 <DropdownMenuItem onClick={() => setModule('dimarclub')}><Users className="size-4 mr-2" /> DimarClub (sitio)</DropdownMenuItem>
                 {canAccessModule(displayUser?.role, 'affiliates') && <DropdownMenuItem onClick={() => setModule('affiliates')}><Network className="size-4 mr-2" /> Mi Red de Afiliados</DropdownMenuItem>}
                 {canAccessModule(displayUser?.role, 'cooperativa') && <DropdownMenuItem onClick={() => setModule('cooperativa')}><PiggyBank className="size-4 mr-2" /> Cooperativa</DropdownMenuItem>}
-                {canAccessModule(displayUser?.role, 'directorio') && <DropdownMenuItem onClick={() => setModule('directorio')}><MapPin className="size-4 mr-2" /> Directorio</DropdownMenuItem>}
               </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>
@@ -261,6 +260,9 @@ export function TopNav() {
             <button onClick={() => setModule('publibags')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'publibags' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><ShoppingBag className="size-4" />PubliBags</button>
             <button onClick={() => setModule('planes')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300', activeModule === 'planes' && 'ring-2 ring-amber-400')}><CreditCard className="size-4" />Planes</button>
             <button onClick={() => setModule('fuerza-delta')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'fuerza-delta' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><Truck className="size-4" />Logística</button>
+            {canAccessModule(displayUser?.role, 'directorio') && (
+              <button onClick={() => setModule('directorio')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'directorio' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><MapPin className="size-4" />Directorio</button>
+            )}
             {displayUser?.role === 'SUPPLIER' && (
               <button onClick={() => setModule('supplier-backoffice')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors', activeModule === 'supplier-backoffice' ? 'text-primary bg-primary/10' : 'text-primary hover:bg-primary/5')}><Store className="size-4" />Mi Backoffice</button>
             )}
