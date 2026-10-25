@@ -240,7 +240,6 @@ export function TopNav() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setModule('dimarclub')}><Users className="size-4 mr-2" /> DimarClub (sitio)</DropdownMenuItem>
                 {canAccessModule(displayUser?.role, 'affiliates') && <DropdownMenuItem onClick={() => setModule('affiliates')}><Network className="size-4 mr-2" /> Mi Red de Afiliados</DropdownMenuItem>}
-                {canAccessModule(displayUser?.role, 'cooperativa') && <DropdownMenuItem onClick={() => setModule('cooperativa')}><PiggyBank className="size-4 mr-2" /> Cooperativa</DropdownMenuItem>}
               </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>
@@ -341,7 +340,6 @@ export function TopNav() {
               {navItem('Inicio', 'impulsepymes360', Home)}
               {navItem('DimarClub', 'dimarclub', Users)}
               {canAccessModule(displayUser?.role, 'affiliates') && navItem('Mi Red de Afiliados', 'affiliates', Network)}
-              {canAccessModule(displayUser?.role, 'cooperativa') && navItem('Cooperativa', 'cooperativa', PiggyBank)}
               {canAccessModule(displayUser?.role, 'directorio') && navItem('Directorio', 'directorio', MapPin)}
               {navItem('Tienda', 'marketplace', Grid3x3)}
               {navItem('PubliBags', 'publibags', ShoppingBag)}

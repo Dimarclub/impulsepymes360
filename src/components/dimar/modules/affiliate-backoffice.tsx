@@ -19,7 +19,7 @@ import {
 import {
   Users, Share2, Copy, Link2, Wallet, TrendingUp, QrCode, Gift,
   CheckCircle2, Plus, Network, DollarSign, Megaphone, ArrowRight,
-  ShoppingBag, Award, Zap, Store,
+  ShoppingBag, Award, Zap, Store, PiggyBank,
 } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
@@ -32,19 +32,21 @@ export function AffiliateBackofficeModule() {
     <div className="space-y-6 p-4 md:p-6 lg:p-8 max-w-[1320px] mx-auto">
       <div>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Backoffice de Afiliado</h1>
-        <p className="text-muted-foreground text-sm mt-1">Tu red, comisiones, marketing y tareas</p>
+        <p className="text-muted-foreground text-sm mt-1">Tu red, comisiones, cooperativa, marketing y tareas</p>
       </div>
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 max-w-3xl">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 max-w-3xl">
           <TabsTrigger value="overview"><TrendingUp className="size-4 md:mr-1.5" /><span className="hidden md:inline">Resumen</span></TabsTrigger>
           <TabsTrigger value="network"><Network className="size-4 md:mr-1.5" /><span className="hidden md:inline">Mi Red</span></TabsTrigger>
           <TabsTrigger value="commissions"><DollarSign className="size-4 md:mr-1.5" /><span className="hidden md:inline">Comisiones</span></TabsTrigger>
+          <TabsTrigger value="cooperative"><PiggyBank className="size-4 md:mr-1.5" /><span className="hidden md:inline">Cooperativa</span></TabsTrigger>
           <TabsTrigger value="marketing"><Megaphone className="size-4 md:mr-1.5" /><span className="hidden md:inline">Marketing</span></TabsTrigger>
           <TabsTrigger value="tasks"><Award className="size-4 md:mr-1.5" /><span className="hidden md:inline">Tareas</span></TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="mt-4"><OverviewTab /></TabsContent>
         <TabsContent value="network" className="mt-4"><NetworkTab /></TabsContent>
         <TabsContent value="commissions" className="mt-4"><CommissionsTab /></TabsContent>
+        <TabsContent value="cooperative" className="mt-4"><CooperativeTab /></TabsContent>
         <TabsContent value="marketing" className="mt-4"><MarketingTab /></TabsContent>
         <TabsContent value="tasks" className="mt-4"><TasksTab /></TabsContent>
       </Tabs>
@@ -293,5 +295,83 @@ function TasksTab() {
         {progress.rewardClaimed && <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4 text-center"><CheckCircle2 className="size-8 mx-auto text-emerald-600 mb-2" /><p className="font-medium text-emerald-800">¡Recompensa reclamada!</p></div>}
       </CardContent>
     </Card>
+  )
+}
+
+// ============ COOPERATIVA ============
+function CooperativeTab() {
+  const toast = useAppStore((s) => s.toast)
+  const [account, setAccount] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [depositOpen, setDepositOpen] = useState(false)
+  const [amount, setAmount] = useState('')
+
+  const fetchAccount = useCallback(async () => {
+    try {
+      const res = await fetch('/api/cooperative')
+      if (res.ok) setAccount(await res.json())
+    } catch { /* ignore */ }
+    finally { setLoading(false) }
+  }, [])
+
+  useEffect(() => { fetchAccount() }, [fetchAccount])
+
+  const deposit = async () => {
+    const amt = parseFloat(amount)
+    if (!amt || amt <= 0) { toast('Monto inválido', 'error'); return }
+    try {
+      const res = await fetch('/api/cooperative/deposit', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: amt, description: 'Aporte desde backoffice' }),
+      })
+      if (!res.ok) throw new Error()
+      toast(`Aporte de ${fmtUsd(amt)} registrado`, 'success')
+      setAmount(''); setDepositOpen(false); fetchAccount()
+    } catch { toast('Error al depositar', 'error') }
+  }
+
+  if (loading) return <Card><CardContent className="p-8 text-center text-muted-foreground">Cargando cooperativa…</CardContent></Card>
+
+  if (!account) {
+    return <Card><CardContent className="p-8 text-center"><PiggyBank className="size-12 mx-auto text-muted-foreground mb-3" /><p className="font-medium">Aún no tienes cuenta cooperativa</p><p className="text-sm text-muted-foreground mt-1">Haz tu primer aporte para activar tu cuenta y empezar a generar 5% interés mensual.</p><Button className="mt-4" onClick={() => setDepositOpen(true)}><Plus className="size-4 mr-1.5" /> Hacer aporte</Button></CardContent></Card>
+  }
+
+  const projectedYear = account.balance * Math.pow(1.05, 12)
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader><CardTitle className="flex items-center gap-2"><PiggyBank className="size-5 text-emerald-600" /> Mi Cooperativa</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4 text-center">
+            <p className="text-xs text-muted-foreground">Saldo disponible</p>
+            <p className="text-4xl font-bold mt-1 text-emerald-700">{fmtUsd(account.balance)}</p>
+            <p className="text-xs text-muted-foreground mt-1">Genera <strong>5% interés mensual compuesto</strong></p>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="text-center"><p className="text-xs text-muted-foreground">Total aportado</p><p className="font-bold text-emerald-600">{fmtUsd(account.totalContributed)}</p></div>
+            <div className="text-center"><p className="text-xs text-muted-foreground">Total ganado</p><p className="font-bold text-amber-600">{fmtUsd(account.totalEarned)}</p></div>
+            <div className="text-center"><p className="text-xs text-muted-foreground">Proyección anual</p><p className="font-bold text-purple-600">{fmtUsd(projectedYear)}</p></div>
+          </div>
+          <div className="flex gap-2">
+            <Button className="flex-1" onClick={() => setDepositOpen(true)}><Plus className="size-4 mr-1.5" /> Hacer aporte</Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Dialog open={depositOpen} onOpenChange={setDepositOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Hacer aporte de capital</DialogTitle></DialogHeader>
+          <div className="space-y-3 py-2">
+            <p className="text-sm text-muted-foreground">Tu aporte genera 5% interés mensual compuesto. Retiro disponible después de 5 años.</p>
+            <Input type="number" placeholder="Monto en USD" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDepositOpen(false)}>Cancelar</Button>
+            <Button onClick={deposit}>Confirmar aporte</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   )
 }
