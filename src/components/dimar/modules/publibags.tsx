@@ -349,35 +349,33 @@ function Hero({ onSeePlan, onWhats }: { onSeePlan: () => void; onWhats: () => vo
             </div>
           </div>
 
-          {/* Hero visual */}
+          {/* Hero visual — imagen del bolso */}
           <div className="relative">
             <div
-              className="rounded-2xl p-8 flex flex-col items-center justify-center text-center"
+              className="rounded-2xl overflow-hidden"
               style={{
-                background: `linear-gradient(135deg, ${C.card} 0%, ${C.card2} 100%)`,
                 border: `1px solid ${C.borderLight}`,
-                minHeight: 320,
+                background: C.card,
               }}
             >
-              <p style={{ color: C.muted, fontSize: 12, letterSpacing: 2, textTransform: 'uppercase' }}>Espacios totales</p>
-              <p style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 900, fontSize: 'clamp(80px, 14vw, 140px)', lineHeight: 1, color: C.emerald, marginTop: 8 }}>
-                {BAG_TOTAL_SPACES}
-              </p>
-              <p style={{ color: C.textDim, fontSize: 15, marginTop: 8, maxWidth: 320 }}>
-                Cada uno de 10×5 cm, distribuidos en 5 paneles del bolso (Frente, Posterior, Base, Tapa y Correa)
-              </p>
-              <div className="grid grid-cols-3 gap-2 w-full mt-6">
-                {[
-                  { label: 'Paneles', value: '5' },
-                  { label: 'Tamaño bolso', value: '45×35cm' },
-                  { label: 'Reutilizable', value: '∞' },
-                ].map((s) => (
-                  <div key={s.label} className="rounded-lg p-2.5" style={{ background: C.bg, border: `1px solid ${C.border}` }}>
-                    <p style={{ fontSize: 18, fontWeight: 700, color: C.text }}>{s.value}</p>
-                    <p style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>{s.label}</p>
-                  </div>
-                ))}
-              </div>
+              <img
+                src="/images/publibags-hero.png"
+                alt="Bolso PubliBags ecológico con espacios publicitarios QR"
+                className="w-full h-auto block"
+                style={{ display: 'block' }}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-2 w-full mt-3">
+              {[
+                { label: 'Paneles', value: '5' },
+                { label: 'Espacios', value: String(BAG_TOTAL_SPACES) },
+                { label: 'Reutilizable', value: '∞' },
+              ].map((s) => (
+                <div key={s.label} className="rounded-lg p-2.5 text-center" style={{ background: C.card, border: `1px solid ${C.border}` }}>
+                  <p style={{ fontSize: 18, fontWeight: 700, color: C.emerald }}>{s.value}</p>
+                  <p style={{ fontSize: 10, color: C.muted, textTransform: 'uppercase', letterSpacing: 0.5 }}>{s.label}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
