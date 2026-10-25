@@ -239,7 +239,6 @@ export function TopNav() {
                 <DropdownMenuLabel>Comunidad DimarClub</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setModule('dimarclub')}><Users className="size-4 mr-2" /> DimarClub (sitio)</DropdownMenuItem>
-                {canAccessModule(displayUser?.role, 'affiliates') && <DropdownMenuItem onClick={() => setModule('affiliates')}><Network className="size-4 mr-2" /> Mi Red de Afiliados</DropdownMenuItem>}
               </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>
@@ -265,7 +264,7 @@ export function TopNav() {
             {displayUser?.role === 'SUPPLIER' && (
               <button onClick={() => setModule('supplier-backoffice')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors', activeModule === 'supplier-backoffice' ? 'text-primary bg-primary/10' : 'text-primary hover:bg-primary/5')}><Store className="size-4" />Mi Backoffice</button>
             )}
-            {displayUser?.role === 'AFFILIATE' && (
+            {(displayUser?.role === 'CLIENT' || displayUser?.role === 'AFFILIATE') && (
               <button onClick={() => setModule('affiliate-backoffice')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors', activeModule === 'affiliate-backoffice' ? 'text-primary bg-primary/10' : 'text-primary hover:bg-primary/5')}><Network className="size-4" />Mi Backoffice</button>
             )}
             {displayUser?.role === 'PARTNER' && (
@@ -339,7 +338,6 @@ export function TopNav() {
               )}
               {navItem('Inicio', 'impulsepymes360', Home)}
               {navItem('DimarClub', 'dimarclub', Users)}
-              {canAccessModule(displayUser?.role, 'affiliates') && navItem('Mi Red de Afiliados', 'affiliates', Network)}
               {canAccessModule(displayUser?.role, 'directorio') && navItem('Directorio', 'directorio', MapPin)}
               {navItem('Tienda', 'marketplace', Grid3x3)}
               {navItem('PubliBags', 'publibags', ShoppingBag)}
