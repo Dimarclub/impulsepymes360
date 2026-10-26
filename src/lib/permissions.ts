@@ -4,7 +4,7 @@ import type { ModuleId, UserRole } from './types'
 export const ROLE_MODULES: Record<UserRole, ModuleId[] | '*'> = {
   ADMIN: '*',
 
-  CLIENT: ['impulsepymes360', 'marketplace', 'affiliates', 'benefits', 'grid', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'alertas', 'directorio'],
+  CLIENT: ['impulsepymes360', 'marketplace', 'affiliates', 'benefits', 'grid', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'affiliate-backoffice', 'alertas', 'directorio'],
   AFFILIATE: ['impulsepymes360', 'marketplace', 'affiliates', 'benefits', 'social-bio', 'grid', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'affiliate-backoffice', 'alertas', 'directorio'],
   SUPPLIER: ['impulsepymes360', 'marketplace', 'suppliers', 'logistics', 'web-express', 'publibags', 'bag-plan', 'planes', 'fuerza-delta', 'directorio', 'social', 'social-studio', 'social-bio', 'social-automation', 'impulse', 'impulse-wizard', 'grid', 'supplier-backoffice', 'alertas'],
   COURIER: ['marketplace', 'courier-app', 'fuerza'],
@@ -27,7 +27,7 @@ export function defaultModuleForRole(role: UserRole): ModuleId {
     case 'COURIER': return 'courier-app'
     case 'PARTNER': return 'partner-backoffice'
     case 'AFFILIATE': return 'affiliate-backoffice'
-    case 'CLIENT': return 'marketplace'
+    case 'CLIENT': return 'affiliate-backoffice'
     default: return 'marketplace'
   }
 }
