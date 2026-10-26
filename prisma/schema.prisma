@@ -109,6 +109,8 @@ model Product {
   reviewCount   Int      @default(0)
   featured      Boolean  @default(false)
   status        String   @default("ACTIVE") // ACTIVE, DRAFT, ARCHIVED
+  commissionRate Float   @default(9) // % total de comisión para la red (N0 3% + N1-N3 2% c/u = 9% por defecto, 30%+ para emprendimientos propios)
+  isOwnBrand    Boolean  @default(false) // true = emprendimiento propio de la comunidad (mayor comisión)
   orderItems    OrderItem[]
   cartItems     CartItem[]
   socialPosts   SocialPost[]
