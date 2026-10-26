@@ -28,25 +28,46 @@ const fmtUsd = (n: number) => `$${(n || 0).toFixed(2)}`
 
 export function AffiliateBackofficeModule() {
   const [tab, setTab] = useState('overview')
+  const currentUser = useAppStore((s) => s.currentUser)
+  const [isSocio, setIsSocio] = useState(false)
+
+  useEffect(() => {
+    // Verificar si el usuario es socio (compró 1+ espacio PubliBags)
+    fetch('/api/impulse/bag-plan')
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => {
+        if (!d || !currentUser?.id) return
+        const mine = [...(d.currentSpaces || []), ...(d.nextSpaces || [])].filter((s: any) => s.buyerId === currentUser.id)
+        setIsSocio(mine.length > 0)
+      })
+      .catch(() => {})
+  }, [currentUser?.id])
+
   return (
     <div className="space-y-6 p-4 md:p-6 lg:p-8 max-w-[1320px] mx-auto">
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Backoffice de Afiliado</h1>
-        <p className="text-muted-foreground text-sm mt-1">Tu red, comisiones, cooperativa, marketing y tareas</p>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+          {isSocio ? 'Backoffice de Socio' : 'Backoffice de Cliente'}
+        </h1>
+        <p className="text-muted-foreground text-sm mt-1">
+          {isSocio
+            ? 'Tu red, comisiones, cooperativa, marketing y tareas'
+            : 'Tu red, comisiones, marketing y tareas — compra un espacio PubliBags para volverte socio'}
+        </p>
       </div>
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 max-w-3xl">
+        <TabsList className={`grid w-full grid-cols-2 md:max-w-3xl ${isSocio ? 'md:grid-cols-6' : 'md:grid-cols-5'}`}>
           <TabsTrigger value="overview"><TrendingUp className="size-4 md:mr-1.5" /><span className="hidden md:inline">Resumen</span></TabsTrigger>
           <TabsTrigger value="network"><Network className="size-4 md:mr-1.5" /><span className="hidden md:inline">Mi Red</span></TabsTrigger>
           <TabsTrigger value="commissions"><DollarSign className="size-4 md:mr-1.5" /><span className="hidden md:inline">Comisiones</span></TabsTrigger>
-          <TabsTrigger value="cooperative"><PiggyBank className="size-4 md:mr-1.5" /><span className="hidden md:inline">Cooperativa</span></TabsTrigger>
+          {isSocio && <TabsTrigger value="cooperative"><PiggyBank className="size-4 md:mr-1.5" /><span className="hidden md:inline">Cooperativa</span></TabsTrigger>}
           <TabsTrigger value="marketing"><Megaphone className="size-4 md:mr-1.5" /><span className="hidden md:inline">Marketing</span></TabsTrigger>
           <TabsTrigger value="tasks"><Award className="size-4 md:mr-1.5" /><span className="hidden md:inline">Tareas</span></TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="mt-4"><OverviewTab /></TabsContent>
         <TabsContent value="network" className="mt-4"><NetworkTab /></TabsContent>
         <TabsContent value="commissions" className="mt-4"><CommissionsTab /></TabsContent>
-        <TabsContent value="cooperative" className="mt-4"><CooperativeTab /></TabsContent>
+        {isSocio && <TabsContent value="cooperative" className="mt-4"><CooperativeTab /></TabsContent>}
         <TabsContent value="marketing" className="mt-4"><MarketingTab /></TabsContent>
         <TabsContent value="tasks" className="mt-4"><TasksTab /></TabsContent>
       </Tabs>
