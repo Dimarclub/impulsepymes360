@@ -331,19 +331,19 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
                         <div className="min-w-0">
                           <p className="text-sm font-medium">Cliente</p>
                           <p className="text-[10px] text-muted-foreground leading-tight">
-                            Compra y accede a beneficios
+                            Compra, recomienda y gana comisiones
                           </p>
                         </div>
                       </Label>
                       <Label
-                        htmlFor="reg-affiliate"
-                        className="flex items-start gap-2 rounded-md border p-2.5 cursor-pointer has-[:checked]:border-accent has-[:checked]:bg-accent/10 transition"
+                        htmlFor="reg-courier"
+                        className="flex items-start gap-2 rounded-md border p-2.5 cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50 dark:has-[:checked]:bg-emerald-900/20 transition"
                       >
-                        <RadioGroupItem id="reg-affiliate" value="AFFILIATE" className="mt-0.5" />
+                        <RadioGroupItem id="reg-courier" value="COURIER" className="mt-0.5" />
                         <div className="min-w-0">
-                          <p className="text-sm font-medium">Afiliado</p>
+                          <p className="text-sm font-medium">Courier / Delta</p>
                           <p className="text-[10px] text-muted-foreground leading-tight">
-                            Gana comisiones N0-N3
+                            Mensajero con App Delta
                           </p>
                         </div>
                       </Label>
