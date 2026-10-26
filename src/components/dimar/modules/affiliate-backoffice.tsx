@@ -87,10 +87,10 @@ function OverviewTab() {
         </CardContent>
       </Card>
       <div className="grid md:grid-cols-2 gap-3">
-        <Button variant="outline" className="justify-start" onClick={() => setModule('marketplace')}><ShoppingBag className="size-4 mr-2" /> Ir al marketplace</Button>
-        <Button variant="outline" className="justify-start" onClick={() => setModule('grid')}><QrCode className="size-4 mr-2" /> Comprar espacio grid</Button>
-        <Button variant="outline" className="justify-start" onClick={() => setModule('cooperativa')}><Wallet className="size-4 mr-2" /> Mi cooperativa</Button>
+        <Button variant="outline" className="justify-start" onClick={() => setModule('marketplace')}><ShoppingBag className="size-4 mr-2" /> Ir a la tienda</Button>
+        <Button variant="outline" className="justify-start" onClick={() => setModule('publibags')}><QrCode className="size-4 mr-2" /> Comprar espacio PubliBags — $67</Button>
         <Button variant="outline" className="justify-start" onClick={() => setModule('benefits')}><Gift className="size-4 mr-2" /> Ver beneficios</Button>
+        <Button variant="outline" className="justify-start" onClick={() => setModule('dimarclub')}><Users className="size-4 mr-2" /> Conocer DimarClub</Button>
       </div>
     </div>
   )
