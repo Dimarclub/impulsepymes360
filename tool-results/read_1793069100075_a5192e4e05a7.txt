@@ -1,0 +1,901 @@
+     1→// Dimarclub - B2C Marketplace con sistema de afiliados de 3 niveles
+     2→// learn more: https://pris.ly/d/prisma-schema
+     3→
+     4→generator client {
+     5→  provider = "prisma-client-js"
+     6→}
+     7→
+     8→datasource db {
+     9→  provider = "sqlite"
+    10→  url      = env("DATABASE_URL")
+    11→}
+    12→
+    13→// ---------- Usuarios y red de afiliados ----------
+    14→
+    15→model User {
+    16→  id         String   @id @default(cuid())
+    17→  email      String   @unique
+    18→  name       String
+    19→  phone      String?
+    20→  password   String   @default("dimar123")
+    21→  role       String   @default("CLIENT") // CLIENT, AFFILIATE, SUPPLIER, COURIER, PARTNER, ADMIN
+    22→  avatarUrl  String?
+    23→  city       String?
+    24→  address    String?
+    25→
+    26→  // Red de afiliados (auto-referencia)
+    27→  sponsorId  String?
+    28→  sponsor    User?    @relation("Referrals", fields: [sponsorId], references: [id])
+    29→  referrals  User[]   @relation("Referrals")
+    30→  affiliateCode String?
+    31→
+    32→  supplier   Supplier?
+    33→  courier    Courier?
+    34→  partner    Partner?
+    35→  orders     Order[]
+    36→  commissions Commission[]
+    37→  cart       Cart?
+    38→  socialAccounts SocialAccount[]
+    39→  socialPosts SocialPost[]
+    40→  mediaAssets MediaAsset[]
+    41→  mediaFolders MediaFolder[]
+    42→  bioPages BioPage[]
+    43→  automationRules AutomationRule[]
+    44→  provider Provider?
+    45→  notifications Notification[]
+    46→  cooperativeAccount CooperativeAccount?
+    47→  gridSpacesOwned GridSpace[]
+    48→  gridCommissions GridCommission[]
+    49→  adSpacesBought AdSpace[] @relation("AdSpaceBuyer")
+    50→  taskProgress TaskProgress?
+    51→  albumProgress AlbumProgress[]
+    52→  raffleEntries RaffleEntry[]
+    53→
+    54→  createdAt  DateTime @default(now())
+    55→  updatedAt  DateTime @updatedAt
+    56→}
+    57→
+    58→// ---------- Catálogo ----------
+    59→
+    60→model Category {
+    61→  id        String     @id @default(cuid())
+    62→  name      String
+    63→  slug      String     @unique
+    64→  icon      String?
+    65→  color     String?
+    66→  parentId  String?
+    67→  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+    68→  children  Category[] @relation("CategoryTree")
+    69→  products  Product[]
+    70→  createdAt DateTime   @default(now())
+    71→}
+    72→
+    73→model Supplier {
+    74→  id          String    @id @default(cuid())
+    75→  userId      String    @unique
+    76→  user        User      @relation(fields: [userId], references: [id])
+    77→  companyName String
+    78→  taxId       String?
+    79→  phone       String?
+    80→  address     String?
+    81→  city        String?
+    82→  category    String?   // rubro
+    83→  verified    Boolean   @default(false)
+    84→  rating      Float     @default(0)
+    85→  products    Product[]
+    86→  ads         Advertisement[]
+    87→  offers      Offer[]
+    88→  createdAt   DateTime  @default(now())
+    89→}
+    90→
+    91→model Product {
+    92→  id            String   @id @default(cuid())
+    93→  name          String
+    94→  slug          String   @unique
+    95→  description   String?
+    96→  longDescription String?
+    97→  price         Float
+    98→  costPrice     Float    @default(0)
+    99→  compareAtPrice Float?
+   100→  stock         Int      @default(0)
+   101→  sku           String?
+   102→  imageUrl      String?
+   103→  gallery       String?  // JSON array
+   104→  tags          String?  // JSON array
+   105→  categoryId    String
+   106→  category      Category @relation(fields: [categoryId], references: [id])
+   107→  supplierId    String
+   108→  supplier      Supplier @relation(fields: [supplierId], references: [id])
+   109→  rating        Float    @default(0)
+   110→  reviewCount   Int      @default(0)
+   111→  featured      Boolean  @default(false)
+   112→  status        String   @default("ACTIVE") // ACTIVE, DRAFT, ARCHIVED
+   113→  commissionRate Float   @default(9) // % total de comisión para la red (N0 3% + N1-N3 2% c/u = 9% por defecto, 30%+ para emprendimientos propios)
+   114→  isOwnBrand    Boolean  @default(false) // true = emprendimiento propio de la comunidad (mayor comisión)
+   115→  orderItems    OrderItem[]
+   116→  cartItems     CartItem[]
+   117→  socialPosts   SocialPost[]
+   118→  createdAt     DateTime @default(now())
+   119→  updatedAt     DateTime @updatedAt
+   120→}
+   121→
+   122→// ---------- Ofertas publicitarias ----------
+   123→
+   124→model Offer {
+   125→  id            String   @id @default(cuid())
+   126→  supplierId    String
+   127→  supplier      Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+   128→  title         String   // ej: "Zapatos 2x1"
+   129→  description   String?  // detalles de la oferta
+   130→  originalPrice Float?   // precio original
+   131→  offerPrice    Float?   // precio con descuento
+   132→  discountPct   Int?     // % de descuento (ej: 50)
+   133→  imageUrl      String?  // imagen promocional subida por el proveedor
+   134→  startDate     DateTime
+   135→  endDate       DateTime
+   136→  status        String   @default("PENDING") // PENDING (enviada por proveedor), APPROVED (aprobada por admin), REJECTED, EXPIRED
+   137→  qrCode        String?  // código corto del QR generado automáticamente
+   138→  qrTargetUrl   String?  // URL a la que apunta el QR (Web Express del proveedor)
+   139→  adminNotes    String?  // notas del admin al aprobar/rechazar
+   140→  createdAt     DateTime @default(now())
+   141→  updatedAt     DateTime @updatedAt
+   142→}
+   143→
+   144→// ---------- Pedidos y carrito ----------
+   145→
+   146→model Order {
+   147→  id            String      @id @default(cuid())
+   148→  orderNumber   String      @unique
+   149→  userId        String
+   150→  user          User        @relation(fields: [userId], references: [id])
+   151→  items         OrderItem[]
+   152→  subtotal      Float
+   153→  commission    Float       // comisión del marketplace
+   154→  total         Float
+   155→  status        String      @default("PENDING") // PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
+   156→  paymentStatus String      @default("UNPAID") // UNPAID, PAID, REFUNDED
+   157→  paymentMethod String?
+   158→  shippingAddress String?
+   159→  city          String?
+   160→  deliveryId    String?
+   161→  delivery      Delivery?
+   162→  createdAt     DateTime    @default(now())
+   163→  updatedAt     DateTime    @updatedAt
+   164→}
+   165→
+   166→model OrderItem {
+   167→  id        String  @id @default(cuid())
+   168→  orderId   String
+   169→  order     Order   @relation(fields: [orderId], references: [id])
+   170→  productId String
+   171→  product   Product @relation(fields: [productId], references: [id])
+   172→  quantity  Int
+   173→  price     Float
+   174→}
+   175→
+   176→model Cart {
+   177→  id     String     @id @default(cuid())
+   178→  userId String     @unique
+   179→  user   User       @relation(fields: [userId], references: [id])
+   180→  items  CartItem[]
+   181→}
+   182→
+   183→model CartItem {
+   184→  id        String  @id @default(cuid())
+   185→  cartId    String
+   186→  cart      Cart    @relation(fields: [cartId], references: [id])
+   187→  productId String
+   188→  product   Product @relation(fields: [productId], references: [id])
+   189→  quantity  Int
+   190→}
+   191→
+   192→// ---------- Comisiones (3 niveles + N0) ----------
+   193→
+   194→model Commission {
+   195→  id        String   @id @default(cuid())
+   196→  userId    String   // quien gana la comisión
+   197→  user      User     @relation(fields: [userId], references: [id])
+   198→  orderId   String?
+   199→  sourceUserId String? // quién generó la venta (sin relación para evitar problemas con Turbopack)
+   200→  amount    Float
+   201→  level     Int      // 0 = venta propia/autoconsumo, 1, 2, 3 = niveles
+   202→  rate      Float    // porcentaje aplicado
+   203→  status    String   @default("PENDING") // PENDING, PAID
+   204→  createdAt DateTime @default(now())
+   205→}
+   206→
+   207→// ---------- Logística y mensajería ----------
+   208→
+   209→model Courier {
+   210→  id            String     @id @default(cuid())
+   211→  userId        String     @unique
+   212→  user          User       @relation(fields: [userId], references: [id])
+   213→  vehicleType   String     // MOTORCYCLE, BICYCLE, PICKUP, TRUCK, TRACTOR_TRUCK, TAXI
+   214→  vehicleModel  String?
+   215→  licensePlate  String?
+   216→  licenseNumber String?
+   217→  available     Boolean    @default(true)
+   218→  rating        Float      @default(0)
+   219→  zone          String?
+   220→  deliveries    Delivery[]
+   221→  createdAt     DateTime   @default(now())
+   222→}
+   223→
+   224→model Delivery {
+   225→  id              String   @id @default(cuid())
+   226→  orderId         String   @unique
+   227→  order           Order    @relation(fields: [orderId], references: [id])
+   228→  courierId       String?
+   229→  courier         Courier? @relation(fields: [courierId], references: [id])
+   230→  status          String   @default("PENDING") // PENDING, ASSIGNED, PICKED_UP, IN_TRANSIT, DELIVERED, FAILED
+   231→  taskType        String   @default("SOBRE") // SOBRE, EXPRESS, MICRODISTRIBUCION
+   232→  amountToCollect Float    @default(0) // monto a cobrar contra entrega (si aplica)
+   233→  pickupAddress   String?
+   234→  deliveryAddress String?
+   235→  distance        Float?
+   236→  estimatedMinutes Int?
+   237→  notes           String?
+   238→  // Firma e incidencias
+   239→  signatureName   String?  // nombre del receptor al firmar
+   240→  incidentType    String?  // DIRECCION_INCORRECTA, CLIENTE_AUSENTE, DAÑO, OTRO
+   241→  incidentDesc    String?  // descripción de la incidencia
+   242→  deliveredAt     DateTime? // cuándo se completó la entrega
+   243→  createdAt       DateTime @default(now())
+   244→  updatedAt       DateTime @updatedAt
+   245→}
+   246→
+   247→// ---------- Socios (capital) ----------
+   248→
+   249→model Partner {
+   250→  id                String                @id @default(cuid())
+   251→  userId            String                @unique
+   252→  user              User                  @relation(fields: [userId], references: [id])
+   253→  totalContribution Float                 @default(0)
+   254→  totalReturns      Float                 @default(0)
+   255→  status            String                @default("ACTIVE")
+   256→  contributions     PartnerContribution[]
+   257→  createdAt         DateTime              @default(now())
+   258→}
+   259→
+   260→model PartnerContribution {
+   261→  id        String   @id @default(cuid())
+   262→  partnerId String
+   263→  partner   Partner  @relation(fields: [partnerId], references: [id])
+   264→  amount    Float
+   265→  returnRate Float   @default(3) // 3% de utilidad
+   266→  monthlyReturn Float @default(0)
+   267→  status    String   @default("ACTIVE") // ACTIVE, WITHDRAWN
+   268→  date      DateTime @default(now())
+   269→}
+   270→
+   271→// ---------- Espacios publicitarios ----------
+   272→
+   273→model Advertisement {
+   274→  id         String    @id @default(cuid())
+   275→  title      String
+   276→  imageUrl   String
+   277→  targetUrl  String?
+   278→  placement  String    // HEADER, SIDEBAR_LEFT, SIDEBAR_RIGHT, IN_GRID, FOOTER, HERO
+   279→  supplierId String?
+   280→  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+   281→  startDate  DateTime
+   282→  endDate    DateTime
+   283→  status     String    @default("ACTIVE")
+   284→  clicks     Int       @default(0)
+   285→  impressions Int      @default(0)
+   286→  price      Float     @default(0)
+   287→  createdAt  DateTime  @default(now())
+   288→}
+   289→
+   290→// ---------- CRM ----------
+   291→
+   292→model CrmContact {
+   293→  id         String   @id @default(cuid())
+   294→  name       String
+   295→  email      String
+   296→  phone      String?
+   297→  company    String?
+   298→  stage      String   @default("LEAD") // LEAD, QUALIFIED, PROPOSAL, NEGOTIATION, WON, LOST
+   299→  value      Float    @default(0)
+   300→  source     String?  // WEB, REFERRAL, MARKETING, MARKETPLACE
+   301→  notes      String?
+   302→  tags       String?  // JSON
+   303→  assignedTo String?
+   304→  activities CrmActivity[]
+   305→  createdAt  DateTime @default(now())
+   306→  updatedAt  DateTime @updatedAt
+   307→}
+   308→
+   309→model CrmActivity {
+   310→  id        String   @id @default(cuid())
+   311→  contactId String
+   312→  contact   CrmContact @relation(fields: [contactId], references: [id])
+   313→  type      String   // CALL, EMAIL, MEETING, NOTE, TASK
+   314→  subject   String
+   315→  description String?
+   316→  dueDate   DateTime?
+   317→  done      Boolean  @default(false)
+   318→  createdAt DateTime @default(now())
+   319→}
+   320→
+   321→// ---------- Email marketing ----------
+   322→
+   323→model EmailCampaign {
+   324→  id            String    @id @default(cuid())
+   325→  name          String
+   326→  subject       String
+   327→  content       String
+   328→  template      String?   // PROMOTION, NEW_MEMBER, COMMISSION, NEWSLETTER
+   329→  audience      String    @default("ALL") // ALL, CLIENTS, AFFILIATES, SUPPLIERS, PARTNERS
+   330→  status        String    @default("DRAFT") // DRAFT, SCHEDULED, SENT
+   331→  scheduledAt   DateTime?
+   332→  sentAt        DateTime?
+   333→  recipientCount Int      @default(0)
+   334→  openCount     Int       @default(0)
+   335→  clickCount    Int       @default(0)
+   336→  createdAt     DateTime  @default(now())
+   337→}
+   338→
+   339→model EmailSubscriber {
+   340→  id        String   @id @default(cuid())
+   341→  email     String   @unique
+   342→  name      String?
+   343→  segment   String   @default("ALL") // ALL, CLIENTS, AFFILIATES, SUPPLIERS, PARTNERS
+   344→  active    Boolean  @default(true)
+   345→  createdAt DateTime @default(now())
+   346→}
+   347→
+   348→// ---------- Solicitudes (registro proveedores, mensajeros, socios) ----------
+   349→
+   350→model Application {
+   351→  id        String   @id @default(cuid())
+   352→  type      String   // SUPPLIER, COURIER, PARTNER
+   353→  name      String
+   354→  email     String
+   355→  phone     String?
+   356→  details   String?  // JSON con datos específicos
+   357→  status    String   @default("PENDING") // PENDING, APPROVED, REJECTED
+   358→  createdAt DateTime @default(now())
+   359→}
+   360→
+   361→// ---------- Dimarclub Social (automatización redes sociales) ----------
+   362→
+   363→model SocialAccount {
+   364→  id           String   @id @default(cuid())
+   365→  userId       String
+   366→  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+   367→  platform     String   // INSTAGRAM, FACEBOOK, TIKTOK, X, WHATSAPP, LINKEDIN, YOUTUBE, TELEGRAM, PINTEREST, THREADS
+   368→  handle       String   // @usuario
+   369→  displayName  String?
+   370→  avatarUrl    String?
+   371→  followerCount Int     @default(0)
+   372→  connected    Boolean  @default(true)
+   373→  token        String?  // mock OAuth token
+   374→  createdAt    DateTime @default(now())
+   375→  postAccounts SocialPostAccount[]
+   376→}
+   377→
+   378→model SocialPost {
+   379→  id           String   @id @default(cuid())
+   380→  userId       String
+   381→  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+   382→  caption      String
+   383→  mediaUrls    String?  // JSON array de URLs
+   384→  mediaType    String   @default("IMAGE") // IMAGE, VIDEO, CAROUSEL, TEXT
+   385→  productId    String?  // si el post promociona un producto
+   386→  product      Product? @relation(fields: [productId], references: [id])
+   387→  affiliateCode String? // código de afiliado para atribución
+   388→  platforms    String   @default("[]") // JSON array de SocialAccount ids seleccionadas
+   389→  status       String   @default("DRAFT") // DRAFT, SCHEDULED, PUBLISHED, FAILED
+   390→  scheduledAt  DateTime?
+   391→  publishedAt  DateTime?
+   392→  // Métricas (simuladas al publicar, reales en producción)
+   393→  likes        Int      @default(0)
+   394→  comments     Int      @default(0)
+   395→  shares       Int      @default(0)
+   396→  reach        Int      @default(0)
+   397→  clicks       Int      @default(0)
+   398→  // Atribución de ventas
+   399→  attributedOrders Int  @default(0)
+   400→  attributedRevenue Float @default(0)
+   401→  createdAt    DateTime @default(now())
+   402→  updatedAt    DateTime @updatedAt
+   403→  accounts     SocialPostAccount[]
+   404→}
+   405→
+   406→model SocialPostAccount {
+   407→  id        String       @id @default(cuid())
+   408→  postId    String
+   409→  post      SocialPost   @relation(fields: [postId], references: [id], onDelete: Cascade)
+   410→  accountId String
+   411→  account   SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+   412→  permalink String?      // URL de la publicación publicada
+   413→  status    String       @default("PENDING") // PENDING, PUBLISHED, FAILED
+   414→}
+   415→
+   416→model MediaAsset {
+   417→  id        String   @id @default(cuid())
+   418→  userId    String
+   419→  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+   420→  name      String
+   421→  url       String
+   422→  type      String   @default("IMAGE") // IMAGE, VIDEO
+   423→  size      Int      @default(0)
+   424→  folderId  String?
+   425→  folder    MediaFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+   426→  tags      String?  // JSON array
+   427→  createdAt DateTime @default(now())
+   428→}
+   429→
+   430→model MediaFolder {
+   431→  id        String       @id @default(cuid())
+   432→  userId    String
+   433→  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+   434→  name      String
+   435→  color     String       @default("#0d9488")
+   436→  assets    MediaAsset[]
+   437→  createdAt DateTime     @default(now())
+   438→}
+   439→
+   440→model BioPage {
+   441→  id          String   @id @default(cuid())
+   442→  userId      String
+   443→  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+   444→  slug        String   @unique
+   445→  title       String
+   446→  subtitle    String?
+   447→  avatarUrl   String?
+   448→  theme       String   @default("emerald") // emerald, amber, dark, minimal
+   449→  affiliateCode String?
+   450→  links       String?  // JSON array {label, url, icon, type}
+   451→  views       Int      @default(0)
+   452→  clicks      Int      @default(0)
+   453→  published   Boolean  @default(true)
+   454→  createdAt   DateTime @default(now())
+   455→  updatedAt   DateTime @updatedAt
+   456→}
+   457→
+   458→model AutomationRule {
+   459→  id           String   @id @default(cuid())
+   460→  userId       String
+   461→  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+   462→  name         String
+   463→  type         String   // BULK_PRODUCT, RECURRING, DAILY_DIGEST
+   464→  config       String   // JSON: {categoryId, frequency, platforms, template}
+   465→  status       String   @default("ACTIVE") // ACTIVE, PAUSED
+   466→  lastRunAt    DateTime?
+   467→  postsCreated Int      @default(0)
+   468→  createdAt    DateTime @default(now())
+   469→}
+   470→
+   471→// ---------- ImpulsePymes360 — Orquestador + Web Express ----------
+   472→
+   473→model Plan {
+   474→  id            String   @id @default(cuid())
+   475→  name          String   // STARTER, CRECIMIENTO, PREMIUM, ENTERPRISE
+   476→  displayName   String
+   477→  price         Float    // precio mensual USD
+   478→  description   String
+   479→  // Límites del plan
+   480→  maxProducts   Int      @default(10)
+   481→  maxAdSpaces   Int      @default(1)  // espacios PubliBags
+   482→  maxShipments  Int      @default(5)  // envíos Fuerza Delta por mes
+   483→  maxAffiliateRate Float @default(1)  // % máximo que el proveedor puede ofrecer a afiliados
+   484→  hasWebExpress Boolean  @default(true)
+   485→  hasDirectorio Boolean  @default(true)
+   486→  hasLogistica  Boolean  @default(true)
+   487→  hasSocial     Boolean  @default(false)
+   488→  featured      Boolean  @default(false)
+   489→  subscriptions Subscription[]
+   490→  createdAt     DateTime @default(now())
+   491→}
+   492→
+   493→model Provider {
+   494→  id            String   @id @default(cuid())
+   495→  userId        String   @unique  // → User (quien administra el proveedor)
+   496→  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+   497→  companyName   String
+   498→  taxId         String?
+   499→  phone         String?
+   500→  mobile        String?
+   501→  address       String?
+   502→  city          String?
+   503→  category      String?
+   504→  description   String?
+   505→  logoUrl       String?
+   506→  coverUrl      String?
+   507→  websiteSlug   String   @unique  // para Web Express: /[slug]
+   508→  // Configuración del plan de afiliados
+   509→  affiliateRate Float    @default(2) // % que este proveedor ofrece a la red de afiliados
+   510→  // Estado
+   511→  status        String   @default("ACTIVE") // ACTIVE, SUSPENDED, CANCELLED
+   512→  verified      Boolean  @default(false)
+   513→  createdAt     DateTime @default(now())
+   514→  updatedAt     DateTime @updatedAt
+   515→  subscription  Subscription?
+   516→  website       WebsiteExpress?
+   517→  qrCodes       QRCode[]
+   518→  adSpaces      AdSpace[]
+   519→  directoryEntry DirectoryEntry?
+   520→}
+   521→
+   522→model Subscription {
+   523→  id            String   @id @default(cuid())
+   524→  providerId    String   @unique
+   525→  provider      Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+   526→  planId        String
+   527→  plan          Plan     @relation(fields: [planId], references: [id])
+   528→  status        String   @default("ACTIVE") // ACTIVE, PAST_DUE, CANCELLED
+   529→  startDate     DateTime @default(now())
+   530→  endDate       DateTime? // null = activa indefinidamente
+   531→  amount        Float    // monto mensual
+   532→  paymentMethod String?
+   533→  // Renovación
+   534→  nextBillingDate DateTime?
+   535→  createdAt     DateTime @default(now())
+   536→}
+   537→
+   538→model WebsiteExpress {
+   539→  id            String   @id @default(cuid())
+   540→  providerId    String   @unique
+   541→  provider      Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+   542→  slug          String   @unique
+   543→  // Configuración visual
+   544→  template      String   @default("classic") // classic, modern, minimal, vibrant
+   545→  primaryColor  String   @default("#0d9488")
+   546→  accentColor   String   @default("#d97706")
+   547→  // Contenido editable
+   548→  heroTitle     String?
+   549→  heroSubtitle  String?
+   550→  heroImageUrl  String?
+   551→  aboutText     String?
+   552→  contactEmail  String?
+   553→  contactPhone  String?
+   554→  contactWhatsapp String?
+   555→  contactAddress String?
+   556→  // Horarios (JSON: {mon: "9-18", ...})
+   557→  businessHours String?
+   558→  // Redes sociales
+   559→  socialLinks   String?  // JSON {instagram, facebook, tiktok, ...}
+   560→  // Productos destacados en el sitio (JSON array de productIds)
+   561→  featuredProducts String?
+   562→  // SEO
+   563→  metaTitle     String?
+   564→  metaDescription String?
+   565→  // Estado
+   566→  published     Boolean  @default(true)
+   567→  views         Int      @default(0)
+   568→  createdAt     DateTime @default(now())
+   569→  updatedAt     DateTime @updatedAt
+   570→}
+   571→
+   572→model QRCode {
+   573→  id            String   @id @default(cuid())
+   574→  providerId    String
+   575→  provider      Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+   576→  code          String   @unique  // código corto ej: ABC123
+   577→  targetUrl     String   // URL a la que apunta el QR
+   578→  type          String   @default("WEBSITE") // WEBSITE, PRODUCT, PROMO, DIRECTORY
+   579→  // Métricas
+   580→  scans         Int      @default(0)
+   581→  uniqueScans   Int      @default(0)
+   582→  lastScanAt    DateTime?
+   583→  // Asignación a espacio PubliBags (inversa, sin references)
+   584→  adSpaceId     String?
+   585→  adSpace       AdSpace?
+   586→  // Metadata de escaneos (JSON array: [{date, ip, location, device}])
+   587→  scanLogs      String?
+   588→  createdAt     DateTime @default(now())
+   589→}
+   590→
+   591→model AdEdition {
+   592→  id            String   @id @default(cuid())
+   593→  name          String   // Ej: "Edición Octubre 2025 - Guayaquil"
+   594→  slug          String   @unique
+   595→  city          String
+   596→  totalSpaces   Int      @default(80)  // espacios 5x5cm por bolsa
+   597→  bagSize       String   @default("48x48") // tamaño de la bolsa
+   598→  printQuantity Int      @default(500) // cantidad de bolsas a imprimir
+   599→  startDate     DateTime
+   600→  endDate       DateTime
+   601→  status        String   @default("DRAFT") // DRAFT, OPEN, CLOSED, PRINTED
+   602→  adSpaces      AdSpace[]
+   603→  createdAt     DateTime @default(now())
+   604→}
+   605→
+   606→model AdSpace {
+   607→  id            String   @id @default(cuid())
+   608→  editionId     String
+   609→  edition       AdEdition @relation(fields: [editionId], references: [id], onDelete: Cascade)
+   610→  providerId    String?
+   611→  provider      Provider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
+   612→  buyerId       String?  // usuario que compró el espacio (socio) — links to User
+   613→  buyer         User?    @relation("AdSpaceBuyer", fields: [buyerId], references: [id], onDelete: SetNull)
+   614→  buyerName     String?  // nombre del comprador (denormalizado para la edición impresa)
+   615→  position      Int      // número de espacio (1-297 para bolso)
+   616→  type          String   @default("QR") // QR, IMAGE, LOGO
+   617→  imageUrl      String?  // si es IMAGE o LOGO
+   618→  qrCodeId      String?  @unique
+   619→  qrCode        QRCode?  @relation(fields: [qrCodeId], references: [id], onDelete: SetNull)
+   620→  status        String   @default("AVAILABLE") // AVAILABLE, RESERVED, SOLD
+   621→  price         Float    @default(20)
+   622→  reservedAt    DateTime?
+   623→  soldAt        DateTime?
+   624→  createdAt     DateTime @default(now())
+   625→}
+   626→
+   627→// ---------- Site Settings + Banners ----------
+   628→
+   629→model SiteSettings {
+   630→  id            String   @id @default(cuid())
+   631→  key           String   @unique
+   632→  value         String
+   633→  updatedAt     DateTime @updatedAt
+   634→}
+   635→
+   636→model Banner {
+   637→  id            String   @id @default(cuid())
+   638→  title         String
+   639→  imageUrl      String?
+   640→  videoUrl      String?
+   641→  gifUrl        String?
+   642→  linkUrl       String?
+   643→  placement     String   @default("HOME_MAIN")
+   644→  width         Int      @default(1320)
+   645→  height        Int      @default(330)
+   646→  active        Boolean  @default(true)
+   647→  order         Int      @default(0)
+   648→  startDate     DateTime @default(now())
+   649→  endDate       DateTime?
+   650→  clicks        Int      @default(0)
+   651→  impressions   Int      @default(0)
+   652→  createdAt     DateTime @default(now())
+   653→}
+   654→
+   655→model BrandLogo {
+   656→  id            String   @id @default(cuid())
+   657→  name          String
+   658→  logoUrl       String
+   659→  linkUrl       String?
+   660→  active        Boolean  @default(true)
+   661→  order         Int      @default(0)
+   662→  createdAt     DateTime @default(now())
+   663→}
+   664→
+   665→// ---------- Cooperativa de Ahorro y Crédito ----------
+   666→
+   667→model CooperativeAccount {
+   668→  id              String   @id @default(cuid())
+   669→  userId          String   @unique
+   670→  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+   671→  balance         Float    @default(0)
+   672→  totalContributed Float   @default(0)
+   673→  totalEarned     Float    @default(0)
+   674→  totalWithdrawn  Float    @default(0)
+   675→  interestRate    Float    @default(5)
+   676→  status          String   @default("ACTIVE")
+   677→  createdAt       DateTime @default(now())
+   678→  updatedAt       DateTime @updatedAt
+   679→  transactions    CooperativeTransaction[]
+   680→}
+   681→
+   682→model CooperativeTransaction {
+   683→  id              String   @id @default(cuid())
+   684→  accountId       String
+   685→  account         CooperativeAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+   686→  type            String   // DEPOSIT, INTEREST, COMMISSION_MARKETPLACE, COMMISSION_GRID, WITHDRAWAL, MATERIAL
+   687→  amount          Float
+   688→  description     String?
+   689→  // Para materiales reciclados
+   690→  materialType    String?  // ALUMINUM, COPPER, BOTTLE_SMALL, BOTTLE_LARGE
+   691→  materialQuantity Float?  // libras o unidades
+   692→  materialUnitPrice Float? // precio por unidad
+   693→  // Para vincular con grid/orden
+   694→  referenceId     String?  // gridSpaceId, orderId, etc.
+   695→  status          String   @default("COMPLETED") // COMPLETED, PENDING
+   696→  createdAt       DateTime @default(now())
+   697→}
+   698→
+   699→model MaterialPrice {
+   700→  id              String   @id @default(cuid())
+   701→  materialType    String   @unique // ALUMINUM, COPPER, BOTTLE_SMALL, BOTTLE_LARGE
+   702→  name            String
+   703→  unitPrice       Float
+   704→  unit            String   @default("libra") // libra, unidad
+   705→  active          Boolean  @default(true)
+   706→  updatedAt       DateTime @updatedAt
+   707→}
+   708→
+   709→model MaterialInventory {
+   710→  id              String   @id @default(cuid())
+   711→  materialType    String
+   712→  quantity        Float    @default(0)
+   713→  unit            String   @default("libra")
+   714→  // Para vidrio: se guarda para Reciclarte
+   715→  // Para aluminio/cobre: se vende
+   716→  location        String?  // bodega
+   717→  notes           String?
+   718→  updatedAt       DateTime @updatedAt
+   719→}
+   720→
+   721→model FinancialReport {
+   722→  id              String   @id @default(cuid())
+   723→  period          String   // "2025-01" mensual o "2025" anual
+   724→  type            String   @default("MONTHLY") // MONTHLY, ANNUAL
+   725→  totalIncome     Float    @default(0)
+   726→  totalExpenses   Float    @default(0)
+   727→  totalCommissionsPaid Float @default(0)
+   728→  totalInterestPaid Float  @default(0)
+   729→  totalMaterialSales Float @default(0)
+   730→  totalArtisanSales Float  @default(0)
+   731→  netProfit       Float    @default(0)
+   732→  notes           String?
+   733→  createdAt       DateTime @default(now())
+   734→}
+   735→
+   736→model Notification {
+   737→  id            String   @id @default(cuid())
+   738→  userId        String
+   739→  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+   740→  type          String
+   741→  title         String
+   742→  message       String
+   743→  link          String?
+   744→  metadata      String?
+   745→  read          Boolean  @default(false)
+   746→  readAt        DateTime?
+   747→  createdAt     DateTime @default(now())
+   748→}
+   749→
+   750→// ---------- Grid Publicitario (PubliBags Digital) ----------
+   751→
+   752→model GridCampaign {
+   753→  id          String   @id @default(cuid())
+   754→  name        String
+   755→  year        Int
+   756→  status      String   @default("ACTIVE")
+   757→  pages       GridPage[]
+   758→  createdAt   DateTime @default(now())
+   759→}
+   760→
+   761→model GridPage {
+   762→  id          String   @id @default(cuid())
+   763→  campaignId  String
+   764→  campaign    GridCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+   765→  month       Int
+   766→  monthName   String
+   767→  totalSpaces Int      @default(300)
+   768→  spaces      GridSpace[]
+   769→  createdAt   DateTime @default(now())
+   770→}
+   771→
+   772→model GridSpace {
+   773→  id            String   @id @default(cuid())
+   774→  pageId        String
+   775→  page          GridPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+   776→  position      Int
+   777→  ownerId       String?
+   778→  owner         User?    @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+   779→  buyerName     String?
+   780→  buyerEmail    String?
+   781→  buyerPhone    String?
+   782→  qrCode        String?
+   783→  qrUrl         String?
+   784→  purchasePrice Float    @default(20)
+   785→  salePrice     Float?
+   786→  status        String   @default("AVAILABLE")
+   787→  ownedAt       DateTime?
+   788→  soldAt        DateTime?
+   789→  soldBy        String?
+   790→  reimbursedToOwner Boolean @default(false)
+   791→  imageUrl      String?
+   792→  websiteSlug   String?
+   793→  commissions   GridCommission[]
+   794→  createdAt     DateTime @default(now())
+   795→  updatedAt     DateTime @updatedAt
+   796→}
+   797→
+   798→model GridCommission {
+   799→  id            String   @id @default(cuid())
+   800→  spaceId       String
+   801→  space         GridSpace @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+   802→  userId        String
+   803→  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+   804→  level         Int
+   805→  amount        Float    @default(1)
+   806→  rate          Float    @default(5)
+   807→  status        String   @default("PENDING")
+   808→  sourceUserId  String?
+   809→  createdAt     DateTime @default(now())
+   810→}
+   811→
+   812→model TaskProgress {
+   813→  id            String   @id @default(cuid())
+   814→  userId        String   @unique
+   815→  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+   816→  scanDone      Boolean  @default(false)
+   817→  identifyDone  Boolean  @default(false)
+   818→  visitWebDone  Boolean  @default(false)
+   819→  shareDone     Boolean  @default(false)
+   820→  commentDone   Boolean  @default(false)
+   821→  photoDone     Boolean  @default(false)
+   822→  photoUrl      String?
+   823→  completed     Boolean  @default(false)
+   824→  completedAt   DateTime?
+   825→  rewardClaimed Boolean  @default(false)
+   826→  rewardClaimedAt DateTime?
+   827→  identifiedCompany String?
+   828→  shareUrl      String?
+   829→  commentText   String?
+   830→  createdAt     DateTime @default(now())
+   831→  updatedAt     DateTime @updatedAt
+   832→}
+   833→
+   834→// ---------- Directorio360 + Álbum de Stickers ----------
+   835→
+   836→model DirectoryEntry {
+   837→  id            String   @id @default(cuid())
+   838→  providerId    String   @unique
+   839→  provider      Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+   840→  category      String
+   841→  tags          String?
+   842→  shortDesc     String?
+   843→  featured      Boolean  @default(false)
+   844→  rating        Float    @default(0)
+   845→  reviewCount   Int      @default(0)
+   846→  viewCount     Int      @default(0)
+   847→  visitCount    Int      @default(0)
+   848→  status        String   @default("ACTIVE")
+   849→  stickers      Sticker[]
+   850→  createdAt     DateTime @default(now())
+   851→  updatedAt     DateTime @updatedAt
+   852→}
+   853→
+   854→model Sticker {
+   855→  id            String   @id @default(cuid())
+   856→  directoryEntryId String
+   857→  directoryEntry DirectoryEntry @relation(fields: [directoryEntryId], references: [id], onDelete: Cascade)
+   858→  name          String
+   859→  imageUrl      String
+   860→  code          String   @unique
+   861→  rarity        String   @default("COMMON")
+   862→  albumProgress  AlbumProgress[]
+   863→  createdAt     DateTime @default(now())
+   864→}
+   865→
+   866→model AlbumProgress {
+   867→  id            String   @id @default(cuid())
+   868→  userId        String
+   869→  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+   870→  stickerId     String
+   871→  sticker       Sticker  @relation(fields: [stickerId], references: [id], onDelete: Cascade)
+   872→  source        String   @default("QR_SCAN")
+   873→  collectedAt   DateTime @default(now())
+   874→  @@unique([userId, stickerId])
+   875→}
+   876→
+   877→model Raffle {
+   878→  id            String   @id @default(cuid())
+   879→  name          String
+   880→  description   String?
+   881→  prize         String
+   882→  prizeImageUrl String?
+   883→  drawDate      DateTime
+   884→  status        String   @default("ACTIVE")
+   885→  minStickers   Int      @default(10)
+   886→  entries       RaffleEntry[]
+   887→  createdAt     DateTime @default(now())
+   888→}
+   889→
+   890→model RaffleEntry {
+   891→  id            String   @id @default(cuid())
+   892→  raffleId      String
+   893→  raffle        Raffle   @relation(fields: [raffleId], references: [id], onDelete: Cascade)
+   894→  userId        String
+   895→  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+   896→  entries       Int      @default(1)
+   897→  winner        Boolean  @default(false)
+   898→  enteredAt     DateTime @default(now())
+   899→  @@unique([raffleId, userId])
+   900→}
+   901→

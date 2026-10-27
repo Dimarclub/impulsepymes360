@@ -24,7 +24,7 @@ import {
   Store, Users, Share2, Camera, Gift, QrCode, TrendingUp, Wallet,
   CheckCircle2, Loader2, Plus, Link2, Copy, Store as StoreIcon,
   Package, MessageSquare, Megaphone, Star, ArrowRight, Zap,
-  Truck, MapPin, User, Phone, ClipboardList, Send,
+  Truck, MapPin, User, Phone, ClipboardList, Send, Tag, Trash2, Image as ImageIcon, Calendar,
 } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
@@ -42,12 +42,13 @@ export function SupplierBackofficeModule() {
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 max-w-3xl">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 max-w-3xl">
           <TabsTrigger value="overview"><Store className="size-4 md:mr-1.5" /><span className="hidden md:inline">Resumen</span></TabsTrigger>
           <TabsTrigger value="marketing"><Megaphone className="size-4 md:mr-1.5" /><span className="hidden md:inline">Marketing</span></TabsTrigger>
           <TabsTrigger value="logistics"><Truck className="size-4 md:mr-1.5" /><span className="hidden md:inline">Logística</span></TabsTrigger>
           <TabsTrigger value="tasks"><CheckCircle2 className="size-4 md:mr-1.5" /><span className="hidden md:inline">Tareas</span></TabsTrigger>
           <TabsTrigger value="tools"><Zap className="size-4 md:mr-1.5" /><span className="hidden md:inline">Herramientas</span></TabsTrigger>
+          <TabsTrigger value="ofertas"><Tag className="size-4 md:mr-1.5" /><span className="hidden md:inline">Ofertas</span></TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4"><OverviewTab /></TabsContent>
@@ -55,6 +56,7 @@ export function SupplierBackofficeModule() {
         <TabsContent value="logistics" className="mt-4"><LogisticsTab /></TabsContent>
         <TabsContent value="tasks" className="mt-4"><TasksTab /></TabsContent>
         <TabsContent value="tools" className="mt-4"><ToolsTab /></TabsContent>
+        <TabsContent value="ofertas" className="mt-4"><OfertasTab /></TabsContent>
       </Tabs>
     </div>
   )
@@ -693,3 +695,409 @@ function ToolsTab() {
     </div>
   )
 }
+
+// ============ OFERTAS (enviar + mis ofertas) ============
+const OFFER_STATUS_LABELS: Record<string, string> = {
+  PENDING: 'Pendiente',
+  APPROVED: 'Aprobada',
+  REJECTED: 'Rechazada',
+  EXPIRED: 'Expirada',
+}
+
+const OFFER_STATUS_BADGES: Record<string, string> = {
+  PENDING: 'bg-amber-100 text-amber-700 border-amber-300',
+  APPROVED: 'bg-emerald-100 text-emerald-700 border-emerald-300',
+  REJECTED: 'bg-red-100 text-red-700 border-red-300',
+  EXPIRED: 'bg-muted text-muted-foreground border-border',
+}
+
+function toDateInputValue(d: Date | string): string {
+  const date = typeof d === 'string' ? new Date(d) : d
+  if (isNaN(date.getTime())) return ''
+  // Ajustar a zona horaria local para inputs type=date
+  const tz = date.getTimezoneOffset() * 60000
+  return new Date(date.getTime() - tz).toISOString().slice(0, 10)
+}
+
+function OfertasTab() {
+  const toast = useAppStore((s) => s.toast)
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    originalPrice: '',
+    offerPrice: '',
+    discountPct: '',
+    imageUrl: '',
+    startDate: toDateInputValue(new Date()),
+    endDate: toDateInputValue(new Date(Date.now() + 7 * 86400000)),
+  })
+  const [submitting, setSubmitting] = useState(false)
+  const [offers, setOffers] = useState<any[]>([])
+  const [loadingList, setLoadingList] = useState(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const fetchMine = useCallback(async () => {
+    setLoadingList(true)
+    try {
+      const res = await fetch('/api/offers/mine')
+      const d = await res.json()
+      if (res.ok) setOffers(d.offers || [])
+      else setOffers([])
+    } catch {
+      setOffers([])
+    } finally {
+      setLoadingList(false)
+    }
+  }, [])
+
+  useEffect(() => { fetchMine() }, [fetchMine])
+
+  // Auto-calcular % descuento cuando cambian los precios
+  useEffect(() => {
+    const orig = parseFloat(form.originalPrice)
+    const off = parseFloat(form.offerPrice)
+    if (!isNaN(orig) && !isNaN(off) && orig > 0 && off <= orig) {
+      const pct = Math.round(((orig - off) / orig) * 100)
+      if (pct !== parseFloat(form.discountPct)) {
+        setForm((p) => ({ ...p, discountPct: String(pct) }))
+      }
+    }
+  }, [form.originalPrice, form.offerPrice])
+
+  const submit = async () => {
+    if (!form.title.trim()) {
+      toast('El título de la oferta es obligatorio', 'error')
+      return
+    }
+    if (!form.startDate || !form.endDate) {
+      toast('Las fechas de inicio y fin son obligatorias', 'error')
+      return
+    }
+    setSubmitting(true)
+    try {
+      const payload: Record<string, unknown> = {
+        title: form.title.trim(),
+        description: form.description.trim() || undefined,
+        imageUrl: form.imageUrl.trim() || undefined,
+        startDate: new Date(form.startDate).toISOString(),
+        endDate: new Date(form.endDate).toISOString(),
+      }
+      if (form.originalPrice) payload.originalPrice = Number(form.originalPrice)
+      if (form.offerPrice) payload.offerPrice = Number(form.offerPrice)
+      if (form.discountPct) payload.discountPct = Number(form.discountPct)
+
+      const res = await fetch('/api/offers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const d = await res.json()
+      if (!res.ok) {
+        toast(d?.error || 'Error al enviar la oferta', 'error')
+        return
+      }
+      toast('Oferta enviada. El admin la revisará pronto.', 'success')
+      setForm({
+        title: '',
+        description: '',
+        originalPrice: '',
+        offerPrice: '',
+        discountPct: '',
+        imageUrl: '',
+        startDate: toDateInputValue(new Date()),
+        endDate: toDateInputValue(new Date(Date.now() + 7 * 86400000)),
+      })
+      fetchMine()
+    } catch {
+      toast('Error de red al enviar la oferta', 'error')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const removeOffer = async (id: string) => {
+    setDeletingId(id)
+    try {
+      const res = await fetch(`/api/offers/${id}`, { method: 'DELETE' })
+      const d = await res.json()
+      if (!res.ok) {
+        toast(d?.error || 'Error al eliminar', 'error')
+        return
+      }
+      toast('Oferta eliminada', 'info')
+      fetchMine()
+    } catch {
+      toast('Error de red', 'error')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Banner */}
+      <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 flex items-start gap-3">
+        <Tag className="size-5 text-primary shrink-0 mt-0.5" />
+        <div className="text-sm">
+          <p className="font-medium">¿Cómo funcionan las ofertas?</p>
+          <p className="text-muted-foreground mt-0.5">
+            Envías una oferta con tu imagen promocional → el <strong>admin</strong> la revisa
+            → al aprobarla, se genera un <strong>código QR</strong> que apunta a tu sitio Web Express
+            → la oferta aparece pública en el módulo <strong>Ofertas</strong> con la imagen + QR + "ESCANEA".
+            Ese mismo diseño va impreso en los <strong>bolsos PubliBags</strong>.
+          </p>
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-4">
+        {/* Formulario */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Send className="size-5 text-primary" /> Enviar nueva oferta
+            </CardTitle>
+            <CardDescription>
+              Completa los datos. El admin la aprobará y se generará el QR automáticamente.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Título de la oferta <span className="text-destructive">*</span></Label>
+              <Input
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                placeholder="Ej: Zapatos 2x1 — Black Friday"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Descripción</Label>
+              <Textarea
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="Detalles de la oferta, condiciones, productos incluidos..."
+                rows={3}
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <Label>Precio original</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.originalPrice}
+                  onChange={(e) => setForm({ ...form, originalPrice: e.target.value })}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Precio oferta</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.offerPrice}
+                  onChange={(e) => setForm({ ...form, offerPrice: e.target.value })}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>% Descuento</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={form.discountPct}
+                  onChange={(e) => setForm({ ...form, discountPct: e.target.value })}
+                  placeholder="auto"
+                />
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground -mt-2">
+              Si ingresas ambos precios, el % se calcula automáticamente.
+            </p>
+
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-1.5">
+                <ImageIcon className="size-3.5 text-muted-foreground" /> URL de imagen promocional
+              </Label>
+              <Input
+                value={form.imageUrl}
+                onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+                placeholder="https://...  (URL directa a la imagen que irá en el bolso)"
+              />
+              {form.imageUrl && (
+                <div className="mt-2 rounded-lg border overflow-hidden bg-muted/30">
+                  <img
+                    src={form.imageUrl}
+                    alt="Vista previa"
+                    className="w-full h-40 object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1.5">
+                  <Calendar className="size-3.5 text-muted-foreground" /> Fecha inicio
+                </Label>
+                <Input
+                  type="date"
+                  value={form.startDate}
+                  onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1.5">
+                  <Calendar className="size-3.5 text-muted-foreground" /> Fecha fin
+                </Label>
+                <Input
+                  type="date"
+                  value={form.endDate}
+                  onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <Button
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+              onClick={submit}
+              disabled={submitting}
+            >
+              {submitting ? (
+                <><Loader2 className="size-4 mr-1.5 animate-spin" /> Enviando...</>
+              ) : (
+                <><Send className="size-4 mr-1.5" /> Enviar oferta</>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Mis ofertas */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Tag className="size-5 text-primary" /> Mis ofertas
+            </CardTitle>
+            <CardDescription>
+              Estado de las ofertas que has enviado ({offers.length})
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loadingList ? (
+              <div className="space-y-2">
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
+              </div>
+            ) : offers.length === 0 ? (
+              <div className="text-center py-10 text-sm text-muted-foreground">
+                <Tag className="size-10 mx-auto mb-2 opacity-30" />
+                No has enviado ofertas todavía.
+                <br />Crea la primera con el formulario de la izquierda.
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-[36rem] overflow-y-auto pr-1 scroll-thin">
+                {offers.map((o) => {
+                  const st = o.status || 'PENDING'
+                  const stLabel = OFFER_STATUS_LABELS[st] || st
+                  const stBadge = OFFER_STATUS_BADGES[st] || 'bg-muted text-muted-foreground border-border'
+                  const qrUrl = o.qrTargetUrl
+                    ? `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}${o.qrTargetUrl}`)}`
+                    : null
+                  const canDelete = st === 'PENDING' || st === 'REJECTED' || st === 'EXPIRED'
+                  return (
+                    <div key={o.id} className="rounded-lg border p-3 space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate">{o.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {new Date(o.startDate).toLocaleDateString('es-EC', { day: '2-digit', month: 'short' })} → {new Date(o.endDate).toLocaleDateString('es-EC', { day: '2-digit', month: 'short', year: 'numeric' })}
+                          </p>
+                        </div>
+                        <Badge variant="outline" className={cn('shrink-0', stBadge)}>{stLabel}</Badge>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 text-xs">
+                        {o.originalPrice != null && (
+                          <span className="text-muted-foreground line-through">{fmtUsd(o.originalPrice)}</span>
+                        )}
+                        {o.offerPrice != null && (
+                          <span className="font-bold text-emerald-700">{fmtUsd(o.offerPrice)}</span>
+                        )}
+                        {o.discountPct != null && o.discountPct > 0 && (
+                          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">-{o.discountPct}%</Badge>
+                        )}
+                      </div>
+
+                      {o.adminNotes && st === 'REJECTED' && (
+                        <div className="rounded-md bg-red-50 border border-red-200 p-2 text-xs text-red-700">
+                          <strong>Nota del admin:</strong> {o.adminNotes}
+                        </div>
+                      )}
+
+                      {st === 'APPROVED' && qrUrl && (
+                        <div className="flex items-center gap-3 rounded-md bg-emerald-50 border border-emerald-200 p-3">
+                          <img
+                            src={qrUrl}
+                            alt="QR de la oferta"
+                            className="size-20 rounded bg-white p-1"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-emerald-700 font-semibold">¡Aprobada y pública!</p>
+                            <p className="text-[11px] text-emerald-600 mt-0.5">
+                              Código: <span className="font-mono">{o.qrCode}</span>
+                            </p>
+                            <p className="text-[11px] text-emerald-600 truncate">
+                              Apunta a: {o.qrTargetUrl}
+                            </p>
+                            <p className="text-emerald-700 font-bold text-sm mt-1">ESCANEA →</p>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between gap-2 pt-1">
+                        {o.imageUrl ? (
+                          <a
+                            href={o.imageUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-primary hover:underline truncate flex items-center gap-1"
+                          >
+                            <ImageIcon className="size-3" /> Ver imagen
+                          </a>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Sin imagen</span>
+                        )}
+                        {canDelete && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 h-7"
+                            disabled={deletingId === o.id}
+                            onClick={() => removeOffer(o.id)}
+                          >
+                            {deletingId === o.id ? (
+                              <Loader2 className="size-3.5 animate-spin" />
+                            ) : (
+                              <><Trash2 className="size-3.5 mr-1" /> Eliminar</>
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
+

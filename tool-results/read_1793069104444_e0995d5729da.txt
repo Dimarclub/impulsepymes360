@@ -1,0 +1,696 @@
+     1→'use client'
+     2→
+     3→import { useEffect, useState, useCallback } from 'react'
+     4→import {
+     5→  Card, CardContent, CardDescription, CardHeader, CardTitle,
+     6→} from '@/components/ui/card'
+     7→import { Button } from '@/components/ui/button'
+     8→import { Input } from '@/components/ui/input'
+     9→import { Label } from '@/components/ui/label'
+    10→import { Textarea } from '@/components/ui/textarea'
+    11→import { Badge } from '@/components/ui/badge'
+    12→import { Skeleton } from '@/components/ui/skeleton'
+    13→import { Progress } from '@/components/ui/progress'
+    14→import {
+    15→  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+    16→} from '@/components/ui/dialog'
+    17→import {
+    18→  Tabs, TabsContent, TabsList, TabsTrigger,
+    19→} from '@/components/ui/tabs'
+    20→import {
+    21→  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+    22→} from '@/components/ui/select'
+    23→import {
+    24→  Store, Users, Share2, Camera, Gift, QrCode, TrendingUp, Wallet,
+    25→  CheckCircle2, Loader2, Plus, Link2, Copy, Store as StoreIcon,
+    26→  Package, MessageSquare, Megaphone, Star, ArrowRight, Zap,
+    27→  Truck, MapPin, User, Phone, ClipboardList, Send,
+    28→} from 'lucide-react'
+    29→import { useAppStore } from '@/lib/store'
+    30→import { cn } from '@/lib/utils'
+    31→
+    32→const fmtUsd = (n: number) => `$${(n || 0).toFixed(2)}`
+    33→
+    34→export function SupplierBackofficeModule() {
+    35→  const [tab, setTab] = useState('overview')
+    36→
+    37→  return (
+    38→    <div className="space-y-6 p-4 md:p-6 lg:p-8 max-w-[1320px] mx-auto">
+    39→      <div>
+    40→        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Backoffice del Proveedor</h1>
+    41→        <p className="text-muted-foreground text-sm mt-1">Gestiona tu tienda, marketing, logística y tareas</p>
+    42→      </div>
+    43→
+    44→      <Tabs value={tab} onValueChange={setTab}>
+    45→        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 max-w-3xl">
+    46→          <TabsTrigger value="overview"><Store className="size-4 md:mr-1.5" /><span className="hidden md:inline">Resumen</span></TabsTrigger>
+    47→          <TabsTrigger value="marketing"><Megaphone className="size-4 md:mr-1.5" /><span className="hidden md:inline">Marketing</span></TabsTrigger>
+    48→          <TabsTrigger value="logistics"><Truck className="size-4 md:mr-1.5" /><span className="hidden md:inline">Logística</span></TabsTrigger>
+    49→          <TabsTrigger value="tasks"><CheckCircle2 className="size-4 md:mr-1.5" /><span className="hidden md:inline">Tareas</span></TabsTrigger>
+    50→          <TabsTrigger value="tools"><Zap className="size-4 md:mr-1.5" /><span className="hidden md:inline">Herramientas</span></TabsTrigger>
+    51→        </TabsList>
+    52→
+    53→        <TabsContent value="overview" className="mt-4"><OverviewTab /></TabsContent>
+    54→        <TabsContent value="marketing" className="mt-4"><MarketingTab /></TabsContent>
+    55→        <TabsContent value="logistics" className="mt-4"><LogisticsTab /></TabsContent>
+    56→        <TabsContent value="tasks" className="mt-4"><TasksTab /></TabsContent>
+    57→        <TabsContent value="tools" className="mt-4"><ToolsTab /></TabsContent>
+    58→      </Tabs>
+    59→    </div>
+    60→  )
+    61→}
+    62→
+    63→// ============ OVERVIEW ============
+    64→function OverviewTab() {
+    65→  const currentUser = useAppStore((s) => s.currentUser)
+    66→  const setModule = useAppStore((s) => s.setModule)
+    67→  const [data, setData] = useState<any>(null)
+    68→  const [loading, setLoading] = useState(true)
+    69→
+    70→  useEffect(() => {
+    71→    fetch('/api/impulse/me').then((r) => r.ok ? r.json() : null).then(setData).catch(() => setData(null)).finally(() => setLoading(false))
+    72→  }, [])
+    73→
+    74→  if (loading) return <Skeleton className="h-64" />
+    75→
+    76→  return (
+    77→    <div className="space-y-4">
+    78→      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    79→        <Card><CardContent className="p-4 text-center"><Package className="size-5 mx-auto text-primary mb-1" /><p className="text-xl font-bold">{data?.subscription?.plan?.maxProducts || '—'}</p><p className="text-xs text-muted-foreground">Productos permitidos</p></CardContent></Card>
+    80→        <Card><CardContent className="p-4 text-center"><Users className="size-5 mx-auto text-primary mb-1" /><p className="text-xl font-bold">{data?.subscription?.plan?.displayName || '—'}</p><p className="text-xs text-muted-foreground">Plan actual</p></CardContent></Card>
+    81→        <Card><CardContent className="p-4 text-center"><Wallet className="size-5 mx-auto text-primary mb-1" /><p className="text-xl font-bold">{fmtUsd(data?.subscription?.amount || 0)}</p><p className="text-xs text-muted-foreground">Suscripción mensual</p></CardContent></Card>
+    82→        <Card><CardContent className="p-4 text-center"><QrCode className="size-5 mx-auto text-primary mb-1" /><p className="text-xl font-bold">{data?.qrCodes?.length || 0}</p><p className="text-xs text-muted-foreground">Códigos QR</p></CardContent></Card>
+    83→      </div>
+    84→
+    85→      <div className="grid md:grid-cols-2 gap-4">
+    86→        <Card>
+    87→          <CardHeader><CardTitle className="text-base">Accesos rápidos</CardTitle></CardHeader>
+    88→          <CardContent className="space-y-2">
+    89→            <Button variant="outline" className="w-full justify-start" onClick={() => setModule('suppliers')}><Store className="size-4 mr-2" /> Gestionar productos</Button>
+    90→            <Button variant="outline" className="w-full justify-start" onClick={() => setModule('web-express')}><Package className="size-4 mr-2" /> Editar mi sitio web</Button>
+    91→            <Button variant="outline" className="w-full justify-start" onClick={() => setModule('logistics')}><TrendingUp className="size-4 mr-2" /> Ver pedidos y envíos</Button>
+    92→            <Button variant="outline" className="w-full justify-start" onClick={() => setModule('grid')}><QrCode className="size-4 mr-2" /> Grid publicitario</Button>
+    93→            <Button variant="outline" className="w-full justify-start" onClick={() => setModule('social-studio')}><Megaphone className="size-4 mr-2" /> Content Studio IA</Button>
+    94→          </CardContent>
+    95→        </Card>
+    96→      </div>
+    97→    </div>
+    98→  )
+    99→}
+   100→
+   101→// ============ AFILIADOS ============
+   102→function AffiliatesTab() {
+   103→  const toast = useAppStore((s) => s.toast)
+   104→  const currentUser = useAppStore((s) => s.currentUser)
+   105→  const [tree, setTree] = useState<any>(null)
+   106→  const [loading, setLoading] = useState(true)
+   107→  const [registerOpen, setRegisterOpen] = useState(false)
+   108→  const [regForm, setRegForm] = useState({ name: '', email: '', phone: '', city: '', password: '' })
+   109→
+   110→  const fetchTree = useCallback(async () => {
+   111→    setLoading(true)
+   112→    try {
+   113→      const res = await fetch(`/api/affiliates/tree?userId=${currentUser?.id}`)
+   114→      if (!res.ok) { setTree(null); return }
+   115→      setTree(await res.json())
+   116→    } catch { setTree(null) }
+   117→    finally { setLoading(false) }
+   118→  }, [currentUser?.id])
+   119→
+   120→  useEffect(() => { fetchTree() }, [fetchTree])
+   121→
+   122→  const registerAffiliate = async () => {
+   123→    if (!regForm.name || !regForm.email || !regForm.password) { toast('Completa los campos', 'error'); return }
+   124→    try {
+   125→      const res = await fetch('/api/auth/register', {
+   126→        method: 'POST', headers: { 'Content-Type': 'application/json' },
+   127→        body: JSON.stringify({ ...regForm, role: 'AFFILIATE', sponsorCode: currentUser?.affiliateCode }),
+   128→      })
+   129→      const d = await res.json()
+   130→      if (!res.ok) { toast(d.error || 'Error', 'error'); return }
+   131→      toast(`¡Afiliado registrado: ${d.name}!`, 'success')
+   132→      setRegisterOpen(false)
+   133→      setRegForm({ name: '', email: '', phone: '', city: '', password: '' })
+   134→      fetchTree()
+   135→    } catch { toast('Error', 'error') }
+   136→  }
+   137→
+   138→  if (loading) return <Skeleton className="h-64" />
+   139→  if (!tree) return <Card><CardContent className="py-8 text-center text-muted-foreground">No se pudo cargar la red.</CardContent></Card>
+   140→
+   141→  return (
+   142→    <div className="space-y-4">
+   143→      <div className="flex items-center justify-between">
+   144→        <div>
+   145→          <h2 className="text-lg font-bold">Mi red de afiliados</h2>
+   146→          <p className="text-sm text-muted-foreground">Registra nuevos afiliados y gestiona tu red de 3 niveles</p>
+   147→        </div>
+   148→        <Button onClick={() => setRegisterOpen(true)}><Plus className="size-4 mr-1" /> Nuevo afiliado</Button>
+   149→      </div>
+   150→
+   151→      {/* Stats */}
+   152→      <div className="grid grid-cols-3 gap-3">
+   153→        <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-primary">{tree.stats?.referrals || 0}</p><p className="text-xs text-muted-foreground">Referidos directos</p></CardContent></Card>
+   154→        <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold text-amber-600">{fmtUsd(tree.stats?.commissions || 0)}</p><p className="text-xs text-muted-foreground">Comisiones totales</p></CardContent></Card>
+   155→        <Card><CardContent className="p-4 text-center"><p className="text-2xl font-bold">{tree.stats?.sales || 0}</p><p className="text-xs text-muted-foreground">Ventas</p></CardContent></Card>
+   156→      </div>
+   157→
+   158→      {/* Árbol simplificado */}
+   159→      <Card>
+   160→        <CardHeader><CardTitle className="text-base">Mi red (N1 → N2 → N3)</CardTitle></CardHeader>
+   161→        <CardContent>
+   162→          {tree.children?.length === 0 ? (
+   163→            <p className="text-center text-sm text-muted-foreground py-8">No tienes afiliados registrados todavía. ¡Registra tu primer afiliado!</p>
+   164→          ) : (
+   165→            <div className="space-y-3">
+   166→              {/* N1 */}
+   167→              <div>
+   168→                <p className="text-xs font-semibold text-muted-foreground mb-2">NIVEL 1 (Directos) — {tree.children?.length} afiliados</p>
+   169→                <div className="space-y-2">
+   170→                  {tree.children?.map((child: any) => (
+   171→                    <div key={child.id} className="flex items-center gap-3 rounded-lg border p-3">
+   172→                      <div className="size-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">{child.name?.slice(0, 2).toUpperCase()}</div>
+   173→                      <div className="flex-1 min-w-0">
+   174→                        <p className="text-sm font-medium truncate">{child.name}</p>
+   175→                        <p className="text-xs text-muted-foreground">{child.email} · {child.city || '—'}</p>
+   176→                      </div>
+   177→                      <Badge variant="outline">{child.stats?.referrals || 0} referidos</Badge>
+   178→                      <Badge variant="outline" className="text-emerald-600">{fmtUsd(child.stats?.commissions || 0)}</Badge>
+   179→                    </div>
+   180→                  ))}
+   181→                </div>
+   182→              </div>
+   183→            </div>
+   184→          )}
+   185→        </CardContent>
+   186→      </Card>
+   187→
+   188→      {/* Dialog registrar afiliado */}
+   189→      <Dialog open={registerOpen} onOpenChange={setRegisterOpen}>
+   190→        <DialogContent className="max-w-md">
+   191→          <DialogHeader><DialogTitle>Registrar nuevo afiliado</DialogTitle>
+   192→          <DialogDescription>Este afiliado se registrará bajo tu código: {currentUser?.affiliateCode}</DialogDescription></DialogHeader>
+   193→          <div className="space-y-3">
+   194→            <div><Label>Nombre completo *</Label><Input value={regForm.name} onChange={(e) => setRegForm({ ...regForm, name: e.target.value })} /></div>
+   195→            <div><Label>Email *</Label><Input type="email" value={regForm.email} onChange={(e) => setRegForm({ ...regForm, email: e.target.value })} /></div>
+   196→            <div className="grid grid-cols-2 gap-2">
+   197→              <div><Label>Teléfono</Label><Input value={regForm.phone} onChange={(e) => setRegForm({ ...regForm, phone: e.target.value })} /></div>
+   198→              <div><Label>Ciudad</Label><Input value={regForm.city} onChange={(e) => setRegForm({ ...regForm, city: e.target.value })} /></div>
+   199→            </div>
+   200→            <div><Label>Contraseña *</Label><Input type="password" value={regForm.password} onChange={(e) => setRegForm({ ...regForm, password: e.target.value })} placeholder="Mínimo 6 caracteres" /></div>
+   201→          </div>
+   202→          <DialogFooter>
+   203→            <Button variant="outline" onClick={() => setRegisterOpen(false)}>Cancelar</Button>
+   204→            <Button onClick={registerAffiliate}><Plus className="size-4 mr-1" /> Registrar afiliado</Button>
+   205→          </DialogFooter>
+   206→        </DialogContent>
+   207→      </Dialog>
+   208→    </div>
+   209→  )
+   210→}
+   211→
+   212→// ============ MARKETING ============
+   213→function MarketingTab() {
+   214→  const toast = useAppStore((s) => s.toast)
+   215→  const currentUser = useAppStore((s) => s.currentUser)
+   216→  const setModule = useAppStore((s) => s.setModule)
+   217→  const [products, setProducts] = useState<any[]>([])
+   218→  const [shareUrl, setShareUrl] = useState('')
+   219→
+   220→  useEffect(() => {
+   221→    fetch('/api/products?limit=10').then((r) => r.json()).then(setProducts).catch(() => setProducts([]))
+   222→  }, [])
+   223→
+   224→  const shareProduct = (product: any) => {
+   225→    const url = `${window.location.origin}/?module=marketplace&product=${product.id}&ref=${currentUser?.affiliateCode}`
+   226→    setShareUrl(url)
+   227→    navigator.clipboard.writeText(url)
+   228→    toast('¡Enlace copiado! Compártelo en WhatsApp o redes', 'success')
+   229→  }
+   230→
+   231→  const shareWhatsApp = (product: any) => {
+   232→    const url = `${window.location.origin}/?module=marketplace&product=${product.id}&ref=${currentUser?.affiliateCode}`
+   233→    const text = `¡Mira este producto en Dimarclub! ${product.name} - ${fmtUsd(product.price)}`
+   234→    window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank')
+   235→  }
+   236→
+   237→  return (
+   238→    <div className="space-y-4">
+   239→      <Card>
+   240→        <CardHeader>
+   241→          <CardTitle className="text-base flex items-center gap-2"><Megaphone className="size-5 text-primary" /> Herramientas de marketing</CardTitle>
+   242→          <CardDescription>Comparte tus productos y registra afiliados</CardDescription>
+   243→        </CardHeader>
+   244→        <CardContent className="space-y-4">
+   245→          {/* Enlace de referido */}
+   246→          <div className="rounded-lg bg-primary/5 border p-4">
+   247→            <p className="text-sm font-medium mb-2 flex items-center gap-1.5"><Link2 className="size-4 text-primary" /> Mi enlace de referido</p>
+   248→            <div className="flex gap-2">
+   249→              <Input readOnly value={`${window.location.origin}/?ref=${currentUser?.affiliateCode}`} className="text-xs" />
+   250→              <Button size="sm" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/?ref=${currentUser?.affiliateCode}`); toast('Enlace copiado', 'success') }}><Copy className="size-4" /></Button>
+   251→            </div>
+   252→          </div>
+   253→
+   254→          {/* Compartir productos */}
+   255→          <div>
+   256→            <p className="text-sm font-medium mb-3">Compartir productos</p>
+   257→            {products.length === 0 ? (
+   258→              <p className="text-sm text-muted-foreground">No tienes productos. Agrega productos desde "Mi Tienda".</p>
+   259→            ) : (
+   260→              <div className="space-y-2">
+   261→                {products.slice(0, 5).map((p) => (
+   262→                  <div key={p.id} className="flex items-center gap-3 rounded-lg border p-3">
+   263→                    <img src={p.imageUrl || 'https://picsum.photos/seed/p/80/80'} alt={p.name} className="size-12 rounded-lg object-cover" />
+   264→                    <div className="flex-1 min-w-0">
+   265→                      <p className="text-sm font-medium truncate">{p.name}</p>
+   266→                      <p className="text-xs text-muted-foreground">{fmtUsd(p.price)}</p>
+   267→                    </div>
+   268→                    <Button size="sm" variant="outline" onClick={() => shareProduct(p)}><Copy className="size-3.5 mr-1" /> Copiar link</Button>
+   269→                    <Button size="sm" variant="outline" onClick={() => shareWhatsApp(p)}><Share2 className="size-3.5 mr-1" /> WhatsApp</Button>
+   270→                  </div>
+   271→                ))}
+   272→              </div>
+   273→            )}
+   274→          </div>
+   275→
+   276→          {/* Otras herramientas */}
+   277→          <div className="grid md:grid-cols-2 gap-3">
+   278→            <Button variant="outline" className="justify-start" onClick={() => setModule('social-studio')}><Megaphone className="size-4 mr-2" /> Content Studio IA (generar posts)</Button>
+   279→            <Button variant="outline" className="justify-start" onClick={() => setModule('social')}><TrendingUp className="size-4 mr-2" /> Social Dashboard</Button>
+   280→            <Button variant="outline" className="justify-start" onClick={() => setModule('email')}><MessageSquare className="size-4 mr-2" /> Email Marketing</Button>
+   281→            <Button variant="outline" className="justify-start" onClick={() => setModule('grid')}><QrCode className="size-4 mr-2" /> Grid publicitario</Button>
+   282→          </div>
+   283→        </CardContent>
+   284→      </Card>
+   285→    </div>
+   286→  )
+   287→}
+   288→
+   289→// ============ TAREAS ============
+   290→function TasksTab() {
+   291→  const toast = useAppStore((s) => s.toast)
+   292→  const [progress, setProgress] = useState<any>(null)
+   293→  const [loading, setLoading] = useState(true)
+   294→
+   295→  const fetchProgress = useCallback(async () => {
+   296→    setLoading(true)
+   297→    try {
+   298→      const res = await fetch('/api/tasks/progress')
+   299→      if (!res.ok) { setProgress(null); return }
+   300→      setProgress(await res.json())
+   301→    } catch { setProgress(null) }
+   302→    finally { setLoading(false) }
+   303→  }, [])
+   304→
+   305→  useEffect(() => { fetchProgress() }, [fetchProgress])
+   306→
+   307→  const toggleTask = async (task: string) => {
+   308→    const res = await fetch('/api/tasks/progress', {
+   309→      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+   310→      body: JSON.stringify({ [task]: !progress[task] }),
+   311→    })
+   312→    if (res.ok) setProgress(await res.json())
+   313→  }
+   314→
+   315→  const claimReward = async () => {
+   316→    const res = await fetch('/api/tasks/complete', { method: 'POST' })
+   317→    const d = await res.json()
+   318→    if (!res.ok) { toast(d.error || 'Error', 'error'); return }
+   319→    toast('¡Recompensa reclamada!', 'success')
+   320→    fetchProgress()
+   321→  }
+   322→
+   323→  if (loading || !progress) return <Skeleton className="h-64" />
+   324→
+   325→  const tasks = [
+   326→    { key: 'scanDone', label: 'Escanear código QR', icon: QrCode, desc: 'Escanea el QR del bolso o grid' },
+   327→    { key: 'identifyDone', label: 'Identificar empresa', icon: Store, desc: 'Identifica qué empresa es el QR' },
+   328→    { key: 'visitWebDone', label: 'Visitar sitio web', icon: ArrowRight, desc: 'Navega el sitio autogenerado' },
+   329→    { key: 'shareDone', label: 'Compartir oferta', icon: Share2, desc: 'Comparte en WhatsApp/redes' },
+   330→    { key: 'commentDone', label: 'Dejar comentario', icon: MessageSquare, desc: 'Comenta en el sitio' },
+   331→    { key: 'photoDone', label: 'Foto en tienda', icon: Camera, desc: 'Visita la tienda y toma foto' },
+   332→  ]
+   333→  const completedCount = tasks.filter((t) => progress[t.key]).length
+   334→  const progressPercent = (completedCount / tasks.length) * 100
+   335→
+   336→  return (
+   337→    <div className="space-y-4">
+   338→      <Card>
+   339→        <CardHeader>
+   340→          <CardTitle className="text-base flex items-center gap-2"><CheckCircle2 className="size-5 text-primary" /> Tareas del bolso</CardTitle>
+   341→          <CardDescription>Completa las 6 tareas para recibir bolso + álbum + sticker</CardDescription>
+   342→        </CardHeader>
+   343→        <CardContent className="space-y-3">
+   344→          <div>
+   345→            <div className="flex justify-between text-sm mb-1">
+   346→              <span>Progreso: {completedCount}/{tasks.length}</span>
+   347→              <span className="font-bold text-primary">{progressPercent}%</span>
+   348→            </div>
+   349→            <Progress value={progressPercent} className="h-2" />
+   350→          </div>
+   351→          {tasks.map((t) => {
+   352→            const done = progress[t.key]; const Icon = t.icon
+   353→            return (
+   354→              <button key={t.key} onClick={() => toggleTask(t.key)}
+   355→                className={cn('w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left',
+   356→                  done ? 'bg-emerald-50 border-emerald-300' : 'bg-card border-border hover:bg-muted/50')}>
+   357→                <div className={cn('size-9 rounded-full flex items-center justify-center shrink-0', done ? 'bg-emerald-500' : 'bg-muted')}>
+   358→                  {done ? <CheckCircle2 className="size-5 text-white" /> : <Icon className="size-5 text-muted-foreground" />}
+   359→                </div>
+   360→                <div className="flex-1">
+   361→                  <p className={cn('text-sm font-medium', done && 'line-through text-muted-foreground')}>{t.label}</p>
+   362→                  <p className="text-xs text-muted-foreground">{t.desc}</p>
+   363→                </div>
+   364→              </button>
+   365→            )
+   366→          })}
+   367→          {progress.completed && !progress.rewardClaimed && (
+   368→            <Button className="w-full" size="lg" onClick={claimReward}><Gift className="size-5 mr-2" />Reclamar recompensa</Button>
+   369→          )}
+   370→          {progress.rewardClaimed && (
+   371→            <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4 text-center">
+   372→              <CheckCircle2 className="size-8 mx-auto text-emerald-600 mb-2" />
+   373→              <p className="font-medium text-emerald-800">¡Recompensa reclamada!</p>
+   374→            </div>
+   375→          )}
+   376→        </CardContent>
+   377→      </Card>
+   378→    </div>
+   379→  )
+   380→}
+   381→
+   382→// ============ LOGÍSTICA (solicitar servicio de envío) ============
+   383→const LOGISTICS_STATUS_LABELS: Record<string, string> = {
+   384→  PENDING: 'Por asignar',
+   385→  ASSIGNED: 'Asignado',
+   386→  PICKED_UP: 'Recogido',
+   387→  IN_TRANSIT: 'En camino',
+   388→  DELIVERED: 'Entregado',
+   389→  FAILED: 'Fallido',
+   390→}
+   391→
+   392→const LOGISTICS_STATUS_BADGES: Record<string, string> = {
+   393→  PENDING: 'bg-amber-100 text-amber-700 border-amber-300',
+   394→  ASSIGNED: 'bg-sky-100 text-sky-700 border-sky-300',
+   395→  PICKED_UP: 'bg-violet-100 text-violet-700 border-violet-300',
+   396→  IN_TRANSIT: 'bg-orange-100 text-orange-700 border-orange-300',
+   397→  DELIVERED: 'bg-emerald-100 text-emerald-700 border-emerald-300',
+   398→  FAILED: 'bg-red-100 text-red-700 border-red-300',
+   399→}
+   400→
+   401→const TASK_TYPE_LABEL: Record<string, string> = {
+   402→  SOBRE: 'Sobre',
+   403→  CARGA: 'Carga',
+   404→  EXPRESS: 'Express',
+   405→  MICRODISTRIBUCION: 'Microdist.',
+   406→}
+   407→
+   408→function LogisticsTab() {
+   409→  const toast = useAppStore((s) => s.toast)
+   410→  const setModule = useAppStore((s) => s.setModule)
+   411→  const [form, setForm] = useState({
+   412→    taskType: 'SOBRE' as 'SOBRE' | 'CARGA',
+   413→    pickupAddress: '',
+   414→    deliveryAddress: '',
+   415→    recipientName: '',
+   416→    recipientPhone: '',
+   417→    notes: '',
+   418→  })
+   419→  const [submitting, setSubmitting] = useState(false)
+   420→  const [deliveries, setDeliveries] = useState<any[]>([])
+   421→  const [loadingList, setLoadingList] = useState(true)
+   422→
+   423→  const fetchDeliveries = useCallback(async () => {
+   424→    setLoadingList(true)
+   425→    try {
+   426→      const res = await fetch('/api/deliveries/request')
+   427→      const d = await res.json()
+   428→      if (res.ok && d?.deliveries) setDeliveries(d.deliveries)
+   429→      else setDeliveries([])
+   430→    } catch {
+   431→      setDeliveries([])
+   432→    } finally {
+   433→      setLoadingList(false)
+   434→    }
+   435→  }, [])
+   436→
+   437→  useEffect(() => { fetchDeliveries() }, [fetchDeliveries])
+   438→
+   439→  const submit = async () => {
+   440→    if (!form.pickupAddress.trim() || !form.deliveryAddress.trim()) {
+   441→      toast('Completa las direcciones de recogida y entrega', 'error')
+   442→      return
+   443→    }
+   444→    setSubmitting(true)
+   445→    try {
+   446→      const res = await fetch('/api/deliveries/request', {
+   447→        method: 'POST',
+   448→        headers: { 'Content-Type': 'application/json' },
+   449→        body: JSON.stringify({
+   450→          taskType: form.taskType,
+   451→          pickupAddress: form.pickupAddress.trim(),
+   452→          deliveryAddress: form.deliveryAddress.trim(),
+   453→          recipientName: form.recipientName.trim() || undefined,
+   454→          recipientPhone: form.recipientPhone.trim() || undefined,
+   455→          notes: form.notes.trim() || undefined,
+   456→        }),
+   457→      })
+   458→      const d = await res.json()
+   459→      if (!res.ok) {
+   460→        toast(d?.error || 'Error al enviar la solicitud', 'error')
+   461→        return
+   462→      }
+   463→      toast('Solicitud enviada. El Delta Master asignará un mensajero pronto.', 'success')
+   464→      setForm({
+   465→        taskType: 'SOBRE',
+   466→        pickupAddress: '',
+   467→        deliveryAddress: '',
+   468→        recipientName: '',
+   469→        recipientPhone: '',
+   470→        notes: '',
+   471→      })
+   472→      fetchDeliveries()
+   473→    } catch {
+   474→      toast('Error de red al enviar la solicitud', 'error')
+   475→    } finally {
+   476→      setSubmitting(false)
+   477→    }
+   478→  }
+   479→
+   480→  return (
+   481→    <div className="space-y-4">
+   482→      {/* Banner informativo: solo el Delta Master asigna mensajeros */}
+   483→      <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-950/20 p-3 flex items-start gap-3">
+   484→        <ClipboardList className="size-5 text-amber-600 shrink-0 mt-0.5" />
+   485→        <div className="text-sm">
+   486→          <p className="font-medium text-amber-900 dark:text-amber-200">¿Cómo funciona el servicio de logística?</p>
+   487→          <p className="text-amber-700 dark:text-amber-300 mt-0.5">
+   488→            Tú solicitas el envío y el <strong>Delta Master</strong> (administrador) asigna un mensajero.
+   489→            Recibirás el nombre del mensajero en cuanto sea asignado.
+   490→          </p>
+   491→        </div>
+   492→      </div>
+   493→
+   494→      <div className="grid lg:grid-cols-2 gap-4">
+   495→        {/* Formulario */}
+   496→        <Card>
+   497→          <CardHeader>
+   498→            <CardTitle className="text-base flex items-center gap-2">
+   499→              <Truck className="size-5 text-primary" /> Solicitar servicio de logística
+   500→            </CardTitle>
+   501→            <CardDescription>
+   502→              ¿Necesitas enviar un sobre o carga? Solicita el servicio y nuestro Delta Master asignará un mensajero.
+   503→            </CardDescription>
+   504→          </CardHeader>
+   505→          <CardContent className="space-y-4">
+   506→            {/* Tipo de envío */}
+   507→            <div className="space-y-1.5">
+   508→              <Label>Tipo de envío <span className="text-destructive">*</span></Label>
+   509→              <Select value={form.taskType} onValueChange={(v) => setForm({ ...form, taskType: v as 'SOBRE' | 'CARGA' })}>
+   510→                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+   511→                <SelectContent>
+   512→                  <SelectItem value="SOBRE">Sobre (documentos, sobres pequeños)</SelectItem>
+   513→                  <SelectItem value="CARGA">Carga (paquetes, bultos)</SelectItem>
+   514→                </SelectContent>
+   515→              </Select>
+   516→            </div>
+   517→
+   518→            {/* Dirección de recogida */}
+   519→            <div className="space-y-1.5">
+   520→              <Label className="flex items-center gap-1.5"><MapPin className="size-3.5 text-muted-foreground" /> Dirección de recogida <span className="text-destructive">*</span></Label>
+   521→              <Input
+   522→                value={form.pickupAddress}
+   523→                onChange={(e) => setForm({ ...form, pickupAddress: e.target.value })}
+   524→                placeholder="Ej. Av. Amazonas N34-451, Quito"
+   525→              />
+   526→            </div>
+   527→
+   528→            {/* Dirección de entrega */}
+   529→            <div className="space-y-1.5">
+   530→              <Label className="flex items-center gap-1.5"><MapPin className="size-3.5 text-muted-foreground" /> Dirección de entrega <span className="text-destructive">*</span></Label>
+   531→              <Input
+   532→                value={form.deliveryAddress}
+   533→                onChange={(e) => setForm({ ...form, deliveryAddress: e.target.value })}
+   534→                placeholder="Ej. Calle Bolívar 12-34, Guayaquil"
+   535→              />
+   536→            </div>
+   537→
+   538→            {/* Destinatario */}
+   539→            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+   540→              <div className="space-y-1.5">
+   541→                <Label className="flex items-center gap-1.5"><User className="size-3.5 text-muted-foreground" /> Nombre del destinatario</Label>
+   542→                <Input
+   543→                  value={form.recipientName}
+   544→                  onChange={(e) => setForm({ ...form, recipientName: e.target.value })}
+   545→                  placeholder="Opcional"
+   546→                />
+   547→              </div>
+   548→              <div className="space-y-1.5">
+   549→                <Label className="flex items-center gap-1.5"><Phone className="size-3.5 text-muted-foreground" /> Teléfono del destinatario</Label>
+   550→                <Input
+   551→                  value={form.recipientPhone}
+   552→                  onChange={(e) => setForm({ ...form, recipientPhone: e.target.value })}
+   553→                  placeholder="Opcional"
+   554→                />
+   555→              </div>
+   556→            </div>
+   557→
+   558→            {/* Notas */}
+   559→            <div className="space-y-1.5">
+   560→              <Label>Notas</Label>
+   561→              <Textarea
+   562→                value={form.notes}
+   563→                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+   564→                placeholder="Descripción del contenido, instrucciones especiales..."
+   565→                rows={3}
+   566→              />
+   567→            </div>
+   568→
+   569→            <Button
+   570→              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+   571→              onClick={submit}
+   572→              disabled={submitting}
+   573→            >
+   574→              {submitting ? (
+   575→                <><Loader2 className="size-4 mr-1.5 animate-spin" /> Enviando...</>
+   576→              ) : (
+   577→                <><Send className="size-4 mr-1.5" /> Enviar solicitud</>
+   578→              )}
+   579→            </Button>
+   580→          </CardContent>
+   581→        </Card>
+   582→
+   583→        {/* Tus solicitudes recientes */}
+   584→        <Card>
+   585→          <CardHeader>
+   586→            <CardTitle className="text-base flex items-center gap-2">
+   587→              <ClipboardList className="size-5 text-primary" /> Tus solicitudes recientes
+   588→            </CardTitle>
+   589→            <CardDescription>Solicitudes de logística que has creado</CardDescription>
+   590→          </CardHeader>
+   591→          <CardContent>
+   592→            {loadingList ? (
+   593→              <div className="space-y-2">
+   594→                <Skeleton className="h-16 w-full" />
+   595→                <Skeleton className="h-16 w-full" />
+   596→                <Skeleton className="h-16 w-full" />
+   597→              </div>
+   598→            ) : deliveries.length === 0 ? (
+   599→              <div className="text-center py-10 text-sm text-muted-foreground">
+   600→                <Truck className="size-10 mx-auto mb-2 opacity-30" />
+   601→                No tienes solicitudes de logística todavía.
+   602→                <br />Crea la primera con el formulario de la izquierda.
+   603→              </div>
+   604→            ) : (
+   605→              <div className="space-y-2 max-h-[28rem] overflow-y-auto pr-1">
+   606→                {deliveries.map((d) => {
+   607→                  const st = d.status || 'PENDING'
+   608→                  const stLabel = LOGISTICS_STATUS_LABELS[st] || st
+   609→                  const stBadge = LOGISTICS_STATUS_BADGES[st] || 'bg-muted text-muted-foreground border-border'
+   610→                  const courierName = d.courier?.user?.name
+   611→                  return (
+   612→                    <div key={d.id} className="rounded-lg border p-3 space-y-2">
+   613→                      <div className="flex items-center justify-between gap-2">
+   614→                        <div className="flex items-center gap-2 min-w-0">
+   615→                          <Badge variant="outline" className="shrink-0">
+   616→                            {TASK_TYPE_LABEL[d.taskType] || d.taskType}
+   617→                          </Badge>
+   618→                          <span className="text-xs text-muted-foreground font-mono truncate">
+   619→                            {d.order?.orderNumber || '—'}
+   620→                          </span>
+   621→                        </div>
+   622→                        <Badge variant="outline" className={cn('shrink-0', stBadge)}>{stLabel}</Badge>
+   623→                      </div>
+   624→                      <div className="text-sm">
+   625→                        <p className="flex items-start gap-1.5">
+   626→                          <MapPin className="size-3.5 text-muted-foreground shrink-0 mt-0.5" />
+   627→                          <span className="truncate">{d.deliveryAddress || '—'}</span>
+   628→                        </p>
+   629→                        {courierName && (
+   630→                          <p className="flex items-center gap-1.5 mt-1 text-emerald-700 dark:text-emerald-300">
+   631→                            <User className="size-3.5 shrink-0" /> Mensajero: <strong>{courierName}</strong>
+   632→                          </p>
+   633→                        )}
+   634→                      </div>
+   635→                      <p className="text-xs text-muted-foreground">
+   636→                        {d.createdAt ? new Date(d.createdAt).toLocaleString('es-EC', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+   637→                      </p>
+   638→                    </div>
+   639→                  )
+   640→                })}
+   641→              </div>
+   642→            )}
+   643→            <Button variant="ghost" size="sm" className="w-full mt-3" onClick={() => setModule('logistics')}>
+   644→              <Truck className="size-4 mr-1.5" /> Ver tablero de logística
+   645→            </Button>
+   646→          </CardContent>
+   647→        </Card>
+   648→      </div>
+   649→    </div>
+   650→  )
+   651→}
+   652→
+   653→// ============ HERRAMIENTAS ============
+   654→function ToolsTab() {
+   655→  const toast = useAppStore((s) => s.toast)
+   656→  const currentUser = useAppStore((s) => s.currentUser)
+   657→  const setModule = useAppStore((s) => s.setModule)
+   658→
+   659→  return (
+   660→    <div className="space-y-4">
+   661→      <div className="grid md:grid-cols-2 gap-4">
+   662→        <Card>
+   663→          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Link2 className="size-5 text-primary" /> Enlaces y códigos</CardTitle></CardHeader>
+   664→          <CardContent className="space-y-3">
+   665→            <div>
+   666→              <Label>Código de afiliado</Label>
+   667→              <div className="flex gap-2">
+   668→                <Input readOnly value={currentUser?.affiliateCode || ''} className="font-mono" />
+   669→                <Button size="sm" onClick={() => { navigator.clipboard.writeText(currentUser?.affiliateCode || ''); toast('Copiado', 'success') }}><Copy className="size-4" /></Button>
+   670→              </div>
+   671→            </div>
+   672→            <div>
+   673→              <Label>Enlace de referido</Label>
+   674→              <div className="flex gap-2">
+   675→                <Input readOnly value={`${typeof window !== 'undefined' ? window.location.origin : ''}/?ref=${currentUser?.affiliateCode || ''}`} className="text-xs" />
+   676→                <Button size="sm" onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/?ref=${currentUser?.affiliateCode}`); toast('Copiado', 'success') }}><Copy className="size-4" /></Button>
+   677→              </div>
+   678→            </div>
+   679→          </CardContent>
+   680→        </Card>
+   681→
+   682→        <Card>
+   683→          <CardHeader><CardTitle className="text-base flex items-center gap-2"><Zap className="size-5 text-primary" /> Herramientas rápidas</CardTitle></CardHeader>
+   684→          <CardContent className="space-y-2">
+   685→            <Button variant="outline" className="w-full justify-start" onClick={() => setModule('suppliers')}><Store className="size-4 mr-2" /> Agregar productos</Button>
+   686→            <Button variant="outline" className="w-full justify-start" onClick={() => setModule('web-express')}><Package className="size-4 mr-2" /> Editar sitio web</Button>
+   687→            <Button variant="outline" className="w-full justify-start" onClick={() => setModule('social-studio')}><Megaphone className="size-4 mr-2" /> Crear post con IA</Button>
+   688→            <Button variant="outline" className="w-full justify-start" onClick={() => setModule('grid')}><QrCode className="size-4 mr-2" /> Comprar espacio grid</Button>
+   689→            <Button variant="outline" className="w-full justify-start" onClick={() => setModule('cooperativa')}><Wallet className="size-4 mr-2" /> Mi cuenta cooperativa</Button>
+   690→          </CardContent>
+   691→        </Card>
+   692→      </div>
+   693→    </div>
+   694→  )
+   695→}
+   696→

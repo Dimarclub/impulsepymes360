@@ -4,14 +4,14 @@ import type { ModuleId, UserRole } from './types'
 export const ROLE_MODULES: Record<UserRole, ModuleId[] | '*'> = {
   ADMIN: '*',
 
-  CLIENT: ['impulsepymes360', 'marketplace', 'affiliates', 'benefits', 'grid', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'affiliate-backoffice', 'alertas', 'directorio'],
-  AFFILIATE: ['impulsepymes360', 'marketplace', 'affiliates', 'benefits', 'social-bio', 'grid', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'affiliate-backoffice', 'alertas', 'directorio'],
-  SUPPLIER: ['impulsepymes360', 'marketplace', 'suppliers', 'logistics', 'web-express', 'publibags', 'bag-plan', 'planes', 'fuerza-delta', 'directorio', 'social', 'social-studio', 'social-bio', 'social-automation', 'impulse', 'impulse-wizard', 'grid', 'supplier-backoffice', 'alertas'],
+  CLIENT: ['impulsepymes360', 'marketplace', 'affiliates', 'benefits', 'grid', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'affiliate-backoffice', 'alertas', 'directorio', 'ofertas'],
+  AFFILIATE: ['impulsepymes360', 'marketplace', 'affiliates', 'benefits', 'social-bio', 'grid', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'affiliate-backoffice', 'alertas', 'directorio', 'ofertas'],
+  SUPPLIER: ['impulsepymes360', 'marketplace', 'suppliers', 'logistics', 'web-express', 'publibags', 'bag-plan', 'planes', 'fuerza-delta', 'directorio', 'social', 'social-studio', 'social-bio', 'social-automation', 'impulse', 'impulse-wizard', 'grid', 'supplier-backoffice', 'alertas', 'ofertas'],
   COURIER: ['marketplace', 'courier-app', 'fuerza'],
-  PARTNER: ['impulsepymes360', 'marketplace', 'partners', 'benefits', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'partner-backoffice', 'directorio'],
+  PARTNER: ['impulsepymes360', 'marketplace', 'partners', 'benefits', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'partner-backoffice', 'directorio', 'ofertas'],
 }
 
-export const PUBLIC_MODULES: ModuleId[] = ['impulsepymes360', 'marketplace', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub']
+export const PUBLIC_MODULES: ModuleId[] = ['impulsepymes360', 'marketplace', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'ofertas']
 
 export function canAccessModule(role: UserRole | undefined, moduleId: ModuleId): boolean {
   if (!role) return PUBLIC_MODULES.includes(moduleId)

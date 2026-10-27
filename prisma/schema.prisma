@@ -84,6 +84,7 @@ model Supplier {
   rating      Float     @default(0)
   products    Product[]
   ads         Advertisement[]
+  offers      Offer[]
   createdAt   DateTime  @default(now())
 }
 
@@ -114,6 +115,28 @@ model Product {
   orderItems    OrderItem[]
   cartItems     CartItem[]
   socialPosts   SocialPost[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ---------- Ofertas publicitarias ----------
+
+model Offer {
+  id            String   @id @default(cuid())
+  supplierId    String
+  supplier      Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  title         String   // ej: "Zapatos 2x1"
+  description   String?  // detalles de la oferta
+  originalPrice Float?   // precio original
+  offerPrice    Float?   // precio con descuento
+  discountPct   Int?     // % de descuento (ej: 50)
+  imageUrl      String?  // imagen promocional subida por el proveedor
+  startDate     DateTime
+  endDate       DateTime
+  status        String   @default("PENDING") // PENDING (enviada por proveedor), APPROVED (aprobada por admin), REJECTED, EXPIRED
+  qrCode        String?  // código corto del QR generado automáticamente
+  qrTargetUrl   String?  // URL a la que apunta el QR (Web Express del proveedor)
+  adminNotes    String?  // notas del admin al aprobar/rechazar
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

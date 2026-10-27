@@ -38,6 +38,8 @@ export type ModuleId =
   | 'partner-backoffice'
   | 'alertas'
   | 'finanzas'
+  | 'ofertas'
+  | 'ofertas-admin'
 
 export type UserRole = 'CLIENT' | 'AFFILIATE' | 'SUPPLIER' | 'COURIER' | 'PARTNER' | 'ADMIN'
 

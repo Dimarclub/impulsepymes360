@@ -1550,3 +1550,42 @@ Stage Summary:
 - bag-plan.tsx visualizer now shows 79 espacios × $67 (no more 297/141/$20).
 - Supplier backoffice has a new "Logística" tab where suppliers can request logistics services (sobre/carga) that go to the Delta Master's "Por asignar" queue.
 - The correct flow is enforced: supplier requests → Delta Master assigns courier → courier delivers. Suppliers cannot assign couriers.
+
+---
+Task ID: 29-offers-system
+Agent: full-stack-developer (offers system)
+Task: Sistema de Ofertas — proveedores envían ofertas con imagen, admin las aprueba, se generan QR automáticos y aparecen en módulo público "Ofertas" con imagen + QR + "ESCANEA".
+
+Work Log:
+- Leído worklog.md, prisma/schema.prisma (model Offer ya definido + Supplier con offers[] relation), types.ts, permissions.ts, supplier-backoffice.tsx (6 tabs ahora), topnav.tsx, alertas-center.tsx, /api/deliveries/request/route.ts (patrón supplier→admin), /lib/security/auth.ts (requireRole), /lib/bag-plan.ts.
+- Detectado que Supplier NO tiene websiteSlug/logoUrl — esos campos están en Provider (mismo userId). Implementé helper slugify() fallback + lookup por userId en cada endpoint.
+- Actualizado `src/lib/types.ts`: añadidos `'ofertas'` y `'ofertas-admin'` a ModuleId.
+- Actualizado `src/lib/permissions.ts`: `'ofertas'` en PUBLIC_MODULES + CLIENT, AFFILIATE, SUPPLIER, PARTNER. `'ofertas-admin'` cubierto por ADMIN vía '*'.
+- Creado `src/app/api/offers/route.ts`:
+  - GET público: APPROVED + activas (startDate<=now<=endDate) + supplier (companyName, websiteSlug via Provider, logoUrl).
+  - POST supplier/admin: valida título+fechas, deriva supplierId del User, autocalcula discountPct si ambos precios, notifica a admins.
+- Creado `src/app/api/offers/[id]/route.ts`:
+  - GET público: oferta APPROVED activa por id.
+  - PATCH admin: approve → status APPROVED + qrCode (4 letras companyName + 4 dígitos random) + qrTargetUrl (/w/{provider.websiteSlug||slug}) + notifica al supplier. reject → REJECTED + adminNotes + notifica.
+  - DELETE admin|supplier owner: verifica ownership via supplier.userId.
+- Creado `src/app/api/offers/mine/route.ts` (GET supplier): todas las ofertas propias (cualquier estado), marca EXPIRED en DB si endDate<now y era APPROVED/PENDING.
+- Creado `src/app/api/offers/admin/route.ts` (GET admin): TODAS las ofertas, orden PENDING→APPROVED→REJECTED→EXPIRED, marca expiradas, lookup Provider en lote.
+- Modificado `src/components/dimar/modules/supplier-backoffice.tsx`: añadida pestaña "Ofertas" (6ª, grid-cols-6 en md). Nuevo componente OfertasTab con:
+  - Formulario "Enviar nueva oferta": título, descripción, precios (original/oferta/descuento autocalc), URL imagen con preview, fechas inicio/fin. Botón emerald → POST /api/offers. Toast + reset + refresh.
+  - Lista "Mis ofertas" (GET /api/offers/mine): badge estado (PENDING=amber, APPROVED=emerald, REJECTED=red, EXPIRED=muted), precios, % descuento, notas admin si rechazada, QR + "ESCANEA →" si aprobada, botón eliminar si PENDING/REJECTED/EXPIRED.
+- Creado `src/components/dimar/modules/ofertas.tsx` (público): grid (sm:2, lg:3, xl:4) de cards con imagen promocional, badge -%descuento, "Últimos días" si vence en ≤3d, QR (api.qrserver.com 150x150) debajo de la imagen, "ESCANEA →" en bold emerald, título, descripción, precios (original tachado → oferta emerald), supplier con logo, fecha vencimiento. Empty state + skeleton loading + refresh button.
+- Creado `src/components/dimar/modules/ofertas-admin.tsx`: header + 4 stat cards (pendientes/aprobadas/rechazadas/expiradas) + grid de cards con imagen preview, info completa, QR si aprobada, botones Aprobar (emerald) / Rechazar (red, abre dialog con notas) para PENDING, botón Eliminar para otros estados.
+- Modificado `src/app/page.tsx`: import OfertasModule + OfertasAdminModule + cases 'ofertas' y 'ofertas-admin'.
+- Modificado `src/components/dimar/topnav.tsx`: añadido icon Tag import, botón público "Ofertas" (red bold, entre Tienda y PubliBags) en fila 3 + mobile, item "Ofertas (aprobar)" en Admin dropdown (después de Alertas).
+- Ejecutado `bun run lint`: 0 errors, 0 warnings (limpio).
+- Verificado con curl: GET /api/offers retorna {"ok":true,"offers":[]} y GET /api/offers/admin retorna 401 correcto.
+
+Stage Summary:
+- Flujo completo: supplier envía oferta (PENDING) → admin aprueba (APPROVED + QR autogenerado) → aparece en módulo público Ofertas con imagen + QR + "ESCANEA →".
+- 4 endpoints API: GET público, POST supplier, GET /mine, GET /admin, GET/PATCH/DELETE /:id.
+- 2 nuevos módulos UI: ofertas (público) y ofertas-admin (admin).
+- 1 nuevo tab en supplier-backoffice (Ofertas, 6ª pestaña).
+- Notificaciones bidireccionales: supplier→admin (OFFER_RECEIVED), admin→supplier (OFFER_APPROVED / OFFER_REJECTED).
+- QR generado desde api.qrserver.com apuntando a /w/{websiteSlug} del Web Express del proveedor.
+- Misma imagen + QR que va impreso en bolsos PubliBags.
+- Lint clean (0/0), no console errors en dev.log.

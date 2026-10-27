@@ -41,6 +41,8 @@ import { PartnerBackofficeModule } from '@/components/dimar/modules/partner-back
 import { AlertasCenterModule } from '@/components/dimar/modules/alertas-center'
 import { FinanzasModule } from '@/components/dimar/modules/finanzas'
 import { DirectorioModule } from '@/components/dimar/modules/directorio'
+import { OfertasModule } from '@/components/dimar/modules/ofertas'
+import { OfertasAdminModule } from '@/components/dimar/modules/ofertas-admin'
 import { Footer } from '@/components/dimar/footer'
 import { canAccessModule, defaultModuleForRole } from '@/lib/permissions'
 
@@ -119,6 +121,8 @@ function HomeContent() {
       case 'alertas': return <AlertasCenterModule />
       case 'finanzas': return <FinanzasModule />
       case 'directorio': return <DirectorioModule />
+      case 'ofertas': return <OfertasModule />
+      case 'ofertas-admin': return <OfertasAdminModule />
       default: return <MarketplaceModule />
     }
   }
