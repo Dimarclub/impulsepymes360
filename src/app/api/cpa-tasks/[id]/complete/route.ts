@@ -245,6 +245,52 @@ export async function POST(
         where: { id: taskId },
         data: { currentParticipants: { increment: 1 } },
       })
+
+      // ===== FACTOR MULTIPLICADOR: comisión a los 3 niveles de la red =====
+      // El usuario que completa la tarea gana el 100% de la recompensa
+      // Sus padrinos (N1, N2, N3) ganan 2% cada uno de la recompensa
+      const sponsorCommission = +(reward * 0.02).toFixed(2) // 2% por nivel
+      if (sponsorCommission > 0) {
+        let currentUser = await tx.user.findUnique({
+          where: { id: user.id },
+          select: { id: true, sponsorId: true },
+        })
+
+        for (let lvl = 1; lvl <= 3; lvl++) {
+          if (!currentUser?.sponsorId) break
+          const sponsor = await tx.user.findUnique({
+            where: { id: currentUser.sponsorId },
+            select: { id: true, name: true, sponsorId: true },
+          })
+          if (!sponsor) break
+
+          // Acreditar al sponsor
+          let sponsorAccount = await tx.cooperativeAccount.findUnique({ where: { userId: sponsor.id } })
+          if (!sponsorAccount) {
+            sponsorAccount = await tx.cooperativeAccount.create({ data: { userId: sponsor.id } })
+          }
+          await tx.cooperativeAccount.update({
+            where: { userId: sponsor.id },
+            data: {
+              balance: { increment: sponsorCommission },
+              totalEarned: { increment: sponsorCommission },
+            },
+          })
+
+          await tx.cooperativeTransaction.create({
+            data: {
+              accountId: sponsorAccount.id,
+              type: 'CPA_REWARD',
+              amount: sponsorCommission,
+              description: `Comisión N${lvl} por tarea CPA de ${user.name}: ${task.title}`,
+              referenceId: taskId,
+              status: 'COMPLETED',
+            },
+          })
+
+          currentUser = sponsor // subir al siguiente nivel
+        }
+      }
     })
 
     // Notificar al usuario (best-effort)

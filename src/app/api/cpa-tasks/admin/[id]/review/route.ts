@@ -103,6 +103,49 @@ export async function PATCH(
             status: 'COMPLETED',
           },
         })
+
+        // ===== FACTOR MULTIPLICADOR: comisión a los 3 niveles de la red =====
+        const sponsorCommission = +(reward * 0.02).toFixed(2) // 2% por nivel
+        if (sponsorCommission > 0) {
+          let currentUser = await tx.user.findUnique({
+            where: { id: completion.userId },
+            select: { id: true, sponsorId: true, name: true },
+          })
+
+          for (let lvl = 1; lvl <= 3; lvl++) {
+            if (!currentUser?.sponsorId) break
+            const sponsor = await tx.user.findUnique({
+              where: { id: currentUser.sponsorId },
+              select: { id: true, name: true, sponsorId: true },
+            })
+            if (!sponsor) break
+
+            let sponsorAccount = await tx.cooperativeAccount.findUnique({ where: { userId: sponsor.id } })
+            if (!sponsorAccount) {
+              sponsorAccount = await tx.cooperativeAccount.create({ data: { userId: sponsor.id } })
+            }
+            await tx.cooperativeAccount.update({
+              where: { userId: sponsor.id },
+              data: {
+                balance: { increment: sponsorCommission },
+                totalEarned: { increment: sponsorCommission },
+              },
+            })
+
+            await tx.cooperativeTransaction.create({
+              data: {
+                accountId: sponsorAccount.id,
+                type: 'CPA_REWARD',
+                amount: sponsorCommission,
+                description: `Comisión N${lvl} por tarea CPA (foto) de ${currentUser.name}: ${completion.task.title}`,
+                referenceId: completion.taskId,
+                status: 'COMPLETED',
+              },
+            })
+
+            currentUser = sponsor
+          }
+        }
       })
 
       try {
