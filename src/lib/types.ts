@@ -42,6 +42,8 @@ export type ModuleId =
   | 'ofertas-admin'
   | 'cpa-tasks'
   | 'cpa-admin'
+  | 'album'
+  | 'album-admin'
 
 export type UserRole = 'CLIENT' | 'AFFILIATE' | 'SUPPLIER' | 'COURIER' | 'PARTNER' | 'ADMIN'
 

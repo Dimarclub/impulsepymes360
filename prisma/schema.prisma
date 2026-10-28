@@ -49,6 +49,7 @@ model User {
   adSpacesBought AdSpace[] @relation("AdSpaceBuyer")
   taskProgress TaskProgress?
   albumProgress AlbumProgress[]
+  albumPrize    AlbumPrize?
   raffleEntries RaffleEntry[]
   cpaCompletions CpaCompletion[]
 
@@ -860,6 +861,16 @@ model Sticker {
   imageUrl      String
   code          String   @unique
   rarity        String   @default("COMMON")
+  // Cromo según el plan del proveedor
+  planLevel     Int      @default(1) // 1=$67, 2=$122, 3=$253, 4=$363, 5=$478, 6=$592+
+  stickerSize   String   @default("8x2") // "8x2", "8x4", "4x4", "14x4", "24x4"
+  hasQR         Boolean  @default(false)
+  hasLogo       Boolean  @default(false)
+  hasBanner     Boolean  @default(false)
+  bannerType    String?  // "horizontal", "vertical", null
+  hasMarketplaceAd Boolean @default(false) // plan $592+ incluye espacio publicitario en marketplace
+  qrCode        String?  // código QR del cromo (para escanear al reclamarlo)
+  qrTargetUrl   String?  // URL a la que apunta el QR
   albumProgress  AlbumProgress[]
   createdAt     DateTime @default(now())
 }
@@ -870,9 +881,25 @@ model AlbumProgress {
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   stickerId     String
   sticker       Sticker  @relation(fields: [stickerId], references: [id], onDelete: Cascade)
-  source        String   @default("QR_SCAN")
+  source        String   @default("QR_SCAN") // QR_SCAN, STORE_VISIT, ADMIN_ASSIGN
   collectedAt   DateTime @default(now())
   @@unique([userId, stickerId])
+}
+
+// Premio por llenar el álbum
+model AlbumPrize {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalStickers Int      @default(0) // total de cromos disponibles
+  collectedStickers Int  @default(0) // cromos recolectados
+  completed     Boolean  @default(false)
+  completedAt   DateTime?
+  prizeAmount   Float    @default(200) // $200 al llenar el álbum
+  prizeClaimed  Boolean  @default(false)
+  prizeClaimedAt DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Raffle {
