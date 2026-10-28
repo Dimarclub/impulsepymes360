@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
+import { CpaTasksModule } from './cpa-tasks'
 
 const fmtUsd = (n: number) => `$${(n || 0).toFixed(2)}`
 
@@ -56,13 +57,14 @@ export function AffiliateBackofficeModule() {
         </p>
       </div>
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className={`grid w-full grid-cols-2 md:max-w-3xl ${isSocio ? 'md:grid-cols-6' : 'md:grid-cols-5'}`}>
+        <TabsList className={`grid w-full grid-cols-2 md:max-w-3xl ${isSocio ? 'md:grid-cols-7' : 'md:grid-cols-6'}`}>
           <TabsTrigger value="overview"><TrendingUp className="size-4 md:mr-1.5" /><span className="hidden md:inline">Resumen</span></TabsTrigger>
           <TabsTrigger value="network"><Network className="size-4 md:mr-1.5" /><span className="hidden md:inline">Mi Red</span></TabsTrigger>
           <TabsTrigger value="commissions"><DollarSign className="size-4 md:mr-1.5" /><span className="hidden md:inline">Comisiones</span></TabsTrigger>
           {isSocio && <TabsTrigger value="cooperative"><PiggyBank className="size-4 md:mr-1.5" /><span className="hidden md:inline">Cooperativa</span></TabsTrigger>}
           <TabsTrigger value="marketing"><Megaphone className="size-4 md:mr-1.5" /><span className="hidden md:inline">Marketing</span></TabsTrigger>
           <TabsTrigger value="tasks"><Award className="size-4 md:mr-1.5" /><span className="hidden md:inline">Tareas</span></TabsTrigger>
+          <TabsTrigger value="cpa"><DollarSign className="size-4 md:mr-1.5" /><span className="hidden md:inline">Tareas CPA</span></TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="mt-4"><OverviewTab /></TabsContent>
         <TabsContent value="network" className="mt-4"><NetworkTab /></TabsContent>
@@ -70,6 +72,7 @@ export function AffiliateBackofficeModule() {
         {isSocio && <TabsContent value="cooperative" className="mt-4"><CooperativeTab /></TabsContent>}
         <TabsContent value="marketing" className="mt-4"><MarketingTab /></TabsContent>
         <TabsContent value="tasks" className="mt-4"><TasksTab /></TabsContent>
+        <TabsContent value="cpa" className="mt-4"><CpaTasksModule /></TabsContent>
       </Tabs>
     </div>
   )

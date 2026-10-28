@@ -43,6 +43,8 @@ import { FinanzasModule } from '@/components/dimar/modules/finanzas'
 import { DirectorioModule } from '@/components/dimar/modules/directorio'
 import { OfertasModule } from '@/components/dimar/modules/ofertas'
 import { OfertasAdminModule } from '@/components/dimar/modules/ofertas-admin'
+import { CpaTasksModule } from '@/components/dimar/modules/cpa-tasks'
+import { CpaAdminModule } from '@/components/dimar/modules/cpa-admin'
 import { Footer } from '@/components/dimar/footer'
 import { canAccessModule, defaultModuleForRole } from '@/lib/permissions'
 
@@ -123,6 +125,8 @@ function HomeContent() {
       case 'directorio': return <DirectorioModule />
       case 'ofertas': return <OfertasModule />
       case 'ofertas-admin': return <OfertasAdminModule />
+      case 'cpa-tasks': return <CpaTasksModule />
+      case 'cpa-admin': return <CpaAdminModule />
       default: return <MarketplaceModule />
     }
   }

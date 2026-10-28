@@ -25,6 +25,7 @@ import {
   CheckCircle2, Loader2, Plus, Link2, Copy, Store as StoreIcon,
   Package, MessageSquare, Megaphone, Star, ArrowRight, Zap,
   Truck, MapPin, User, Phone, ClipboardList, Send, Tag, Trash2, Image as ImageIcon, Calendar,
+  Award, DollarSign, Eye, Pause, Play, Video,
 } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
@@ -42,13 +43,14 @@ export function SupplierBackofficeModule() {
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 max-w-3xl">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 max-w-3xl">
           <TabsTrigger value="overview"><Store className="size-4 md:mr-1.5" /><span className="hidden md:inline">Resumen</span></TabsTrigger>
           <TabsTrigger value="marketing"><Megaphone className="size-4 md:mr-1.5" /><span className="hidden md:inline">Marketing</span></TabsTrigger>
           <TabsTrigger value="logistics"><Truck className="size-4 md:mr-1.5" /><span className="hidden md:inline">Logística</span></TabsTrigger>
           <TabsTrigger value="tasks"><CheckCircle2 className="size-4 md:mr-1.5" /><span className="hidden md:inline">Tareas</span></TabsTrigger>
           <TabsTrigger value="tools"><Zap className="size-4 md:mr-1.5" /><span className="hidden md:inline">Herramientas</span></TabsTrigger>
           <TabsTrigger value="ofertas"><Tag className="size-4 md:mr-1.5" /><span className="hidden md:inline">Ofertas</span></TabsTrigger>
+          <TabsTrigger value="cpa"><Award className="size-4 md:mr-1.5" /><span className="hidden md:inline">Tareas CPA</span></TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4"><OverviewTab /></TabsContent>
@@ -57,6 +59,7 @@ export function SupplierBackofficeModule() {
         <TabsContent value="tasks" className="mt-4"><TasksTab /></TabsContent>
         <TabsContent value="tools" className="mt-4"><ToolsTab /></TabsContent>
         <TabsContent value="ofertas" className="mt-4"><OfertasTab /></TabsContent>
+        <TabsContent value="cpa" className="mt-4"><CpaTab /></TabsContent>
       </Tabs>
     </div>
   )
@@ -1101,3 +1104,275 @@ function OfertasTab() {
   )
 }
 
+
+// ============ TAREAS CPA ============
+const CPA_TYPE_LABELS: Record<string, string> = {
+  VIDEO: '🎬 Video',
+  SHARE: '📤 Compartir',
+  VISIT: '🔗 Visitar',
+  SUBSCRIBE: '🔔 Suscribirse',
+  PHOTO_BOLSO: '📸 Foto bolso',
+  PHOTO_STORE: '📸 Foto tienda',
+  PHOTO_STICKER: '📸 Foto sticker',
+}
+
+const CPA_STATUS_BADGES: Record<string, string> = {
+  ACTIVE: 'bg-emerald-100 text-emerald-700 border-emerald-300',
+  PAUSED: 'bg-amber-100 text-amber-700 border-amber-300',
+  COMPLETED: 'bg-sky-100 text-sky-700 border-sky-300',
+  EXPIRED: 'bg-muted text-muted-foreground border-border',
+}
+
+function CpaTab() {
+  const toast = useAppStore((s) => s.toast)
+  const currentUser = useAppStore((s) => s.currentUser)
+  const [form, setForm] = useState({
+    title: '',
+    description: '',
+    type: 'VIDEO',
+    videoUrl: '',
+    imageUrl: '',
+    offerTitle: '',
+    offerUrl: '',
+    commission: '0.25',
+    maxParticipants: '',
+    endDate: toDateInputValue(new Date(Date.now() + 7 * 86400000)),
+  })
+  const [submitting, setSubmitting] = useState(false)
+  const [tasks, setTasks] = useState<any[]>([])
+  const [loadingList, setLoadingList] = useState(true)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [togglingId, setTogglingId] = useState<string | null>(null)
+
+  const fetchMine = useCallback(async () => {
+    setLoadingList(true)
+    try {
+      // Filter admin endpoint? We'll fetch all and filter by createdBy === currentUser.id
+      const res = await fetch('/api/cpa-tasks')
+      const d = await res.json()
+      // Public list only returns ACTIVE+available — to show own tasks regardless of status we need
+      // a different endpoint. Use admin endpoint as a fallback for SUPPLIER with no admin perms:
+      // it returns 403, so we just use the public list filtered by createdBy.
+      const all = (d.tasks || []).filter((t: any) => t.createdBy === currentUser?.id)
+      setTasks(all)
+    } catch {
+      setTasks([])
+    } finally {
+      setLoadingList(false)
+    }
+  }, [currentUser?.id])
+
+  useEffect(() => { fetchMine() }, [fetchMine])
+
+  const isPhoto = form.type.startsWith('PHOTO_')
+
+  const submit = async () => {
+    if (!form.title.trim()) { toast('El título es obligatorio', 'error'); return }
+    if (!form.endDate) { toast('La fecha de fin es obligatoria', 'error'); return }
+    if (!isPhoto && !form.videoUrl.trim()) {
+      toast('La URL del video es obligatoria para tareas de video', 'error'); return
+    }
+    const commission = Number(form.commission)
+    if (isNaN(commission) || commission < 0) { toast('Comisión inválida', 'error'); return }
+
+    setSubmitting(true)
+    try {
+      const payload: Record<string, unknown> = {
+        title: form.title.trim(),
+        description: form.description.trim() || undefined,
+        type: form.type,
+        videoUrl: form.videoUrl.trim() || undefined,
+        imageUrl: form.imageUrl.trim() || undefined,
+        offerTitle: form.offerTitle.trim() || undefined,
+        offerUrl: form.offerUrl.trim() || undefined,
+        commission,
+        endDate: new Date(form.endDate).toISOString(),
+      }
+      if (form.maxParticipants) payload.maxParticipants = Number(form.maxParticipants)
+
+      const res = await fetch('/api/cpa-tasks', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const d = await res.json()
+      if (!res.ok) { toast(d.error || 'Error al crear', 'error'); return }
+      toast(`Tarea CPA "${form.title}" creada y publicada a todos los usuarios`, 'success')
+      setForm({
+        title: '', description: '', type: 'VIDEO', videoUrl: '', imageUrl: '',
+        offerTitle: '', offerUrl: '', commission: '0.25', maxParticipants: '',
+        endDate: toDateInputValue(new Date(Date.now() + 7 * 86400000)),
+      })
+      fetchMine()
+    } catch {
+      toast('Error de red', 'error')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const removeTask = async (id: string) => {
+    setDeletingId(id)
+    try {
+      const res = await fetch(`/api/cpa-tasks/${id}`, { method: 'DELETE' })
+      if (!res.ok) { toast('Error al eliminar', 'error'); return }
+      toast('Tarea eliminada', 'success')
+      fetchMine()
+    } catch {
+      toast('Error de red', 'error')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const togglePause = async (task: any) => {
+    setTogglingId(task.id)
+    const next = task.status === 'PAUSED' ? 'ACTIVE' : 'PAUSED'
+    try {
+      const res = await fetch(`/api/cpa-tasks/${task.id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: next }),
+      })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        toast(d.error || 'No tienes permiso para editar (solo el admin)', 'error'); return
+      }
+      toast(next === 'PAUSED' ? 'Tarea pausada' : 'Tarea reactivada', 'success')
+      fetchMine()
+    } catch {
+      toast('Error de red', 'error')
+    } finally {
+      setTogglingId(null)
+    }
+  }
+
+  return (
+    <div className="grid lg:grid-cols-2 gap-4">
+      {/* Create form */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Award className="size-5 text-primary" /> Publicar tarea CPA
+          </CardTitle>
+          <CardDescription>
+            Crea una tarea con video o foto + oferta. Todos los usuarios la verán y ganarán la comisión al completarla.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <Label>Título *</Label>
+            <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
+              placeholder="Ej: Zapatos 2x1 - TecnoExpress" />
+          </div>
+          <div>
+            <Label>Tipo de tarea *</Label>
+            <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="VIDEO">🎬 Video (ver completo)</SelectItem>
+                <SelectItem value="SHARE">📤 Compartir contenido</SelectItem>
+                <SelectItem value="VISIT">🔗 Visitar enlace</SelectItem>
+                <SelectItem value="SUBSCRIBE">🔔 Suscribirse</SelectItem>
+                <SelectItem value="PHOTO_BOLSO">📸 Foto con bolso PubliBags</SelectItem>
+                <SelectItem value="PHOTO_STORE">📸 Foto en la tienda</SelectItem>
+                <SelectItem value="PHOTO_STICKER">📸 Foto con sticker</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Descripción</Label>
+            <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Instrucciones para el usuario…" rows={2} />
+          </div>
+          {!isPhoto && (
+            <div>
+              <Label className="flex items-center gap-1.5"><Video className="size-3.5" /> URL del video *</Label>
+              <Input value={form.videoUrl} onChange={(e) => setForm({ ...form, videoUrl: e.target.value })}
+                placeholder="https://…mp4 (URL directa, no YouTube)" />
+            </div>
+          )}
+          <div>
+            <Label className="flex items-center gap-1.5"><ImageIcon className="size-3.5" /> URL de imagen</Label>
+            <Input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+              placeholder="https://… (opcional)" />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div><Label>Título oferta</Label>
+              <Input value={form.offerTitle} onChange={(e) => setForm({ ...form, offerTitle: e.target.value })} placeholder="2x1 en zapatos" /></div>
+            <div><Label>URL oferta (comprar)</Label>
+              <Input value={form.offerUrl} onChange={(e) => setForm({ ...form, offerUrl: e.target.value })} placeholder="/w/mi-sitio" /></div>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <div><Label>Comisión *</Label>
+              <Input type="number" step="0.01" min="0" value={form.commission}
+                onChange={(e) => setForm({ ...form, commission: e.target.value })} /></div>
+            <div><Label>Máx. participantes</Label>
+              <Input type="number" min="1" value={form.maxParticipants}
+                onChange={(e) => setForm({ ...form, maxParticipants: e.target.value })}
+                placeholder="Vacío = ∞" /></div>
+            <div><Label>Fecha fin *</Label>
+              <Input type="date" value={form.endDate}
+                onChange={(e) => setForm({ ...form, endDate: e.target.value })} /></div>
+          </div>
+          <Button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white" onClick={submit} disabled={submitting}>
+            {submitting ? <><Loader2 className="size-4 mr-1.5 animate-spin" /> Publicando…</> : <><Send className="size-4 mr-1.5" /> Publicar tarea</>}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* List of own tasks */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Eye className="size-5 text-primary" /> Mis tareas CPA
+          </CardTitle>
+          <CardDescription>{tasks.length} tarea(s) publicada(s)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loadingList ? (
+            <div className="space-y-2">
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+          ) : tasks.length === 0 ? (
+            <div className="text-center py-10 text-sm text-muted-foreground">
+              <Award className="size-10 mx-auto mb-2 opacity-30" />
+              No has publicado tareas CPA todavía.
+              <br />Crea la primera con el formulario de la izquierda.
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-[36rem] overflow-y-auto pr-1 scroll-thin">
+              {tasks.map((t) => {
+                const st = t.status || 'ACTIVE'
+                return (
+                  <div key={t.id} className="rounded-lg border p-3 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold truncate">{t.title}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {CPA_TYPE_LABELS[t.type] || t.type} · {fmtUsd(t.commission)} · {t.currentParticipants}/{t.maxParticipants || '∞'} cupos
+                        </p>
+                      </div>
+                      <Badge variant="outline" className={cn('shrink-0', CPA_STATUS_BADGES[st] || '')}>{st}</Badge>
+                    </div>
+                    {t.offerTitle && <p className="text-xs text-muted-foreground">Oferta: {t.offerTitle}</p>}
+                    <div className="flex gap-1.5">
+                      <Button size="sm" variant="outline" className="h-7"
+                        onClick={() => togglePause(t)} disabled={togglingId === t.id}>
+                        {togglingId === t.id ? <Loader2 className="size-3.5 animate-spin" /> :
+                          st === 'PAUSED' ? <><Play className="size-3.5 mr-1" /> Activar</> : <><Pause className="size-3.5 mr-1" /> Pausar</>}
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-7 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => removeTask(t.id)} disabled={deletingId === t.id}>
+                        {deletingId === t.id ? <Loader2 className="size-3.5 animate-spin" /> : <><Trash2 className="size-3.5 mr-1" /> Eliminar</>}
+                      </Button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}

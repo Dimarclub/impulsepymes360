@@ -40,6 +40,8 @@ export type ModuleId =
   | 'finanzas'
   | 'ofertas'
   | 'ofertas-admin'
+  | 'cpa-tasks'
+  | 'cpa-admin'
 
 export type UserRole = 'CLIENT' | 'AFFILIATE' | 'SUPPLIER' | 'COURIER' | 'PARTNER' | 'ADMIN'
 

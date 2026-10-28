@@ -50,6 +50,7 @@ model User {
   taskProgress TaskProgress?
   albumProgress AlbumProgress[]
   raffleEntries RaffleEntry[]
+  cpaCompletions CpaCompletion[]
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -897,4 +898,47 @@ model RaffleEntry {
   winner        Boolean  @default(false)
   enteredAt     DateTime @default(now())
   @@unique([raffleId, userId])
+}
+
+// ---------- Tareas CPA (Cost-Per-Action) ----------
+
+model CpaTask {
+  id                String   @id @default(cuid())
+  title             String
+  description       String?
+  type              String   @default("VIDEO") // VIDEO, SHARE, VISIT, SUBSCRIBE, PHOTO_BOLSO, PHOTO_STORE, PHOTO_STICKER
+  videoUrl          String?
+  imageUrl          String?
+  offerTitle        String?
+  offerUrl          String?
+  productId         String?
+  commission        Float    @default(0.15)
+  maxParticipants   Int?
+  currentParticipants Int @default(0)
+  startDate         DateTime @default(now())
+  endDate           DateTime
+  status            String   @default("ACTIVE") // ACTIVE, PAUSED, COMPLETED, EXPIRED
+  createdBy         String
+  createdAt         DateTime @default(now())
+  completions       CpaCompletion[]
+}
+
+model CpaCompletion {
+  id            String   @id @default(cuid())
+  taskId        String
+  task          CpaTask  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status        String   @default("COMPLETED") // COMPLETED, PENDING_REVIEW, REJECTED
+  photoUrl      String?
+  rewardAmount  Float
+  videoWatched  Boolean  @default(false)
+  shared        Boolean  @default(false)
+  purchased     Boolean  @default(false)
+  strikeCount   Int      @default(0)
+  reviewedAt    DateTime?
+  reviewedBy    String?
+  adminNotes    String?
+  completedAt   DateTime @default(now())
+  @@unique([taskId, userId])
 }
