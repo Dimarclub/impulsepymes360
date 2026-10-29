@@ -54,7 +54,7 @@ const PLANS: Plan[] = [
 ]
 
 const ADDONS: Addon[] = [
-  { id: 'sobre-individual', name: 'Sobre individual (retiro horario fijo)', price: 2.25, unit: '/ unidad', icon: 'package' },
+  { id: 'sobre-individual', name: 'Sobre individual (hasta 10 sobres/día)', price: 2.25, unit: '/ unidad', icon: 'package' },
   { id: 'entrega-express', name: 'Entrega Express (retiro y entrega inmediata)', price: 4.0, unit: '/ unidad', icon: 'truck' },
   { id: 'solo-publibags-qr', name: 'Solo espacio PubliBags con QR (sin plan integral)', price: 67.0, unit: '/ mes', icon: 'mapPin' },
 ]

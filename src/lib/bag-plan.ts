@@ -12,23 +12,20 @@ export interface BagPanel {
   heightCm: number
 }
 
-// Bolso PubliBags — 5 paneles, 79 espacios de 10×5cm.
-// Frente + Posterior (28 c/u) + Base (8) + Tapa solapa (8) + Correa/Asa (7) = 79.
+// Bolso PubliBags — 2 paneles, 56 espacios de 10×5cm.
+// Frente (28) + Posterior (28) = 56 QR codes.
 // Precio cliente final: $67 por espacio.
 export const BAG_PANELS: readonly BagPanel[] = [
   { key: 'frontal', label: 'Frente', cols: 4, rows: 7, start: 1, end: 28, widthCm: 40, heightCm: 35 },
   { key: 'posterior', label: 'Posterior', cols: 4, rows: 7, start: 29, end: 56, widthCm: 40, heightCm: 35 },
-  { key: 'base', label: 'Base', cols: 4, rows: 2, start: 57, end: 64, widthCm: 40, heightCm: 10 },
-  { key: 'tapa-solapa', label: 'Tapa solapa', cols: 4, rows: 2, start: 65, end: 72, widthCm: 40, heightCm: 10 },
-  { key: 'correa', label: 'Correa / Asa', cols: 7, rows: 1, start: 73, end: 79, widthCm: 70, heightCm: 5 },
 ] as const
 
-export const BAG_TOTAL_SPACES = 79
+export const BAG_TOTAL_SPACES = 56
 export const BAG_SPACE_PRICE = 67
-export const BAG_POTENTIAL_REVENUE = BAG_TOTAL_SPACES * BAG_SPACE_PRICE // $5,293
+export const BAG_POTENTIAL_REVENUE = BAG_TOTAL_SPACES * BAG_SPACE_PRICE // $3,752
 
 /**
- * Devuelve el panel al que pertenece una posición (1..79).
+ * Devuelve el panel al que pertenece una posición (1..56).
  * Lanza error si la posición está fuera de rango.
  */
 export function panelForPosition(position: number): BagPanel {

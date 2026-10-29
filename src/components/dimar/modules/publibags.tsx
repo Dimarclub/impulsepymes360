@@ -367,7 +367,7 @@ function Hero({ onSeePlan, onWhats }: { onSeePlan: () => void; onWhats: () => vo
             </div>
             <div className="grid grid-cols-3 gap-2 w-full mt-3">
               {[
-                { label: 'Paneles', value: '5' },
+                { label: 'Paneles', value: '2' },
                 { label: 'Espacios', value: String(BAG_TOTAL_SPACES) },
                 { label: 'Reutilizable', value: '∞' },
               ].map((s) => (
@@ -391,7 +391,7 @@ function Anatomia() {
     dims: `${p.widthCm}×${p.heightCm} cm`,
     count: p.end - p.start + 1,
     color: [C.emerald, C.purple, C.gold, C.rose, C.amber][i] || C.emerald,
-    big: i === 2, // Base es la más destacada
+    big: false,
   }))
 
   const stats = [
@@ -402,7 +402,7 @@ function Anatomia() {
   ]
 
   return (
-    <Section id="anatomia" eyebrow="Anatomía del bolso" title={`${BAG_TOTAL_SPACES} espacios publicitarios por bolso`} subtitle="Cada bolso tiene espacios de 10×5 cm distribuidos en 5 paneles (Frente, Posterior, Base, Tapa solapa y Correa). Todos los espacios son vendibles.">
+    <Section id="anatomia" eyebrow="Anatomía del bolso" title={`${BAG_TOTAL_SPACES} espacios publicitarios por bolso`} subtitle="Cada bolso tiene espacios de 10×5 cm distribuidos en 2 paneles (Frente y Posterior). Todos los espacios son vendibles.">
       {/* Visual panels */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {panelInfo.map((p) => (

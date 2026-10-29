@@ -336,11 +336,11 @@ function Hero({ onSeeTarifas, onWhats }: { onSeeTarifas: () => void; onWhats: ()
                 className="size-11 rounded-lg flex items-center justify-center font-bold"
                 style={{ background: `${C.gold}22`, color: C.gold, fontSize: 18 }}
               >
-                $1.75
+                $2.25
               </div>
               <div>
                 <p style={{ fontSize: 14, fontWeight: 600, color: C.text }}>
-                  por entrega · Plan 15 · pago diario
+                  por entrega · Plan 10 · pago diario
                 </p>
                 <p style={{ fontSize: 12, color: C.muted }}>
                   Recogida incluida · Sin contratos forzosos
@@ -409,29 +409,29 @@ function Hero({ onSeeTarifas, onWhats }: { onSeeTarifas: () => void; onWhats: ()
 function Tarifas({ onSolicitar }: { onSolicitar: (planName: string) => void }) {
   const planes = [
     {
-      id: 'plan-5',
-      name: 'Plan 5',
-      icon: <FileText className="size-5" />,
-      price: 2.25,
-      volume: '1 a 5 sobres al día',
-      features: ['Recogida incluida', 'Seguimiento en tiempo real', 'Pago diario por adelantado'],
-      best: false,
-    },
-    {
       id: 'plan-10',
       name: 'Plan 10',
-      icon: <Package className="size-5" />,
-      price: 2.0,
-      volume: '1 a 10 entregas al día',
+      icon: <FileText className="size-5" />,
+      price: 2.25,
+      volume: '1 a 10 sobres al día',
       features: ['Recogida incluida', 'Seguimiento en tiempo real', 'Pago diario por adelantado'],
       best: false,
     },
     {
       id: 'plan-15',
       name: 'Plan 15',
+      icon: <Package className="size-5" />,
+      price: 2.0,
+      volume: '11 a 15 entregas al día',
+      features: ['Recogida incluida', 'Seguimiento en tiempo real', 'Pago diario por adelantado'],
+      best: false,
+    },
+    {
+      id: 'plan-25',
+      name: 'Plan 25',
       icon: <Building2 className="size-5" />,
       price: 1.75,
-      volume: '1 a 15 entregas al día',
+      volume: '16 a 25 entregas al día',
       features: ['Recogida incluida', 'Ejecutiva asignada', 'Pago diario por adelantado'],
       best: true,
     },
