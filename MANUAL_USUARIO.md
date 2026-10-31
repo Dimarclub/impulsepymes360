@@ -251,7 +251,7 @@ Cuando completás una tarea, tus padrinos (N1, N2, N3) también ganan 2% de tu r
 - Invitás gente con tu **código de afiliado**
 - Cuando ellos compran → ganás comisiones
 - 3 niveles: N1 (2%), N2 (2%), N3 (2%)
-- Tope mensual: $500 por afiliado
+- Tope mensual: SIN tope — ganá todo lo que tu red consuma
 
 ### Comisiones:
 | Nivel | % | Quién |
@@ -282,7 +282,7 @@ Cuando completás una tarea, tus padrinos (N1, N2, N3) también ganan 2% de tu r
 ## 12. Preguntas Frecuentes
 
 **¿Cuánto puedo ganar?**
-Depende de tu actividad. Combinando tareas CPA + comisiones de red + álbum, un afiliado activo puede ganar $50-200/mes. Hay tope de $500/mes.
+Depende de tu actividad. Combinando tareas CPA + comisiones de red + álbum, un afiliado activo puede ganar $50-200/mes. Sin tope — las comisiones por consumo de tu red son ilimitadas.
 
 **¿Tengo que invertir para empezar?**
 No. Como cliente podés ganar dinero con tareas CPA y completando el álbum sin invertir. Para ser socio y acceder a la cooperativa, necesitás comprar un espacio PubliBags ($67) o bolsos ($50 mínimo).
