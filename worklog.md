@@ -1623,3 +1623,47 @@ Stage Summary:
 - Admin puede crear cromos para proveedores (auto-config por plan level) y abrir vista de impresión con cromos a tamaño real (cm) para impresión física.
 - Constante PLAN_STICKER_CONFIG en src/lib/album-config.ts con los 6 niveles exactos del spec. Wiring completo: types.ts, permissions.ts, page.tsx, topnav.tsx (botón Álbum en navbar + item admin).
 - Lint clean (0/0). Sin build, sin restart dev server.
+
+---
+Task ID: 33-presentacion-negocios
+Agent: main (Z.ai Code)
+Task: Crear el módulo "Presentación de Negocios DimarClub" — página web oscura estilo pitch-deck scrollable que los miembros pueden compartir con prospectos por WhatsApp.
+
+Work Log:
+- Leído worklog.md (referencia Task 27-impulsepymes360-portal-v2 + Task 11 patrón PubliBags satellite) y revisado src/components/dimar/modules/publibags.tsx (paleta C idéntica: bg #0B1120, emerald #00D4AA, gold #F5A623, purple #A855F7 + sección wrapper con eyebrow/title/subtitle + inyección Google Fonts Outfit+DM Sans vía useEffect + scrollTo helper + Footer con "Volver al portal" → setModule('marketplace')).
+- Revisados src/lib/types.ts (ModuleId union), src/lib/permissions.ts (ROLE_MODULES por rol + PUBLIC_MODULES), src/app/page.tsx (switch de modules), src/components/dimar/topnav.tsx (dropdown "Comunidad" — actualmente solo tiene DimarClub).
+- Creado `src/components/dimar/modules/presentacion.tsx` (~1090 líneas, 'use client'):
+  * Paleta C idéntica a publibags/dimarclub/fuerza-delta (bg #0B1120, card #15203A, border #243352, emerald #00D4AA, gold #F5A623, purple #A855F7, rose #F43F5E, amber #F59E0B) + colores extra cyan/pink/sky/success para variar cards.
+  * Inyección Google Fonts (Outfit + DM Sans) vía useEffect con id único 'presentacion-fonts'.
+  * WHATSAPP_URL = wa.me/593992689844?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20DimarClub · WHATSAPP_DISPLAY = +593 99 268 9844.
+  * Componente PresentacionModule: Navbar + 10 secciones + Footer.
+  * Navbar sticky (logo "Dimar**Club**" Club en emerald + botón "Compartir" gold outline que usa navigator.share() o fallback wa.me?text con window.location.href + botón "Únete" emerald que hace scrollTo('cta') + link WhatsApp visible en lg + menú móvil).
+  * Section 1 INICIO (Hero): badge eyebrow "Presentación de Negocios DimarClub" + big quote italic del usuario sobre ingresos/metas/dreams con borde izquierdo emerald + título gigante DIMARCLUB (clamp 48-110px, Club en emerald) + subtítulo en gold + 2 CTAs ("Quiero unirme" → wa.me + "Ver presentación" → scroll). Glows radiales emerald + gold.
+  * Section 2 ¿QUÉ ES DIMARCLUB?: card grande con el texto EXACTO del usuario (Marketplace B2C + socios prosumidores $300 + 3% mensual + sistema de afiliados 3 niveles). 3 stat chips: Desde $300 / 3% mensual / 3 niveles.
+  * Section 3 FUNDAMENTOS: grid 2/3 de 6 cards con iconos (HandCoins/TrendingUp/Users/Network/Heart/Recycle) + check verde "✓ Fundamento" + 2 InfoBox (Economía circular esmeralda + Economía popular y solidaria gold) con textos EXACTOS.
+  * Section 4 OBJETIVO/VISIÓN/MISIÓN: 3 cards con borde superior coloreado (Target gold / Eye emerald / Rocket purple) + iconos + textos EXACTOS del usuario.
+  * Section 5 BENEFICIOS PARA SOCIOS: 3 cards centradas con emojis (💰 🏪 💼) + títulos cortos + descripciones EXACTAS.
+  * Section 6 PLAN DE COMPENSACIÓN: 4 cards grandes (N0 3% emerald / N1 2% gold / N2 2% purple / N3 2% cyan) con porcentaje gigante + nivel + descripción EXACTA. Debajo: card "Servicios incluidos" con grid de 7 servicios (Truck/Car/Wrench/Droplets/Laptop/Car/Ambulance) con sus descripciones EXACTAS ("solo mano de obra", "sin costo", "para emergencias").
+  * Section 7 CAPACITACIÓN Ser-Hacer-Tener: subtitle con concepto de "reingeniería interior" del usuario + 3 big cards (SER esmeralda / HACER gold / TENER purple) + card grande "7 grandes problemas" con barra visual de distribución de riqueza (1% ricos emerald / 4% solventes gold / 5% aún trabajan cyan / 28% fallecen rose / 62% quiebra muted) con legend + grid de 7 problemas numerados con descripciones EXACTAS del usuario.
+  * Section 8 MEDIO AMBIENTE: 3 cards R (Reciclar esmeralda / Reducir gold / Reutilizar purple) con icono Recycle + InfoBox emerald "Nuestros compromisos" con checklist de los 4 items EXACTOS.
+  * Section 9 ¿DE DÓNDE SACAMOS LOS RECURSOS?: subtitle "Creamos emprendimientos propios de la comunidad" + grid 2/4 de 8 cards con emojis (🍫 Auki / 🍾 Reciclarte / 🛒 Mi Tienda / 🥬 El Agricultor / 🚌 DimarTours / 🛵 Fuerza Delta / 🏠 Proyecto Fénix / 🏨 En 2 años) + descripciones EXACTAS.
+  * Section 10 CTA FINAL: sección con gradiente emerald + glow + badge "Tu momento es ahora" + H2 "Únete a DIMARCLUB y empieza a construir tus sueños" (DIMARCLUB en emerald) + subtext "Recibe beneficios por lo que has hecho siempre: comprar en otras tiendas." + botón grande WhatsApp + teléfono.
+  * Footer: logo "Dimar**Club**" + "· por ImpulsePymes360" + botón "Volver al portal" → setModule('marketplace') + copyright "© 2026 DimarClub · ImpulsePymes360".
+- Limpieza de imports: removidos GraduationCap, Bus, Home, Coins (sin uso). Network añadido al bloque top-level (no al final del archivo como en draft inicial).
+- Wiring realizado:
+  * `src/lib/types.ts`: añadido `'presentacion'` al union ModuleId (después de 'album-admin').
+  * `src/lib/permissions.ts`: añadido `'presentacion'` a CLIENT, AFFILIATE, SUPPLIER, PARTNER + a PUBLIC_MODULES.
+  * `src/app/page.tsx`: import PresentacionModule + case 'presentacion' en renderModule.
+  * `src/components/dimar/topnav.tsx`: añadido icon `Rocket` ya estaba en imports (línea 8). Nuevo item "Presentación de Negocios" con icon Rocket en el dropdown "Comunidad" del desktop (después de "DimarClub (sitio)"). Nuevo navItem('Presentación', 'presentacion', Rocket) en el mobile menu (después de DimarClub). Actualizada la condición de highlight del botón "Comunidad" para incluir `activeModule === 'presentacion'`.
+- Ejecutado `bun run lint` → 0 errors, 0 warnings (EXIT=0).
+- Revisado dev.log: servidor dev activo en puerto 3000, sin errores relacionados con el nuevo módulo (solo calls normales a /api/settings, /api/categories, /api/products).
+
+Stage Summary:
+- Nuevo módulo PresentacionModule creado como pitch-deck scrollable dark-themed (~1090 líneas, sobre el guideline ~800 debido a la densidad de las 10 secciones con estilo inline completo y cards múltiples — pitch-deck quality priorizada).
+- 10 secciones en orden EXACTO: INICIO (quote + DIMARCLUB) / ¿Qué es? / Fundamentos (6 cards + 2 InfoBox) / OVM / Beneficios socios (3) / Plan Compensación (4 comisiones + 7 servicios) / Capacitación (3 cards SHT + barra riqueza + 7 problemas) / Medio Ambiente (3R + 4 compromisos) / Recursos (8 emprendimientos) / CTA Final.
+- Textos EXACTOS del usuario en todas las secciones (quote, definición de DimarClub, fundamentos, descripciones de emprendimientos, etc.).
+- Navbar sticky con botón "Compartir" (usa Web Share API + fallback WhatsApp con window.location.href) + "Únete" (scroll al CTA).
+- WhatsApp button en CTA final apunta a wa.me/593992689844 con texto pre-cargado.
+- Footer con "Volver al portal" → setModule('marketplace') + copyright "© 2026 DimarClub · ImpulsePymes360".
+- Accesible desde: dropdown "Comunidad" del topnav desktop ("Presentación de Negocios") + mobile menu ("Presentación"). Resaltado activo del botón Comunidad cuando se está en el módulo.
+- Lint clean (0/0). Sin build, sin restart dev server. Listo para preview en el panel derecho / "Open in New Tab".

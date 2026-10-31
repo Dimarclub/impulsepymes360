@@ -47,6 +47,7 @@ import { CpaTasksModule } from '@/components/dimar/modules/cpa-tasks'
 import { CpaAdminModule } from '@/components/dimar/modules/cpa-admin'
 import { AlbumModule } from '@/components/dimar/modules/album'
 import { AlbumAdminModule } from '@/components/dimar/modules/album-admin'
+import { PresentacionModule } from '@/components/dimar/modules/presentacion'
 import { Footer } from '@/components/dimar/footer'
 import { canAccessModule, defaultModuleForRole } from '@/lib/permissions'
 
@@ -131,6 +132,7 @@ function HomeContent() {
       case 'cpa-admin': return <CpaAdminModule />
       case 'album': return <AlbumModule />
       case 'album-admin': return <AlbumAdminModule />
+      case 'presentacion': return <PresentacionModule />
       default: return <MarketplaceModule />
     }
   }

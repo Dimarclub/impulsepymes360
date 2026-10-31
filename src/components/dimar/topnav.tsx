@@ -233,12 +233,13 @@ export function TopNav() {
             {navItem('Inicio', 'impulsepymes360', Home)}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', (activeModule === 'affiliates' || activeModule === 'dimarclub' || activeModule === 'cooperativa' || activeModule === 'directorio') ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><Users className="size-4" />Comunidad<ChevronDown className="size-3" /></button>
+                <button className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', (activeModule === 'affiliates' || activeModule === 'dimarclub' || activeModule === 'cooperativa' || activeModule === 'directorio' || activeModule === 'presentacion') ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><Users className="size-4" />Comunidad<ChevronDown className="size-3" /></button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56">
                 <DropdownMenuLabel>Comunidad DimarClub</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setModule('dimarclub')}><Users className="size-4 mr-2" /> DimarClub (sitio)</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setModule('presentacion')}><Rocket className="size-4 mr-2" /> Presentación de Negocios</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>
@@ -344,6 +345,7 @@ export function TopNav() {
               )}
               {navItem('Inicio', 'impulsepymes360', Home)}
               {navItem('DimarClub', 'dimarclub', Users)}
+              {navItem('Presentación', 'presentacion', Rocket)}
               {canAccessModule(displayUser?.role, 'directorio') && navItem('Directorio', 'directorio', MapPin)}
               {navItem('Tienda', 'marketplace', Grid3x3)}
               {navItem('Ofertas', 'ofertas', Tag)}

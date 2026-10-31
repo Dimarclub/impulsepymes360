@@ -44,6 +44,7 @@ export type ModuleId =
   | 'cpa-admin'
   | 'album'
   | 'album-admin'
+  | 'presentacion'
 
 export type UserRole = 'CLIENT' | 'AFFILIATE' | 'SUPPLIER' | 'COURIER' | 'PARTNER' | 'ADMIN'
 
