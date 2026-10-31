@@ -316,7 +316,7 @@ function Hero({ onConocerRed, onSeePlanes }: { onConocerRed: () => void; onSeePl
               }}
             >
               <Sparkles className="size-3.5" />
-              Comunidad · Red de Afiliados · Incubadora · Ecuador
+              Economía Colaborativa · Comunidad · Red de Afiliados · Ecuador
             </div>
             <h1
               style={{
@@ -331,7 +331,7 @@ function Hero({ onConocerRed, onSeePlanes }: { onConocerRed: () => void; onSeePl
               Bienvenido a <span style={{ color: C.purple }}>DimarClub</span>
             </h1>
             <p style={{ color: C.textDim, fontSize: 17, marginTop: 18, lineHeight: 1.55, maxWidth: 560 }}>
-              Somos una comunidad de emprendedores{' '}
+              Somos una <strong style={{ color: C.emerald }}>economía colaborativa</strong> de emprendedores{' '}
               <strong style={{ color: C.emerald }}>Prosumidores</strong> comprometidos con las empresas que han confiado en nuestro sistema de comercialización, una comunidad donde cada persona puede{' '}
               <strong style={{ color: C.emerald }}>consumir</strong>,{' '}
               <strong style={{ color: C.emerald }}>recomendar</strong>,{' '}

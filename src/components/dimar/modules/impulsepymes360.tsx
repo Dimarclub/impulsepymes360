@@ -68,7 +68,7 @@ const ELEMENTOS: ElementoItem[] = [
     n: 1,
     icon: <Users className="size-6" />,
     title: 'Comunidad de consumidores',
-    desc: 'Comunidad de potenciales consumidores y divulgadores que consumen y recomiendan sus productos o servicios a cambio de una comisión.',
+    desc: 'Economía colaborativa: comunidad de potenciales consumidores y divulgadores que consumen y recomiendan sus productos o servicios a cambio de una comisión.',
     color: C.purple,
     target: 'dimarclub',
   },
