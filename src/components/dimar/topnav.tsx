@@ -238,7 +238,7 @@ export function TopNav() {
               <DropdownMenuContent align="start" className="w-60">
                 <DropdownMenuLabel>Nuestros servicios</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setModule('publibags')}><ShoppingBag className="size-4 mr-2" /> Publicidad</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setModule('publibags')}><ShoppingBag className="size-4 mr-2" /> Publicidad Verde</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setModule('web-express')}><Globe className="size-4 mr-2" /> Web</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setModule('fuerza-delta')}><Truck className="size-4 mr-2" /> Mensajería y Logística</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setModule('marketplace')}><Newspaper className="size-4 mr-2" /> Clasificados</DropdownMenuItem>
