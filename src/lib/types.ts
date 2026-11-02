@@ -45,6 +45,7 @@ export type ModuleId =
   | 'album'
   | 'album-admin'
   | 'presentacion'
+  | 'ferias'
 
 export type UserRole = 'CLIENT' | 'AFFILIATE' | 'SUPPLIER' | 'COURIER' | 'PARTNER' | 'ADMIN'
 

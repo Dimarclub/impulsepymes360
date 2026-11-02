@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react'
 import {
   Search, ShoppingCart, ChevronDown, User, LogIn, UserPlus, LogOut, Menu, X,
   Home, Users, Store, Building2, Phone, Sparkles, Loader2, Settings,
-  LayoutDashboard, Truck, Mail, Megaphone, ClipboardList, Rocket, Zap, Globe, MapPin, Grid3x3, PiggyBank, Network, HandCoins, Bell, DollarSign, Package, ShoppingBag, CreditCard, Bike, LayoutGrid, Newspaper, Book, Tag, Award,
+  LayoutDashboard, Truck, Mail, Megaphone, ClipboardList, Rocket, Zap, Globe, MapPin, Grid3x3, PiggyBank, Network, HandCoins, Bell, DollarSign, Package, ShoppingBag, CreditCard, Bike, LayoutGrid, Newspaper, Book, Tag, Award, Calendar,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -262,8 +262,6 @@ export function TopNav() {
             </DropdownMenu>
             <button onClick={() => setModule('marketplace')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', activeModule === 'marketplace' ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><Grid3x3 className="size-4" />Tienda</button>
             <button onClick={() => setModule('ofertas')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300', activeModule === 'ofertas' && 'ring-2 ring-red-400')}><Tag className="size-4" />Ofertas</button>
-            <button onClick={() => setModule('cpa-tasks')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300', activeModule === 'cpa-tasks' && 'ring-2 ring-emerald-400')}><Award className="size-4" />Tareas CPA</button>
-            <button onClick={() => setModule('album')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300', activeModule === 'album' && 'ring-2 ring-emerald-400')}><Book className="size-4" />Álbum</button>
             <button onClick={() => setModule('planes')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300', activeModule === 'planes' && 'ring-2 ring-amber-400')}><CreditCard className="size-4" />Planes</button>
             {displayUser?.role === 'SUPPLIER' && (
               <button onClick={() => setModule('supplier-backoffice')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors', activeModule === 'supplier-backoffice' ? 'text-primary bg-primary/10' : 'text-primary hover:bg-primary/5')}><Store className="size-4" />Mi Backoffice</button>
@@ -292,6 +290,7 @@ export function TopNav() {
                     <DropdownMenuItem onClick={() => setModule('ofertas-admin')}><Tag className="size-4 mr-2" /> Ofertas (aprobar)</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setModule('cpa-admin')}><Award className="size-4 mr-2" /> Tareas CPA (admin)</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setModule('album-admin')}><Book className="size-4 mr-2" /> Álbum de cromos (admin)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('ferias')}><Calendar className="size-4 mr-2" /> Ferias (calendario)</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setModule('finanzas')}><DollarSign className="size-4 mr-2" /> Finanzas</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Operación</DropdownMenuLabel>
@@ -353,8 +352,6 @@ export function TopNav() {
               {navItem('Directorio Comercial', 'directorio', MapPin)}
               {navItem('Tienda', 'marketplace', Grid3x3)}
               {navItem('Ofertas', 'ofertas', Tag)}
-              {navItem('Tareas CPA', 'cpa-tasks', Award)}
-              {navItem('Álbum', 'album', Book)}
               {navItem('Planes', 'planes', CreditCard)}
               {navItem('Proveedor', 'suppliers', Store)}
             </div>

@@ -1667,3 +1667,80 @@ Stage Summary:
 - Footer con "Volver al portal" → setModule('marketplace') + copyright "© 2026 DimarClub · ImpulsePymes360".
 - Accesible desde: dropdown "Comunidad" del topnav desktop ("Presentación de Negocios") + mobile menu ("Presentación"). Resaltado activo del botón Comunidad cuando se está en el módulo.
 - Lint clean (0/0). Sin build, sin restart dev server. Listo para preview en el panel derecho / "Open in New Tab".
+
+---
+Task ID: 34-pos-ferias
+Agent: main (Z.ai Code)
+Task: Construir un Punto de Venta (POS) para suppliers + un Calendario de Ferias para admins.
+
+Work Log:
+- Leído worklog.md (referencias Task 28-supplier-logistics-request + Task 29-offers-system + Task 31-album-cromos + Task 33-presentacion-negocios), prisma/schema.prisma completo (Supplier no tenía fairBooths), supplier-backoffice.tsx (7 tabs), /api/orders/route.ts (patrón de creación de Order + comisiones N0-N3 + notificaciones), /lib/security/auth.ts (requireSession, requireRole), types.ts (ModuleId union), permissions.ts (ADMIN = '*'), page.tsx (switch de módulos), topnav.tsx (dropdown Admin).
+
+Schema changes (prisma/schema.prisma):
+- Añadido campo `fairBooths FairBooth[]` al modelo Supplier (relación 1:N opcional).
+- Añadidos dos modelos nuevos al final del archivo:
+  * Fair: id, name, description?, location?, city?, startDate, endDate, status (default SCHEDULED), booths[], createdAt
+  * FairBooth: id, fairId (cascade), supplierId? (SetNull), supplier?, boothNumber?, status (default AVAILABLE), createdAt
+- Bump PRISMA_VERSION en src/lib/db.ts de 'v3-cpa' → 'v4-ferias' para que el cliente Prisma cached se regenere con los nuevos tipos.
+- Ejecutado `bun run db:push` → DB sincronizada, Prisma Client generado.
+
+API POS (src/app/api/pos/sell/route.ts):
+- POST (requireRole SUPPLIER/ADMIN). Body: { items: [{productId, quantity, price}], paymentMethod, fairId?, customerName?, customerPhone?, affiliateCode? }.
+- Validaciones: items no vacío, paymentMethod ∈ {EFECTIVO, TARJETA, TRANSFERENCIA, SALDO_BILLETERA, QR}, fairId existe si viene, todos los productIds existen en DB, y (si SUPPLIER) todos los productos son del propio supplier; stock suficiente por item.
+- Resolver buyer: si affiliateCode viene → busca User con ese código → buyerId = ese user; si no → buyerId = supplier.userId (autoconsumo).
+- Cálculo: subtotal = Σ price×qty; commission ponderada por commissionRate de cada producto; orderNumber = 'DM-' + random 2000-9999.
+- Transacción: crea Order (status CONFIRMED, paymentStatus PAID, paymentMethod, shippingAddress = "POS - {companyName}" o "{customerName} · {customerPhone}", city del supplier) + OrderItems + decrementa stock por item.
+- Genera comisiones N0 (3% + bono extra si commissionRate>9) + N1-N3 (2% c/u) recorriendo sponsorId hasta 3 niveles — mismo patrón que /api/orders POST.
+- Notificaciones: al buyer (ORDER_RECEIVED "Venta POS registrada") + a todos los ADMIN (link /finanzas).
+- Response 201: { ok: true, order: { id, orderNumber, total, subtotal, commission, paymentMethod, items[] con name+imageUrl } }.
+
+API products/mine (src/app/api/products/mine/route.ts):
+- GET (requireRole SUPPLIER/ADMIN). Devuelve TODOS los productos del supplier autenticado (cualquier status, incluyendo DRAFT), take 500, include category. Usado por el POS.
+
+API ferias (3 endpoints):
+- src/app/api/ferias/route.ts:
+  * GET: opcional ?onlyActive=true (filtra status ∈ SCHEDULED/ACTIVE) y ?includePast=true (incluye ferias con endDate<now). Por defecto solo ferias futuras. Incluye _count.booths + groupBy de FairBooth por fairId+status → calcula {total, available, reserved, confirmed}. Retorna { ok, fairs[] }.
+  * POST (ADMIN): body { name, description?, location?, city?, startDate, endDate, boothCount }. Valida name+fechas, end>=start. Auto-detecta status (SCHEDULED/ACTIVE/COMPLETED según now). Crea Fair + N FairBooth AVAILABLE con boothNumber auto "Stand {A..}-{1..10}". Retorna { ok, fair } con status 201.
+- src/app/api/ferias/[id]/route.ts:
+  * GET: detalle de fair con booths[] (include supplier). Opcional ?withRevenue=true → calcula revenue aproximado buscando órdenes con items de productos de suppliers con stand CONFIRMED y createdAt en rango de la feria. Retorna { ok, fair } con booths + revenue.
+  * PATCH (ADMIN): actualiza name/description/location/city/status/startDate/endDate (parcial).
+  * DELETE (ADMIN): borra fair + cascade booths.
+- src/app/api/ferias/[id]/booths/route.ts:
+  * POST (ADMIN): body { boothId, supplierId? }. Si supplierId viene → asigna supplier al stand + status CONFIRMED + notifica al supplier (type BOOTH_ASSIGNED). Si supplierId es null/vacío → libera el stand (status AVAILABLE, supplierId null).
+  * GET: alias rápido que lista los booths de una feria.
+
+UI — POS Tab en supplier-backoffice.tsx (8ª pestaña, grid-cols-8 en md):
+- Layout grid lg:grid-cols-[1fr_380px] (70/30).
+- Lado izquierdo (Card "Productos"): search bar, grid 2/3/4 cols de cards de producto. Cada card: imagen cuadrada (fallback Package), nombre, precio emerald, badge stock (rojo si 0, amber si ≤5, emerald si >5). Click agrega al carrito. Out-of-stock greyed + badge "Agotado" + disabled. Indicador circular emerald con cantidad en carrito si >0. Scroll vertical con max-h-[calc(100vh-22rem)] scroll-thin.
+- Lado derecho (Card "Carrito"): lista de items con imagen miniatura + qty +/- (Minus/Plus buttons size-7) + remove. Subtotal + Total. Dropdown "Feria (opcional)" desde /api/ferias?onlyActive=true. Select "Método de pago" con 5 opciones (iconos Banknote/CreditCard/Building2/Wallet/Smartphone). Inputs customerName + customerPhone. Input affiliateCode (uppercase font-mono). Botón "Cobrar ${total}" emerald h-12 que POST a /api/pos/sell.
+- On success: toast "Venta registrada: DM-XXXX", abre Dialog de recibo con orderNumber mono + total emerald + payment method + lista de items con imagen + subtotal + comisión + total + botones "Imprimir" (window.print) y "Nueva venta" (cierra dialog, ya con cart vacío). fetchProducts() refresca el stock visible.
+
+UI — Módulo Ferias (src/components/dimar/modules/ferias.tsx, ~570 líneas):
+- Header "Calendario de Ferias" + botones Actualizar + Crear feria.
+- 4 stats cards: total ferias · activas · completadas · ventas POS en ferias.
+- Layout grid lg:grid-cols-[1fr_1fr]:
+  * CalendarView: calendario mensual con navegación (mes anterior/Hoy/mes siguiente), 7 días (Lun-Dom), cada celda = día del mes con badges de las ferias que intersectan ese día (máximo 2 visibles + "+N más"). Celdas de hoy destacadas con border-primary border-2. Click en una feria del calendario abre el detalle. Status icon por feria (Clock/PlayCircle/CheckCircle2/XCircle).
+  * FairsList: lista completa de ferias ordenada por startDate asc, scroll vertical max-h-[28rem]. Cada card: nombre, fechas, badge status con icon, ubicación, "# confirmados / total stands" + "# disponibles".
+- CreateFairDialog: form (name, description, location, city, startDate, endDate, boothCount default 10) + validación + POST /api/ferias. Botón emerald.
+- FairDetailDialog (max-w-3xl, max-h-90vh overflow): info de la feria + 4 botones para cambiar status (SCHEDULED/ACTIVE/COMPLETED/CANCELLED) + sección "Stands" con grid sm:2 de cards. Cada stand: número + supplier (si asignado: companyName + category + city + phone) + badge status. Si AVAILABLE → select de proveedor + botón "Asignar" (Hand icon, emerald). Si CONFIRMED → botón "Liberar stand" (rojo ghost). Botón "Eliminar feria" al final con confirm().
+
+Wiring:
+- types.ts: añadido `'ferias'` al final del union ModuleId (después de 'presentacion').
+- permissions.ts: 'ferias' cubierto por ADMIN '*' (admin only). No se añade a CLIENT/AFFILIATE/SUPPLIER/PARTNER — solo admins.
+- page.tsx: import FeriasModule + case 'ferias' en renderModule switch.
+- topnav.tsx: añadido icon `Calendar` a imports de lucide-react. Nuevo item "Ferias (calendario)" con icon Calendar en el dropdown Admin (después de "Álbum de cromos (admin)", antes de "Finanzas").
+
+Verificación:
+- `bun run lint` → 0 errors, 0 warnings (EXIT=0).
+- DB push exitoso: tablas Fair + FairBooth creadas, supplier.fairBooths relation añadida, Prisma Client regenerado con PRISMA_VERSION='v4-ferias'.
+- Dev.log: se observó un panic de Turbopack durante el boot (problema interno conocido de Turbopack 16.1.3 con `next_swc_napi::next_api::project::EntrypointsWithIssues`), no relacionado con mis cambios — el servidor será reiniciado por el sistema. Lint pasa limpio.
+
+Stage Summary:
+- 2 features completas: POS para suppliers + Calendario de Ferias para admins.
+- Schema: 2 modelos nuevos (Fair, FairBooth) + relación fairBooths en Supplier.
+- 4 endpoints API nuevos: /api/pos/sell (POST), /api/products/mine (GET), /api/ferias (GET+POST), /api/ferias/[id] (GET+PATCH+DELETE), /api/ferias/[id]/booths (GET+POST).
+- 1 tab nuevo en supplier-backoffice: "POS" (8ª pestaña, ahora grid-cols-8).
+- 1 módulo admin nuevo: ferias.tsx (~570 líneas, calendario mensual interactivo + lista + create + detail con asignación de stands + stats).
+- Flujo POS completo: supplier busca productos propios → clic agrega al carrito → opcional vincula a feria + método de pago + cliente + código de afiliado → POST /api/pos/sell → genera Order CONFIRMED + OrderItems + descuenta stock + comisiones N0-N3 + notificaciones → modal recibo con Imprimir/Nueva venta.
+- Flujo Ferias: admin crea feria con N stands auto-generados → calendario mensual muestra las ferias + lista ordenada por fecha → click en feria → detail con asignación/liberación de stands + cambio de status + revenue aproximado + eliminar.
+- Lint clean (0/0). Sin build, sin restart dev server (panic de Turbopack observado pero es interno del bundler, no de mis archivos — el sistema lo reiniciará).

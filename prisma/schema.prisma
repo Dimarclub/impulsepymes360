@@ -87,6 +87,7 @@ model Supplier {
   products    Product[]
   ads         Advertisement[]
   offers      Offer[]
+  fairBooths  FairBooth[]
   createdAt   DateTime  @default(now())
 }
 
@@ -968,4 +969,30 @@ model CpaCompletion {
   adminNotes    String?
   completedAt   DateTime @default(now())
   @@unique([taskId, userId])
+}
+
+// ---------- Ferias (Calendario de Ferias) ----------
+
+model Fair {
+  id          String   @id @default(cuid())
+  name        String   // ej: "Feria de Emprendedores Guayaquil"
+  description String?
+  location    String?  // dirección
+  city        String?
+  startDate   DateTime
+  endDate     DateTime
+  status      String   @default("SCHEDULED") // SCHEDULED, ACTIVE, COMPLETED, CANCELLED
+  booths      FairBooth[]
+  createdAt   DateTime @default(now())
+}
+
+model FairBooth {
+  id          String   @id @default(cuid())
+  fairId      String
+  fair        Fair     @relation(fields: [fairId], references: [id], onDelete: Cascade)
+  supplierId  String?
+  supplier    Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  boothNumber String?  // ej: "Stand A-12"
+  status      String   @default("AVAILABLE") // AVAILABLE, RESERVED, CONFIRMED
+  createdAt   DateTime @default(now())
 }

@@ -26,6 +26,7 @@ import {
   Package, MessageSquare, Megaphone, Star, ArrowRight, Zap,
   Truck, MapPin, User, Phone, ClipboardList, Send, Tag, Trash2, Image as ImageIcon, Calendar,
   Award, DollarSign, Eye, Pause, Play, Video,
+  ShoppingCart, Search, Minus, Printer, Receipt, Banknote, CreditCard, Smartphone, Building2,
 } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
@@ -43,7 +44,7 @@ export function SupplierBackofficeModule() {
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 max-w-3xl">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-8 max-w-3xl">
           <TabsTrigger value="overview"><Store className="size-4 md:mr-1.5" /><span className="hidden md:inline">Resumen</span></TabsTrigger>
           <TabsTrigger value="marketing"><Megaphone className="size-4 md:mr-1.5" /><span className="hidden md:inline">Marketing</span></TabsTrigger>
           <TabsTrigger value="logistics"><Truck className="size-4 md:mr-1.5" /><span className="hidden md:inline">Logística</span></TabsTrigger>
@@ -51,6 +52,7 @@ export function SupplierBackofficeModule() {
           <TabsTrigger value="tools"><Zap className="size-4 md:mr-1.5" /><span className="hidden md:inline">Herramientas</span></TabsTrigger>
           <TabsTrigger value="ofertas"><Tag className="size-4 md:mr-1.5" /><span className="hidden md:inline">Ofertas</span></TabsTrigger>
           <TabsTrigger value="cpa"><Award className="size-4 md:mr-1.5" /><span className="hidden md:inline">Tareas CPA</span></TabsTrigger>
+          <TabsTrigger value="pos"><ShoppingCart className="size-4 md:mr-1.5" /><span className="hidden md:inline">POS</span></TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4"><OverviewTab /></TabsContent>
@@ -60,6 +62,7 @@ export function SupplierBackofficeModule() {
         <TabsContent value="tools" className="mt-4"><ToolsTab /></TabsContent>
         <TabsContent value="ofertas" className="mt-4"><OfertasTab /></TabsContent>
         <TabsContent value="cpa" className="mt-4"><CpaTab /></TabsContent>
+        <TabsContent value="pos" className="mt-4"><PosTab /></TabsContent>
       </Tabs>
     </div>
   )
@@ -1373,6 +1376,513 @@ function CpaTab() {
           )}
         </CardContent>
       </Card>
+    </div>
+  )
+}
+
+// ============ POS (PUNTO DE VENTA) ============
+const PAYMENT_METHODS = [
+  { value: 'EFECTIVO', label: 'Efectivo', icon: Banknote },
+  { value: 'TARJETA', label: 'Tarjeta', icon: CreditCard },
+  { value: 'TRANSFERENCIA', label: 'Transferencia', icon: Building2 },
+  { value: 'SALDO_BILLETERA', label: 'Saldo Billetera', icon: Wallet },
+  { value: 'QR', label: 'QR', icon: Smartphone },
+] as const
+
+interface CartLine {
+  productId: string
+  name: string
+  price: number
+  imageUrl?: string | null
+  stock: number
+  quantity: number
+}
+
+function PosTab() {
+  const toast = useAppStore((s) => s.toast)
+  const [products, setProducts] = useState<any[]>([])
+  const [fairs, setFairs] = useState<any[]>([])
+  const [loadingProducts, setLoadingProducts] = useState(true)
+  const [search, setSearch] = useState('')
+  const [cart, setCart] = useState<CartLine[]>([])
+  const [paymentMethod, setPaymentMethod] = useState<string>('EFECTIVO')
+  const [fairId, setFairId] = useState<string>('')
+  const [customerName, setCustomerName] = useState('')
+  const [customerPhone, setCustomerPhone] = useState('')
+  const [affiliateCode, setAffiliateCode] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [receipt, setReceipt] = useState<any | null>(null)
+
+  const fetchProducts = useCallback(async () => {
+    setLoadingProducts(true)
+    try {
+      const res = await fetch('/api/products/mine')
+      const d = await res.json()
+      if (res.ok && Array.isArray(d)) setProducts(d)
+      else if (d?.error) {
+        toast(d.error, 'error')
+        setProducts([])
+      } else setProducts([])
+    } catch {
+      setProducts([])
+    } finally {
+      setLoadingProducts(false)
+    }
+  }, [toast])
+
+  const fetchFairs = useCallback(async () => {
+    try {
+      const res = await fetch('/api/ferias?onlyActive=true')
+      const d = await res.json()
+      if (res.ok) setFairs(d.fairs || [])
+      else setFairs([])
+    } catch { setFairs([]) }
+  }, [])
+
+  useEffect(() => { fetchProducts(); fetchFairs() }, [fetchProducts, fetchFairs])
+
+  const filtered = products.filter((p) =>
+    !search || p.name?.toLowerCase().includes(search.toLowerCase())
+  )
+
+  const addToCart = (p: any) => {
+    if (!p || p.stock <= 0) {
+      toast('Producto sin stock', 'error')
+      return
+    }
+    setCart((prev) => {
+      const existing = prev.find((l) => l.productId === p.id)
+      if (existing) {
+        if (existing.quantity >= p.stock) {
+          toast(`Stock máximo alcanzado (${p.stock})`, 'warning')
+          return prev
+        }
+        return prev.map((l) => l.productId === p.id ? { ...l, quantity: l.quantity + 1 } : l)
+      }
+      return [...prev, {
+        productId: p.id,
+        name: p.name,
+        price: p.price,
+        imageUrl: p.imageUrl,
+        stock: p.stock,
+        quantity: 1,
+      }]
+    })
+  }
+
+  const changeQty = (productId: string, delta: number) => {
+    setCart((prev) => prev.flatMap((l) => {
+      if (l.productId !== productId) return [l]
+      const next = l.quantity + delta
+      if (next <= 0) return [] // remove
+      if (next > l.stock) {
+        toast(`Stock máximo alcanzado (${l.stock})`, 'warning')
+        return [l]
+      }
+      return [{ ...l, quantity: next }]
+    }))
+  }
+
+  const removeFromCart = (productId: string) => {
+    setCart((prev) => prev.filter((l) => l.productId !== productId))
+  }
+
+  const subtotal = cart.reduce((s, l) => s + l.price * l.quantity, 0)
+  const totalItems = cart.reduce((s, l) => s + l.quantity, 0)
+
+  const checkout = async () => {
+    if (cart.length === 0) {
+      toast('El carrito está vacío', 'error')
+      return
+    }
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/pos/sell', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cart.map((l) => ({ productId: l.productId, quantity: l.quantity, price: l.price })),
+          paymentMethod,
+          fairId: fairId || undefined,
+          customerName: customerName.trim() || undefined,
+          customerPhone: customerPhone.trim() || undefined,
+          affiliateCode: affiliateCode.trim() || undefined,
+        }),
+      })
+      const d = await res.json()
+      if (!res.ok) {
+        toast(d?.error || 'Error al registrar la venta', 'error')
+        return
+      }
+      toast(`Venta registrada: ${d.order.orderNumber}`, 'success')
+      setReceipt(d.order)
+      setCart([])
+      setCustomerName('')
+      setCustomerPhone('')
+      setAffiliateCode('')
+      setFairId('')
+      setPaymentMethod('EFECTIVO')
+      // Refrescar productos para ver stock actualizado
+      fetchProducts()
+    } catch {
+      toast('Error de red', 'error')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid lg:grid-cols-[1fr_380px] gap-4">
+        {/* ===== LADO IZQUIERDO: Productos (70%) ===== */}
+        <Card className="lg:col-span-1">
+          <CardHeader className="pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <ShoppingCart className="size-5 text-primary" /> Productos
+                </CardTitle>
+                <CardDescription>
+                  Haz clic en un producto para agregarlo al carrito
+                </CardDescription>
+              </div>
+              <div className="relative w-full sm:w-72">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  placeholder="Buscar producto..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loadingProducts ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Skeleton key={i} className="h-44 w-full" />
+                ))}
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-12 text-sm text-muted-foreground">
+                <Package className="size-10 mx-auto mb-2 opacity-30" />
+                {products.length === 0
+                  ? 'No tienes productos. Agrega productos desde "Mi Tienda".'
+                  : 'No se encontraron productos con ese criterio.'}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 max-h-[calc(100vh-22rem)] overflow-y-auto pr-1 scroll-thin">
+                {filtered.map((p) => {
+                  const out = !p.stock || p.stock <= 0
+                  const inCart = cart.find((l) => l.productId === p.id)?.quantity || 0
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => addToCart(p)}
+                      disabled={out}
+                      className={cn(
+                        'group text-left rounded-xl border overflow-hidden transition-all',
+                        out
+                          ? 'opacity-50 cursor-not-allowed bg-muted/30'
+                          : 'hover:border-primary hover:shadow-md hover:-translate-y-0.5 bg-card'
+                      )}
+                    >
+                      <div className="aspect-square bg-muted/40 relative overflow-hidden">
+                        {p.imageUrl ? (
+                          <img
+                            src={p.imageUrl}
+                            alt={p.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                            onError={(e) => { (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/pos/200/200' }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                            <Package className="size-8" />
+                          </div>
+                        )}
+                        {out && (
+                          <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
+                            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300">Agotado</Badge>
+                          </div>
+                        )}
+                        {!out && inCart > 0 && (
+                          <div className="absolute top-1.5 right-1.5 size-6 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center">
+                            {inCart}
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-2 space-y-1">
+                        <p className="text-xs font-medium line-clamp-2 leading-tight min-h-8">{p.name}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-bold text-emerald-700 dark:text-emerald-300">{fmtUsd(p.price)}</span>
+                          <Badge variant="outline" className={cn(
+                            'text-[10px] px-1.5 py-0',
+                            out ? 'bg-red-50 text-red-600 border-red-200'
+                              : p.stock <= 5 ? 'bg-amber-50 text-amber-700 border-amber-200'
+                              : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          )}>
+                            {p.stock}u
+                          </Badge>
+                        </div>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* ===== LADO DERECHO: Carrito / Checkout (30%) ===== */}
+        <Card className="lg:col-span-1 flex flex-col">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center justify-between">
+              <span className="flex items-center gap-2"><ShoppingCart className="size-5 text-primary" /> Carrito</span>
+              {cart.length > 0 && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 text-xs"
+                  onClick={() => setCart([])}
+                >
+                  Vaciar
+                </Button>
+              )}
+            </CardTitle>
+            <CardDescription>
+              {totalItems} artículo{totalItems !== 1 ? 's' : ''} · {fmtUsd(subtotal)}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1 flex flex-col gap-4">
+            {/* Items */}
+            <div className="flex-1 min-h-0">
+              {cart.length === 0 ? (
+                <div className="text-center py-10 text-sm text-muted-foreground">
+                  <ShoppingCart className="size-10 mx-auto mb-2 opacity-30" />
+                  Carrito vacío.
+                  <br />Haz clic en un producto para agregarlo.
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-72 overflow-y-auto pr-1 scroll-thin">
+                  {cart.map((l) => (
+                    <div key={l.productId} className="flex items-center gap-2 rounded-lg border p-2">
+                      <img
+                        src={l.imageUrl || 'https://picsum.photos/seed/cart/40/40'}
+                        alt={l.name}
+                        className="size-10 rounded-md object-cover shrink-0"
+                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/cart/40/40' }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium truncate">{l.name}</p>
+                        <p className="text-xs text-muted-foreground">{fmtUsd(l.price)} c/u</p>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="size-7"
+                          onClick={() => changeQty(l.productId, -1)}
+                          aria-label="Restar"
+                        >
+                          <Minus className="size-3" />
+                        </Button>
+                        <span className="w-6 text-center text-sm font-semibold">{l.quantity}</span>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="size-7"
+                          onClick={() => changeQty(l.productId, 1)}
+                          disabled={l.quantity >= l.stock}
+                          aria-label="Sumar"
+                        >
+                          <Plus className="size-3" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="size-7 text-red-600 hover:bg-red-50"
+                          onClick={() => removeFromCart(l.productId)}
+                          aria-label="Eliminar"
+                        >
+                          <Trash2 className="size-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Campos de checkout */}
+            <div className="space-y-3 border-t pt-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span className="font-semibold">{fmtUsd(subtotal)}</span>
+              </div>
+              <div className="flex items-center justify-between text-base font-bold">
+                <span>Total</span>
+                <span className="text-emerald-700 dark:text-emerald-300">{fmtUsd(subtotal)}</span>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1.5 text-xs">
+                  <Calendar className="size-3.5 text-muted-foreground" /> Feria (opcional)
+                </Label>
+                <Select value={fairId} onValueChange={(v) => setFairId(v === '__none__' ? '' : v)}>
+                  <SelectTrigger className="h-9"><SelectValue placeholder="Sin feria" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">Sin feria</SelectItem>
+                    {fairs.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>
+                        {f.name} — {new Date(f.startDate).toLocaleDateString('es-EC', { day: '2-digit', month: 'short' })}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1.5 text-xs">
+                  <CreditCard className="size-3.5 text-muted-foreground" /> Método de pago *
+                </Label>
+                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PAYMENT_METHODS.map((m) => (
+                      <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1.5 text-xs">
+                  <User className="size-3.5 text-muted-foreground" /> Cliente (opcional)
+                </Label>
+                <Input
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Nombre del cliente"
+                  className="h-9"
+                />
+                <Input
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder="Teléfono (opcional)"
+                  className="h-9"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1.5 text-xs">
+                  <QrCode className="size-3.5 text-muted-foreground" /> Código de afiliado (opcional)
+                </Label>
+                <Input
+                  value={affiliateCode}
+                  onChange={(e) => setAffiliateCode(e.target.value.toUpperCase())}
+                  placeholder="Atribuye comisión a este afiliado"
+                  className="h-9 font-mono"
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  Si ingresas un código válido, la venta se atribuirá a esa red de afiliados.
+                </p>
+              </div>
+
+              <Button
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-base h-12"
+                onClick={checkout}
+                disabled={submitting || cart.length === 0}
+              >
+                {submitting ? (
+                  <><Loader2 className="size-5 mr-2 animate-spin" /> Cobrando...</>
+                ) : (
+                  <><Receipt className="size-5 mr-2" /> Cobrar {fmtUsd(subtotal)}</>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ===== MODAL DE RECIBO ===== */}
+      <Dialog open={!!receipt} onOpenChange={(o) => !o && setReceipt(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Receipt className="size-5 text-emerald-600" /> Recibo de venta
+            </DialogTitle>
+            <DialogDescription>
+              La venta se registró correctamente.
+            </DialogDescription>
+          </DialogHeader>
+          {receipt && (
+            <div className="space-y-4">
+              <div className="text-center pb-3 border-b">
+                <div className="size-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto mb-2">
+                  <CheckCircle2 className="size-7" />
+                </div>
+                <p className="text-xs text-muted-foreground">Número de orden</p>
+                <p className="text-xl font-bold font-mono">{receipt.orderNumber}</p>
+                <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300 mt-1">
+                  {fmtUsd(receipt.total)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Pagado con: <strong>{receipt.paymentMethod}</strong>
+                </p>
+              </div>
+
+              <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1 scroll-thin">
+                {receipt.items?.map((it: any, idx: number) => (
+                  <div key={it.id || idx} className="flex items-center gap-2 text-sm py-1 border-b last:border-0">
+                    <img
+                      src={it.imageUrl || 'https://picsum.photos/seed/rec/32/32'}
+                      alt={it.name}
+                      className="size-8 rounded object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://picsum.photos/seed/rec/32/32' }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium truncate">{it.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {it.quantity} × {fmtUsd(it.price)}
+                      </p>
+                    </div>
+                    <span className="font-semibold text-sm">{fmtUsd(it.price * it.quantity)}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between text-sm pt-2 border-t">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span>{fmtUsd(receipt.subtotal)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Comisión marketplace</span>
+                <span className="text-amber-700 dark:text-amber-300">{fmtUsd(receipt.commission)}</span>
+              </div>
+              <div className="flex items-center justify-between text-base font-bold pt-1 border-t">
+                <span>Total</span>
+                <span className="text-emerald-700 dark:text-emerald-300">{fmtUsd(receipt.total)}</span>
+              </div>
+            </div>
+          )}
+          <DialogFooter className="flex-row gap-2 sm:gap-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => window.print()}
+            >
+              <Printer className="size-4 mr-1.5" /> Imprimir
+            </Button>
+            <Button
+              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+              onClick={() => setReceipt(null)}
+            >
+              <ShoppingCart className="size-4 mr-1.5" /> Nueva venta
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
