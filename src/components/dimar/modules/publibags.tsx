@@ -145,6 +145,9 @@ export function PubliBagsModule() {
       {/* ===== Cómo funciona ===== */}
       <ComoFunciona />
 
+      {/* ===== Productos Publicidad Verde ===== */}
+      <ProductosVerdes />
+
       {/* ===== Plano LIVE ===== */}
       <PlanoLive data={data} loading={loading} onBuy={() => setModule('bag-plan')} />
 
@@ -477,6 +480,71 @@ function ComoFunciona() {
               {s.title}
             </h3>
             <p style={{ fontSize: 13, color: C.textDim, lineHeight: 1.5 }}>{s.desc}</p>
+          </div>
+        ))}
+      </div>
+    </Section>
+  )
+}
+
+// ===================== PRODUCTOS PUBLICIDAD VERDE =====================
+function ProductosVerdes() {
+  const productos = [
+    {
+      img: '/images/publibags/bolso-a5.jfif',
+      title: 'Bolso A5',
+      desc: 'Bolso ecológico tamaño A5 con espacios QR. Ideal para publicidad de tu marca en la calle. Reutilizable, elegante y con tu logo + QR.',
+    },
+    {
+      img: '/images/publibags/bolso-vertical.jfif',
+      title: 'Bolso Vertical',
+      desc: 'Bolso ecológico vertical con marca exclusiva. Espacios QR para publicidad. Diseño moderno, resistente y reutilizable.',
+    },
+    {
+      img: '/images/publibags/portalapices.jfif',
+      title: 'Portalápices de Vidrio',
+      desc: 'Portalápices artesanal hecho de botellas de vidrio recicladas. Cada pieza es única, hecha a mano por Reciclarte. Ecológico y decorativo.',
+    },
+  ]
+
+  return (
+    <Section
+      id="productos"
+      eyebrow="Publicidad Verde"
+      title="Nuestros productos ecológicos"
+      subtitle="Bolsos reutilizables con QR + productos de vidrio reciclado. Cada producto lleva tu marca y circula por la ciudad."
+    >
+      <div className="space-y-6">
+        {productos.map((p, i) => (
+          <div
+            key={p.title}
+            className="rounded-2xl overflow-hidden grid md:grid-cols-2 gap-0"
+            style={{ background: C.card, border: `1px solid ${C.borderLight}` }}
+          >
+            {/* Imagen */}
+            <div className="relative" style={{ minHeight: 280 }}>
+              <img
+                src={p.img}
+                alt={p.title}
+                className="w-full h-full object-cover"
+                style={{ minHeight: 280 }}
+              />
+            </div>
+            {/* Texto */}
+            <div className="p-6 md:p-8 flex flex-col justify-center" style={{ order: i % 2 === 1 ? -1 : 1 }}>
+              <div
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-3 self-start"
+                style={{ background: `${C.emerald}1A`, color: C.emerald, border: `1px solid ${C.emerald}55` }}
+              >
+                <Leaf className="size-3" /> 100% Ecológico
+              </div>
+              <h3 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: 24, color: C.text, marginBottom: 8 }}>
+                {p.title}
+              </h3>
+              <p style={{ color: C.textDim, fontSize: 15, lineHeight: 1.6, marginBottom: 16 }}>
+                {p.desc}
+              </p>
+            </div>
           </div>
         ))}
       </div>

@@ -331,13 +331,9 @@ function Hero({ onConocerRed, onSeePlanes }: { onConocerRed: () => void; onSeePl
               Bienvenido a <span style={{ color: C.purple }}>DimarClub</span>
             </h1>
             <p style={{ color: C.textDim, fontSize: 17, marginTop: 18, lineHeight: 1.55, maxWidth: 560 }}>
-              Somos una <strong style={{ color: C.emerald }}>economía colaborativa</strong> de emprendedores{' '}
-              <strong style={{ color: C.emerald }}>Prosumidores</strong> comprometidos con las empresas que han confiado en nuestro sistema de comercialización, una comunidad donde cada persona puede{' '}
-              <strong style={{ color: C.emerald }}>consumir</strong>,{' '}
-              <strong style={{ color: C.emerald }}>recomendar</strong>,{' '}
-              <strong style={{ color: C.emerald }}>emprender</strong> y{' '}
-              <strong style={{ color: C.emerald }}>crecer</strong>. Nuestro sistema de afiliados de una sola{' '}
-              <strong style={{ color: C.emerald }}>Red Universal de 3 Niveles</strong> es el motor de nuestro sistema de comercialización en donde todos ganan y todos pueden llegar lejos.
+              Somos una <strong style={{ color: C.emerald }}>red de emprendedores</strong> organizada bajo los principios de la <strong style={{ color: C.emerald }}>economía circular, colaborativa y solidaria</strong>.{' '}
+              Ofrecemos una amplia variedad de productos y servicios para <strong style={{ color: C.emerald }}>pequeñas y medianas empresas</strong> y para la sociedad en general, respaldados por la experiencia y la responsabilidad de nuestros miembros.{' '}
+              Apoyamos el crecimiento de las PyMEs mediante servicios y estrategias comerciales, al tiempo que impulsamos el desarrollo de nuestros integrantes. Conformamos una <strong style={{ color: C.emerald }}>comunidad comprometida</strong> que consume y respalda las marcas que confían en nosotros, recomendándolas a familiares y amigos a cambio de <strong style={{ color: C.emerald }}>capacitación constante</strong> y <strong style={{ color: C.emerald }}>beneficios económicos</strong> acordes a sus metas.
             </p>
 
             <div className="flex flex-wrap gap-3 mt-7">
