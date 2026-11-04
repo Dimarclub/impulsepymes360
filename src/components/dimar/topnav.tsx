@@ -235,16 +235,31 @@ export function TopNav() {
               <DropdownMenuTrigger asChild>
                 <button className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300', (activeModule === 'publibags' || activeModule === 'web-express' || activeModule === 'fuerza-delta' || activeModule === 'marketplace' || activeModule === 'social-automation' || activeModule === 'impulsepymes360' || activeModule === 'directorio') && 'ring-2 ring-emerald-400')}><LayoutGrid className="size-4" />Servicios<ChevronDown className="size-3" /></button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-60">
+              <DropdownMenuContent align="start" className="w-64">
                 <DropdownMenuLabel>Nuestros servicios</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setModule('publibags')}><ShoppingBag className="size-4 mr-2" /> Publicidad Verde</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setModule('web-express')}><Globe className="size-4 mr-2" /> Web</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setModule('fuerza-delta')}><Truck className="size-4 mr-2" /> Mensajería y Logística</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setModule('marketplace')}><Newspaper className="size-4 mr-2" /> Clasificados</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setModule('social-automation')}><Zap className="size-4 mr-2" /> Autoposter</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setModule('impulsepymes360')}><Rocket className="size-4 mr-2" /> Comercialización y Ventas</DropdownMenuItem>
+                <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Publicidad</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setModule('publibags')}><ShoppingBag className="size-4 mr-2" /> Publicidad Verde (Bolsos QR)</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Presencia Digital</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setModule('web-express')}><Globe className="size-4 mr-2" /> Sitios Web Express</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setModule('directorio')}><MapPin className="size-4 mr-2" /> Directorio Comercial</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Ventas</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setModule('marketplace')}><Grid3x3 className="size-4 mr-2" /> Marketplace (Tienda)</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setModule('marketplace')}><Newspaper className="size-4 mr-2" /> Clasificados</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setModule('ofertas')}><Tag className="size-4 mr-2" /> Ofertas con QR</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Logística</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setModule('fuerza-delta')}><Truck className="size-4 mr-2" /> Mensajería y Logística</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Marketing</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setModule('social-automation')}><Zap className="size-4 mr-2" /> Autoposter (IA)</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setModule('social-studio')}><Sparkles className="size-4 mr-2" /> Content Studio</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setModule('impulsepymes360')}><Rocket className="size-4 mr-2" /> Comercialización y Ventas</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Comunidad</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setModule('planes')}><CreditCard className="size-4 mr-2" /> Planes Integrales</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>
