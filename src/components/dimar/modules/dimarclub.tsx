@@ -124,9 +124,6 @@ export function DimarClubModule() {
       {/* ===== Beneficios Exclusivos ===== */}
       <Beneficios onSeePlanes={() => setModule('planes')} />
 
-      {/* ===== Rangos de Socios Operativos ===== */}
-      <Rangos />
-
       {/* ===== Sistema de 6 Frascos ===== */}
       <Frascos />
 
@@ -160,7 +157,6 @@ function Navbar({
     { href: '#tareas', label: 'Tareas CPA' },
     { href: '#red', label: 'Red Universal' },
     { href: '#beneficios', label: 'Beneficios' },
-    { href: '#rangos', label: 'Rangos' },
     { href: '#frascos', label: 'Frascos' },
     { href: '#contacto', label: 'Contacto' },
   ]
@@ -783,99 +779,6 @@ function Beneficios({ onSeePlanes }: { onSeePlanes: () => void }) {
         >
           Ver Planes <ArrowRight className="size-4" />
         </button>
-      </div>
-    </Section>
-  )
-}
-
-// ===================== RANGOS DE SOCIOS OPERATIVOS =====================
-function Rangos() {
-  const rangos = [
-    { emoji: '🔥', name: 'Fénix', price: 300, bono: '+0.2%', desc: 'El punto de entrada. Inversión mínima, misma oportunidad.', color: C.rose },
-    { emoji: '⚡', name: 'Delta', price: 600, bono: '+0.3%', desc: 'Para quienes quieren crecer más rápido.', color: C.amber },
-    { emoji: '💎', name: 'Omega', price: 900, bono: '+0.4%', desc: 'Mayor inversión, mayor retorno mensual.', color: C.emerald },
-    { emoji: '👑', name: 'Sigma', price: 1200, bono: '+0.5%', desc: 'Para líderes que quieren construir patrimonio.', color: C.purple },
-    { emoji: '🏆', name: 'Alpha', price: 1500, bono: '+0.6%', desc: 'El rango más alto. Máximo retorno y liderazgo.', color: C.gold },
-  ]
-  return (
-    <Section
-      id="rangos"
-      accent="gold"
-      eyebrow="Rangos de Socios Operativos"
-      title="5 rangos. Una sola meta: crecer juntos."
-      subtitle="Los socios operativos invierten desde $300 y ganan un bono adicional sobre las ventas de su red. A mayor rango, mayor bono. Todos ganan además el 3% de su red de 3 niveles."
-    >
-      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {rangos.map((r) => (
-          <div
-            key={r.name}
-            className="rounded-2xl p-5 relative flex flex-col"
-            style={{
-              background: `linear-gradient(135deg, ${C.card} 0%, ${C.card2} 100%)`,
-              border: `1px solid ${r.color}55`,
-            }}
-          >
-            <div
-              className="absolute -top-3 -left-3 size-10 rounded-full flex items-center justify-center text-lg"
-              style={{ background: C.bg, border: `1px solid ${r.color}55` }}
-            >
-              {r.emoji}
-            </div>
-            <div className="mt-3">
-              <p style={{ fontSize: 11, color: C.muted, textTransform: 'uppercase', letterSpacing: 1 }}>
-                Rango
-              </p>
-              <h3
-                style={{
-                  fontFamily: "'Outfit', sans-serif",
-                  fontWeight: 800,
-                  fontSize: 20,
-                  color: C.text,
-                }}
-              >
-                {r.name}
-              </h3>
-            </div>
-            <div className="mt-4">
-              <p
-                style={{
-                  fontFamily: "'Outfit', sans-serif",
-                  fontWeight: 900,
-                  fontSize: 32,
-                  color: r.color,
-                  lineHeight: 1,
-                }}
-              >
-                ${r.price.toLocaleString('es-EC')}
-              </p>
-              <p style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>inversión mensual</p>
-            </div>
-            <div
-              className="mt-3 mb-3 inline-flex items-center justify-center px-3 py-1.5 rounded-md text-sm font-bold"
-              style={{ background: `${C.gold}22`, color: C.gold }}
-            >
-              {r.bono} de bono
-            </div>
-            <p style={{ fontSize: 12.5, color: C.textDim, lineHeight: 1.45, marginTop: 'auto' }}>
-              {r.desc}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* Info box */}
-      <div
-        className="mt-6 rounded-xl p-4 flex items-start gap-3"
-        style={{ background: `${C.emerald}0F`, border: `1px solid ${C.emerald}33` }}
-      >
-        <Info className="size-5 flex-shrink-0 mt-0.5" style={{ color: C.emerald }} />
-        <p style={{ fontSize: 13, color: C.textDim, lineHeight: 1.55 }}>
-          <strong style={{ color: C.text }}>Todos los socios</strong> ganan el{' '}
-          <strong style={{ color: C.emerald }}>3% de su Red Universal de 3 Niveles</strong>, más el{' '}
-          <strong style={{ color: C.emerald }}>3% de su inversión mensual</strong>, más el{' '}
-          <strong style={{ color: C.gold }}>bono según su rango</strong>, más el{' '}
-          <strong style={{ color: C.purple }}>CPA de las tareas completadas</strong>.
-        </p>
       </div>
     </Section>
   )
