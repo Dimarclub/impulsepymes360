@@ -30,6 +30,8 @@ import { requireSession } from '@/lib/security/auth'
 
 const PHOTO_TYPES = new Set(['PHOTO_BOLSO', 'PHOTO_STORE', 'PHOTO_STICKER'])
 const VIDEO_TYPES = new Set(['VIDEO', 'SHARE', 'VISIT', 'SUBSCRIBE'])
+const NEW_TYPES = new Set(['PURCHASE_REGISTER', 'MONTHLY_STICKERS'])
+const MIN_MONTHLY_CONSUMPTION = 250
 const MAX_STRIKES = 3
 
 export async function POST(
@@ -84,6 +86,39 @@ export async function POST(
 
     const isPhoto = PHOTO_TYPES.has(task.type)
     const isVideo = VIDEO_TYPES.has(task.type)
+    const isNewType = NEW_TYPES.has(task.type)
+
+    // Validar consumo mensual obligatorio ($250/mes) si la tarea lo requiere
+    if (task.requiresMonthlyConsumption) {
+      const startOfMonth = new Date()
+      startOfMonth.setDate(1)
+      startOfMonth.setHours(0, 0, 0, 0)
+      const monthlyOrders = await db.order.aggregate({
+        where: {
+          userId: user.id,
+          createdAt: { gte: startOfMonth },
+          status: { in: ['CONFIRMED', 'SHIPPED', 'DELIVERED'] },
+        },
+        _sum: { total: true },
+      })
+      const monthlyTotal = monthlyOrders._sum.total || 0
+      // También contar compras externas aprobadas
+      const externalTotal = await db.externalPurchase.aggregate({
+        where: {
+          userId: user.id,
+          status: 'APPROVED',
+          createdAt: { gte: startOfMonth },
+        },
+        _sum: { amount: true },
+      })
+      const totalConsumption = monthlyTotal + (externalTotal._sum.amount || 0)
+      if (totalConsumption < MIN_MONTHLY_CONSUMPTION) {
+        return NextResponse.json(
+          { error: `Para reclamar esta tarea necesitas consumir $${MIN_MONTHLY_CONSUMPTION}/mes en el marketplace o registrar compras externas. Consumo actual: $${totalConsumption.toFixed(2)}` },
+          { status: 403 },
+        )
+      }
+    }
 
     // Anti-fraud: si llegó al máximo de strikes, bloquear
     const strikes = body.strikeCount ?? 0

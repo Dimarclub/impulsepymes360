@@ -52,6 +52,7 @@ model User {
   albumPrize    AlbumPrize?
   raffleEntries RaffleEntry[]
   cpaCompletions CpaCompletion[]
+  externalPurchases ExternalPurchase[]
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -934,7 +935,7 @@ model CpaTask {
   id                String   @id @default(cuid())
   title             String
   description       String?
-  type              String   @default("VIDEO") // VIDEO, SHARE, VISIT, SUBSCRIBE, PHOTO_BOLSO, PHOTO_STORE, PHOTO_STICKER
+  type              String   @default("VIDEO") // VIDEO, SHARE, VISIT, SUBSCRIBE, PHOTO_BOLSO, PHOTO_STORE, PHOTO_STICKER, PURCHASE_REGISTER, MONTHLY_STICKERS
   videoUrl          String?
   imageUrl          String?
   offerTitle        String?
@@ -947,6 +948,7 @@ model CpaTask {
   endDate           DateTime
   status            String   @default("ACTIVE") // ACTIVE, PAUSED, COMPLETED, EXPIRED
   createdBy         String
+  requiresMonthlyConsumption Boolean @default(false) // true = requiere $250/mes para reclamar
   createdAt         DateTime @default(now())
   completions       CpaCompletion[]
 }
@@ -969,6 +971,26 @@ model CpaCompletion {
   adminNotes    String?
   completedAt   DateTime @default(now())
   @@unique([taskId, userId])
+}
+
+// ---------- Registro de compras externas (CPA) ----------
+
+model ExternalPurchase {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productName   String
+  amount        Float
+  storeName     String?  // tienda donde compró
+  storeUrl      String?  // URL de la tienda (si es online)
+  receiptUrl    String?  // foto del recibo/factura
+  category      String?  // categoría del producto
+  status        String   @default("PENDING_REVIEW") // PENDING_REVIEW, APPROVED, REJECTED
+  rewardAmount  Float    @default(0.50) // comisión CPA por registrar compra
+  reviewedAt    DateTime?
+  reviewedBy    String?
+  adminNotes    String?
+  createdAt     DateTime @default(now())
 }
 
 // ---------- Ferias (Calendario de Ferias) ----------

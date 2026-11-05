@@ -96,7 +96,8 @@ export const STICKER_DIMENSIONS: Record<PlanStickerConfig['size'], { w: number; 
 }
 
 // Monto del premio por llenar el álbum
-export const ALBUM_PRIZE_AMOUNT = 200
+export const ALBUM_PRIZE_AMOUNT = 200 // Premio anual por llenar el álbum completo
+export const MONTHLY_STICKERS_PRIZE = 5 // Premio mensual por completar los cromos del mes
 
 // Genera un código único legible para el cromo (mayúsculas, 6-8 chars)
 export function generateStickerCode(prefix: string): string {
