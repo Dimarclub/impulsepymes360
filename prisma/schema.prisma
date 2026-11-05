@@ -986,7 +986,7 @@ model ExternalPurchase {
   receiptUrl    String?  // foto del recibo/factura
   category      String?  // categoría del producto
   status        String   @default("PENDING_REVIEW") // PENDING_REVIEW, APPROVED, REJECTED
-  rewardAmount  Float    @default(0.50) // comisión CPA por registrar compra
+  rewardAmount  Float    @default(0) // No se paga comisión por registrar — el usuario ya cobra 3% N0
   reviewedAt    DateTime?
   reviewedBy    String?
   adminNotes    String?

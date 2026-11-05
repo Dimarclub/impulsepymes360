@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       receiptUrl: receiptUrl || null,
       category: category || null,
       status: 'PENDING_REVIEW',
-      rewardAmount: 0.50,
+      rewardAmount: 0, // No se paga comisión por registrar — el usuario ya cobra 3% N0 en el plan de compensación
     },
   })
 
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         type: 'CPA_PURCHASE_REGISTERED',
         title: 'Compra registrada',
-        message: `Tu compra de "${productName}" ($${amount.toFixed(2)}) fue registrada. Pendiente de aprobación para acreditar $0.50.`,
+        message: `Tu compra de "${productName}" ($${amount.toFixed(2)}) fue registrada. Suma a tu consumo mensual de $250. Pendiente de aprobación del admin.`,
         link: '/?module=affiliate-backoffice',
       },
     })
