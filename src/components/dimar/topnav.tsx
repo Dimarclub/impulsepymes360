@@ -235,7 +235,7 @@ export function TopNav() {
               <DropdownMenuTrigger asChild>
                 <button className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300', (activeModule === 'publibags' || activeModule === 'web-express' || activeModule === 'fuerza-delta' || activeModule === 'marketplace' || activeModule === 'social-automation' || activeModule === 'impulsepymes360' || activeModule === 'directorio') && 'ring-2 ring-emerald-400')}><LayoutGrid className="size-4" />Servicios<ChevronDown className="size-3" /></button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-64">
+              <DropdownMenuContent align="start" sideOffset={8} className="w-64">
                 <DropdownMenuLabel>Nuestros servicios</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Publicidad</DropdownMenuLabel>
