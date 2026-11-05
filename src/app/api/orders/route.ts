@@ -45,10 +45,10 @@ export async function POST(req: NextRequest) {
     where: { id: { in: items.map((it) => it.productId) } },
     select: { id: true, commissionRate: true },
   })
-  const productRateMap = new Map(products.map((p) => [p.id, p.commissionRate || 9]))
+  const productRateMap = new Map(products.map((p) => [p.id, p.commissionRate || 5]))
   // Comisión ponderada: suma de (precio × cantidad × rate/100) por item
   const commission = +items.reduce((s, it) => {
-    const rate = productRateMap.get(it.productId) || 9
+    const rate = productRateMap.get(it.productId) || 5
     return s + (it.price * it.quantity * rate / 100)
   }, 0).toFixed(2)
 
@@ -72,29 +72,29 @@ export async function POST(req: NextRequest) {
     include: { items: true },
   })
 
-  // Generar comisiones N0 (3%) + 3 niveles (2% c/u) sobre el total de comisión disponible
-  // Si el producto tiene commissionRate > 9, el excedente se reparte como bono extra en N0
+  // Generar comisiones: 5% base = 1% N0 + 1% N1 + 1% N2 + 1% N3 + 1% plataforma
+  // Si el producto tiene commissionRate > 5, el excedente va como bono extra al N0
   const buyer = await db.user.findUnique({ where: { id: userId } })
   if (buyer) {
-    // Comisión base: N0 = 3%, N1-N3 = 2% c/u (sobre el subtotal)
-    const n0Rate = 0.03
-    const nRate = 0.02
+    // Comisión base: N0 = 1%, N1-N3 = 1% c/u (sobre el subtotal)
+    const n0Rate = 0.01
+    const nRate = 0.01
     const n0Amount = +(subtotal * n0Rate).toFixed(2)
 
-    // Bono extra para N0 si los productos tienen commissionRate > 9%
+    // Bono extra para N0 si los productos tienen commissionRate > 5%
     const extraCommission = +items.reduce((s, it) => {
-      const rate = productRateMap.get(it.productId) || 9
-      const extra = Math.max(0, rate - 9) // excedente sobre el 9% base
+      const rate = productRateMap.get(it.productId) || 5
+      const extra = Math.max(0, rate - 5) // excedente sobre el 5% base
       return s + (it.price * it.quantity * extra / 100)
     }, 0).toFixed(2)
 
-    await db.commission.create({ data: { userId: buyer.id, orderId: order.id, sourceUserId: buyer.id, amount: +(n0Amount + extraCommission).toFixed(2), level: 0, rate: 3 + (extraCommission > 0 ? (extraCommission / subtotal * 100) : 0), status: 'PENDING' } })
+    await db.commission.create({ data: { userId: buyer.id, orderId: order.id, sourceUserId: buyer.id, amount: +(n0Amount + extraCommission).toFixed(2), level: 0, rate: 1 + (extraCommission > 0 ? (extraCommission / subtotal * 100) : 0), status: 'PENDING' } })
     let current = buyer
     for (let lvl = 1; lvl <= 3; lvl++) {
       if (!current.sponsorId) break
       const sponsor = await db.user.findUnique({ where: { id: current.sponsorId } })
       if (!sponsor) break
-      await db.commission.create({ data: { userId: sponsor.id, orderId: order.id, sourceUserId: buyer.id, amount: +(subtotal * 0.02).toFixed(2), level: lvl, rate: 2, status: 'PENDING' } })
+      await db.commission.create({ data: { userId: sponsor.id, orderId: order.id, sourceUserId: buyer.id, amount: +(subtotal * 0.01).toFixed(2), level: lvl, rate: 1, status: 'PENDING' } })
       current = sponsor
     }
   }
