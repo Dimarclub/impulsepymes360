@@ -111,6 +111,7 @@ interface PreviewSite {
   heroTitle: string
   heroSubtitle: string
   heroImageUrl: string
+  heroVideoUrl: string
   aboutText: string
   contactEmail: string
   contactPhone: string
@@ -131,6 +132,7 @@ interface EditorForm {
   heroTitle: string
   heroSubtitle: string
   heroImageUrl: string
+  heroVideoUrl: string
   aboutText: string
   contactEmail: string
   contactPhone: string
@@ -275,6 +277,7 @@ function toPreviewSite(s: SiteWithProvider): PreviewSite {
     heroTitle: safeStr(s.heroTitle),
     heroSubtitle: safeStr(s.heroSubtitle),
     heroImageUrl: safeStr(s.heroImageUrl),
+    heroVideoUrl: safeStr(s.heroVideoUrl),
     aboutText: safeStr(s.aboutText),
     contactEmail: safeStr(s.contactEmail),
     contactPhone: safeStr(s.contactPhone),
@@ -382,6 +385,8 @@ function WebsitePreview({ site, products }: { site: PreviewSite; products: Previ
   const logo = site.provider?.logoUrl || null
   const cover = site.provider?.coverUrl || null
   const heroImg = site.heroImageUrl || cover || null
+  const heroVideo = site.heroVideoUrl || null
+  const youtubeId = heroVideo ? (heroVideo.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]{11})/) || [])[1] : null
   const hours = site.businessHours
   const social = site.socialLinks || {}
   const initial = company.charAt(0).toUpperCase()
@@ -467,7 +472,15 @@ function WebsitePreview({ site, products }: { site: PreviewSite; products: Previ
             </div>
           </div>
           <div className="aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 shadow-sm">
-            {heroImg ? (
+            {youtubeId ? (
+              <iframe
+                className="w-full h-full"
+                src={`https://www.youtube.com/embed/${youtubeId}`}
+                title={company}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            ) : heroImg ? (
               <img src={heroImg} alt={company} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${primary}, ${accent})` }} />
@@ -481,7 +494,17 @@ function WebsitePreview({ site, products }: { site: PreviewSite; products: Previ
           id="inicio"
           className="relative min-h-[380px] sm:min-h-[460px] flex items-center justify-center text-center text-white overflow-hidden"
         >
-          {heroImg ? (
+          {youtubeId ? (
+            <div className="absolute inset-0 w-full h-full">
+              <iframe
+                className="w-full h-full"
+                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0&controls=1`}
+                title={company}
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          ) : heroImg ? (
             <>
               <img src={heroImg} alt="" className="absolute inset-0 w-full h-full object-cover" />
               <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${primary}e6, ${accent}cc)` }} />
@@ -1540,6 +1563,15 @@ export function WebExpressModule() {
                               value={form.heroImageUrl}
                               onChange={(url) => update('heroImageUrl', url)}
                             />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs text-muted-foreground">Video de presentación (YouTube)</Label>
+                            <Input
+                              value={form.heroVideoUrl}
+                              onChange={(e) => update('heroVideoUrl', e.target.value)}
+                              placeholder="https://www.youtube.com/watch?v=..."
+                            />
+                            <p className="text-xs text-muted-foreground">Pega el enlace de tu video de YouTube. Aparecerá en el hero.</p>
                           </div>
                         </Card>
 

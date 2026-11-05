@@ -552,6 +552,7 @@ model WebsiteExpress {
   heroTitle     String?
   heroSubtitle  String?
   heroImageUrl  String?
+  heroVideoUrl  String?  // URL de YouTube para el video de presentación del proveedor
   aboutText     String?
   contactEmail  String?
   contactPhone  String?

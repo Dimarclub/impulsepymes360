@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     // Plan
     planId, affiliateRate,
     // Web Express
-    heroTitle, heroSubtitle, heroImageUrl, aboutText, contactEmail, contactPhone, contactWhatsapp, contactAddress, template, primaryColor, accentColor,
+    heroTitle, heroSubtitle, heroImageUrl, heroVideoUrl, aboutText, contactEmail, contactPhone, contactWhatsapp, contactAddress, template, primaryColor, accentColor,
     // Espacios PubliBags
     selectedSpaceIds,
   } = body
@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
       heroTitle: heroTitle || `${companyName} — ${category || 'Bienvenidos'}`,
       heroSubtitle: heroSubtitle || description || '',
       heroImageUrl: heroImageUrl || null,
+      heroVideoUrl: heroVideoUrl || null,
       aboutText: aboutText || description || null,
       contactEmail: contactEmail || email,
       contactPhone: contactPhone || phone,

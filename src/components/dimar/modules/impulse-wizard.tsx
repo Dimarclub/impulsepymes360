@@ -175,6 +175,7 @@ interface FormState {
   accentColor: string
   heroTitle: string
   heroSubtitle: string
+  heroVideoUrl: string
   aboutText: string
   contactEmail: string
   contactPhone: string
@@ -205,6 +206,7 @@ const DEFAULT_FORM: FormState = {
   accentColor: '#d97706',
   heroTitle: '',
   heroSubtitle: '',
+  heroVideoUrl: '',
   aboutText: '',
   contactEmail: '',
   contactPhone: '',
@@ -1077,6 +1079,14 @@ function Step5({
                 placeholder="Tu compromiso con la calidad"
               />
             </Field>
+            <Field label="Video de presentación (YouTube)">
+              <Input
+                value={form.heroVideoUrl}
+                onChange={(e) => setForm({ heroVideoUrl: e.target.value })}
+                placeholder="https://www.youtube.com/watch?v=..."
+              />
+              <p className="text-xs text-muted-foreground mt-1">Sube tu video a YouTube y pega el enlace aquí. Aparecerá en el hero de tu sitio Web Express.</p>
+            </Field>
             <Field label="Texto «Sobre nosotros»">
               <Textarea
                 value={form.aboutText}
@@ -1749,6 +1759,7 @@ export function ImpulseWizardModule() {
         // web express
         heroTitle: form.heroTitle,
         heroSubtitle: form.heroSubtitle,
+        heroVideoUrl: form.heroVideoUrl,
         aboutText: form.aboutText,
         contactEmail: form.contactEmail,
         contactPhone: form.contactPhone,
