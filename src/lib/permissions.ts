@@ -4,11 +4,11 @@ import type { ModuleId, UserRole } from './types'
 export const ROLE_MODULES: Record<UserRole, ModuleId[] | '*'> = {
   ADMIN: '*',
 
-  CLIENT: ['impulsepymes360', 'marketplace', 'affiliates', 'benefits', 'grid', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'affiliate-backoffice', 'alertas', 'directorio', 'ofertas', 'cpa-tasks', 'album', 'presentacion'],
-  AFFILIATE: ['impulsepymes360', 'marketplace', 'affiliates', 'benefits', 'social-bio', 'grid', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'affiliate-backoffice', 'alertas', 'directorio', 'ofertas', 'cpa-tasks', 'album', 'presentacion'],
-  SUPPLIER: ['impulsepymes360', 'marketplace', 'suppliers', 'logistics', 'web-express', 'publibags', 'bag-plan', 'planes', 'fuerza-delta', 'directorio', 'social', 'social-studio', 'social-bio', 'social-automation', 'impulse', 'impulse-wizard', 'grid', 'supplier-backoffice', 'alertas', 'ofertas', 'cpa-tasks', 'album', 'presentacion'],
+  CLIENT: ['impulsepymes360', 'marketplace', 'affiliates', 'benefits', 'grid', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'affiliate-backoffice', 'alertas', 'directorio', 'ofertas', 'cpa-tasks', 'album', 'presentacion', 'ai-hub', 'cursos'],
+  AFFILIATE: ['impulsepymes360', 'marketplace', 'affiliates', 'benefits', 'social-bio', 'grid', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'affiliate-backoffice', 'alertas', 'directorio', 'ofertas', 'cpa-tasks', 'album', 'presentacion', 'ai-hub', 'cursos'],
+  SUPPLIER: ['impulsepymes360', 'marketplace', 'suppliers', 'logistics', 'web-express', 'publibags', 'bag-plan', 'planes', 'fuerza-delta', 'directorio', 'social', 'social-studio', 'social-bio', 'social-automation', 'impulse', 'impulse-wizard', 'grid', 'supplier-backoffice', 'alertas', 'ofertas', 'cpa-tasks', 'album', 'presentacion', 'embudos', 'facturacion', 'ai-hub', 'formularios', 'encuestas', 'resenas', 'citas', 'bandeja', 'cursos', 'chat'],
   COURIER: ['marketplace', 'courier-app', 'fuerza'],
-  PARTNER: ['impulsepymes360', 'marketplace', 'partners', 'benefits', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'partner-backoffice', 'directorio', 'ofertas', 'cpa-tasks', 'album', 'presentacion'],
+  PARTNER: ['impulsepymes360', 'marketplace', 'partners', 'benefits', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'cooperativa', 'partner-backoffice', 'directorio', 'ofertas', 'cpa-tasks', 'album', 'presentacion', 'ai-hub', 'cursos'],
 }
 
 export const PUBLIC_MODULES: ModuleId[] = ['impulsepymes360', 'marketplace', 'bag-plan', 'publibags', 'planes', 'fuerza-delta', 'dimarclub', 'ofertas', 'cpa-tasks', 'album', 'presentacion']

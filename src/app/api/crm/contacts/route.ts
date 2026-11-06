@@ -2,8 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { requireRole } from '@/lib/security/auth'
 
+/**
+ * GET /api/crm/contacts
+ * Lista todos los contactos CRM (con sus actividades).
+ * Acceso: ADMIN (gestión CRM) y SUPPLIER (para dropdown de contactos en embudos/deals).
+ * Los SUPPLIER solo pueden listar; la creación/edición/borrado queda restringida a ADMIN.
+ */
 export async function GET() {
-  const auth = await requireRole('ADMIN')
+  const auth = await requireRole('ADMIN', 'SUPPLIER')
   if (auth instanceof NextResponse) return auth
   const contacts = await db.crmContact.findMany({
     include: { activities: true },

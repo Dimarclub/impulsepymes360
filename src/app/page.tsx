@@ -49,6 +49,16 @@ import { AlbumModule } from '@/components/dimar/modules/album'
 import { AlbumAdminModule } from '@/components/dimar/modules/album-admin'
 import { PresentacionModule } from '@/components/dimar/modules/presentacion'
 import { FeriasModule } from '@/components/dimar/modules/ferias'
+import { EmbudosModule } from '@/components/dimar/modules/embudos'
+import { FacturacionModule } from '@/components/dimar/modules/facturacion'
+import { AiHubModule } from '@/components/dimar/modules/ai-hub'
+import { FormulariosModule } from '@/components/dimar/modules/formularios'
+import { EncuestasModule } from '@/components/dimar/modules/encuestas'
+import { ResenasModule } from '@/components/dimar/modules/resenas'
+import { CitasModule } from '@/components/dimar/modules/citas'
+import { BandejaModule } from '@/components/dimar/modules/bandeja'
+import { CursosModule } from '@/components/dimar/modules/cursos'
+import { ChatModule } from '@/components/dimar/modules/chat'
 import { Footer } from '@/components/dimar/footer'
 import { canAccessModule, defaultModuleForRole } from '@/lib/permissions'
 
@@ -135,6 +145,16 @@ function HomeContent() {
       case 'album-admin': return <AlbumAdminModule />
       case 'presentacion': return <PresentacionModule />
       case 'ferias': return <FeriasModule />
+      case 'embudos': return <EmbudosModule />
+      case 'facturacion': return <FacturacionModule />
+      case 'ai-hub': return <AiHubModule />
+      case 'formularios': return <FormulariosModule />
+      case 'encuestas': return <EncuestasModule />
+      case 'resenas': return <ResenasModule />
+      case 'citas': return <CitasModule />
+      case 'bandeja': return <BandejaModule />
+      case 'cursos': return <CursosModule />
+      case 'chat': return <ChatModule />
       default: return <MarketplaceModule />
     }
   }

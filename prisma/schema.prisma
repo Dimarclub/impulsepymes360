@@ -54,6 +54,20 @@ model User {
   cpaCompletions CpaCompletion[]
   externalPurchases ExternalPurchase[]
 
+  // CRMHUB-inspired features
+  dealsAssigned     Deal[]              @relation("DealAssignee")
+  invoicesCreated   Invoice[]
+  formTemplates     FormTemplate[]
+  surveys           Survey[]
+  reviewsReceived   Review[]
+  appointmentsOwned Appointment[]
+  coursesOwned      Course[]
+  courseEnrollments CourseEnrollment[]
+  knowledgeArticles KnowledgeArticle[]
+  unifiedMessages   UnifiedMessage[]
+  chatSessions      ChatSession[]
+  funnels           Funnel[]
+
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
@@ -306,6 +320,10 @@ model CrmContact {
   tags       String?  // JSON
   assignedTo String?
   activities CrmActivity[]
+  deals      Deal[]
+  invoices   Invoice[]
+  appointments Appointment[]
+  unifiedMessages UnifiedMessage[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
@@ -1018,5 +1036,272 @@ model FairBooth {
   supplier    Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
   boothNumber String?  // ej: "Stand A-12"
   status      String   @default("AVAILABLE") // AVAILABLE, RESERVED, CONFIRMED
+  createdAt   DateTime @default(now())
+}
+
+// =====================================================================
+// CRMHUB-inspired modules
+// =====================================================================
+
+// ---------- Embudos de Venta (Sales Funnels) ----------
+
+model Funnel {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  stages      FunnelStage[]
+  deals       Deal[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model FunnelStage {
+  id          String   @id @default(cuid())
+  funnelId    String
+  funnel      Funnel   @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+  name        String
+  order       Int
+  color       String?
+  deals       Deal[]
+}
+
+model Deal {
+  id          String   @id @default(cuid())
+  funnelId    String
+  funnel      Funnel   @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+  stageId     String
+  stage       FunnelStage @relation(fields: [stageId], references: [id])
+  contactId   String?
+  contact     CrmContact? @relation(fields: [contactId], references: [id])
+  title       String
+  value       Float    @default(0)
+  currency    String   @default("USD")
+  probability Int      @default(0)
+  expectedCloseDate DateTime?
+  assignedToId String?
+  assignedTo  User?    @relation("DealAssignee", fields: [assignedToId], references: [id])
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ---------- Facturación + Enlaces de Pago ----------
+
+model Invoice {
+  id          String   @id @default(cuid())
+  number      String   @unique
+  userId      String
+  issuer      User     @relation(fields: [userId], references: [id])
+  contactId   String?
+  contact     CrmContact? @relation(fields: [contactId], references: [id])
+  clientName  String?
+  clientEmail String?
+  clientPhone String?
+  items       String   @default("[]") // JSON array
+  subtotal    Float    @default(0)
+  taxRate     Float    @default(0)
+  taxAmount   Float    @default(0)
+  total       Float    @default(0)
+  currency    String   @default("USD")
+  status      String   @default("DRAFT") // DRAFT, SENT, PAID, VOID, OVERDUE
+  paymentLink String?
+  notes       String?
+  paidAt      DateTime?
+  dueDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ---------- Centro de IA + Base de Conocimiento ----------
+
+model KnowledgeArticle {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  title       String
+  content     String
+  category    String?
+  tags        String?  // comma-separated
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ---------- Formularios + Respuestas ----------
+
+model FormTemplate {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  name        String
+  description String?
+  fields      String   @default("[]") // JSON array
+  submitLabel String   @default("Enviar")
+  successMessage String?
+  responses   FormResponse[]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model FormResponse {
+  id          String   @id @default(cuid())
+  formId      String
+  form        FormTemplate @relation(fields: [formId], references: [id], onDelete: Cascade)
+  data        String   @default("{}") // JSON
+  contactId   String?
+  createdAt   DateTime @default(now())
+}
+
+// ---------- Encuestas ----------
+
+model Survey {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  title       String
+  description String?
+  questions   String   @default("[]") // JSON array
+  responses   SurveyResponse[]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SurveyResponse {
+  id          String   @id @default(cuid())
+  surveyId    String
+  survey      Survey   @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  respondentName String?
+  respondentEmail String?
+  answers     String   @default("{}") // JSON
+  rating      Int?
+  createdAt   DateTime @default(now())
+}
+
+// ---------- Reseñas (Reputation) ----------
+
+model Review {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  customerName String
+  customerEmail String?
+  rating      Int      // 1-5
+  title       String?
+  comment     String?
+  source      String   @default("INTERNAL") // INTERNAL, GOOGLE, FACEBOOK
+  status      String   @default("PUBLISHED") // PUBLISHED, HIDDEN, PENDING
+  response    String?
+  respondedAt DateTime?
+  createdAt   DateTime @default(now())
+}
+
+// ---------- Citas / Calendario ----------
+
+model Appointment {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  contactId   String?
+  contact     CrmContact? @relation(fields: [contactId], references: [id])
+  clientName  String
+  clientEmail String?
+  clientPhone String?
+  service     String
+  startsAt    DateTime
+  endsAt      DateTime
+  status      String   @default("SCHEDULED") // SCHEDULED, CONFIRMED, COMPLETED, CANCELLED, NO_SHOW
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ---------- Cursos / Membresías ----------
+
+model Course {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  title       String
+  description String?
+  coverImage  String?
+  category    String?
+  lessons     CourseLesson[]
+  enrollments CourseEnrollment[]
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CourseLesson {
+  id          String   @id @default(cuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title       String
+  content     String
+  videoUrl    String?
+  duration    Int?
+  order       Int      @default(0)
+}
+
+model CourseEnrollment {
+  id          String   @id @default(cuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  progress    Int      @default(0)
+  completedLessons String @default("[]") // JSON array of lesson ids
+  enrolledAt  DateTime @default(now())
+  completedAt DateTime?
+
+  @@unique([courseId, userId])
+}
+
+// ---------- Bandeja Unificada (Multi-canal) ----------
+
+model UnifiedMessage {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  channel     String   // WHATSAPP, INSTAGRAM, FACEBOOK, EMAIL, SMS, WEB
+  fromName    String
+  fromHandle  String?
+  toName      String?
+  subject     String?
+  body        String
+  attachments String?  // JSON array
+  status      String   @default("UNREAD") // UNREAD, READ, REPLIED, ARCHIVED
+  contactId   String?
+  contact     CrmContact? @relation(fields: [contactId], references: [id])
+  isOutgoing  Boolean  @default(false)
+  parentMessageId String?
+  createdAt   DateTime @default(now())
+}
+
+// ---------- Chat en Vivo ----------
+
+model ChatSession {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  visitorName String
+  visitorEmail String?
+  visitorIp   String?
+  status      String   @default("ACTIVE") // ACTIVE, CLOSED, WAITING
+  messages    ChatMessage[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ChatMessage {
+  id          String   @id @default(cuid())
+  sessionId   String
+  session     ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sender      String   // VISITOR, AGENT, BOT
+  body        String
   createdAt   DateTime @default(now())
 }

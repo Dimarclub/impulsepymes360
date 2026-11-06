@@ -46,6 +46,16 @@ export type ModuleId =
   | 'album-admin'
   | 'presentacion'
   | 'ferias'
+  | 'embudos'
+  | 'facturacion'
+  | 'ai-hub'
+  | 'formularios'
+  | 'encuestas'
+  | 'resenas'
+  | 'citas'
+  | 'bandeja'
+  | 'cursos'
+  | 'chat'
 
 export type UserRole = 'CLIENT' | 'AFFILIATE' | 'SUPPLIER' | 'COURIER' | 'PARTNER' | 'ADMIN'
 
