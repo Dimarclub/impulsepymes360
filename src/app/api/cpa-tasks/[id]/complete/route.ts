@@ -73,13 +73,14 @@ export async function POST(
       return NextResponse.json({ error: 'La tarea ya no tiene cupo disponible' }, { status: 400 })
     }
 
-    // Verificar si ya completó
-    const existing = await db.cpaCompletion.findUnique({
-      where: { taskId_userId: { taskId, userId: user.id } },
+    // Verificar si ya completó HOY (1 vez por día por tipo)
+    const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
+    const existing = await db.cpaCompletion.findFirst({
+      where: { taskId, userId: user.id, completionDate: today },
     })
     if (existing && (existing.status === 'COMPLETED' || existing.status === 'PENDING_REVIEW')) {
       return NextResponse.json(
-        { error: 'Ya completaste esta tarea', status: existing.status },
+        { error: 'Ya completaste esta tarea hoy. Vuelve mañana.' },
         { status: 409 },
       )
     }
@@ -150,9 +151,8 @@ export async function POST(
 
     // ---------- PHOTO: PENDING_REVIEW (no acredita) ----------
     if (isPhoto) {
-      const completion = await db.cpaCompletion.upsert({
-        where: { taskId_userId: { taskId, userId: user.id } },
-        create: {
+      const completion = await db.cpaCompletion.create({
+        data: {
           taskId, userId: user.id,
           status: 'PENDING_REVIEW',
           photoUrl: body.photoUrl?.trim() || null,
@@ -161,18 +161,7 @@ export async function POST(
           shared: body.shared ?? false,
           purchased: body.purchased ?? false,
           strikeCount: strikes,
-        },
-        update: {
-          status: 'PENDING_REVIEW',
-          photoUrl: body.photoUrl?.trim() || null,
-          rewardAmount: reward,
-          shared: body.shared ?? false,
-          purchased: body.purchased ?? false,
-          strikeCount: strikes,
-          reviewedAt: null,
-          reviewedBy: null,
-          adminNotes: null,
-          completedAt: new Date(),
+          completionDate: today,
         },
       })
 
@@ -225,9 +214,8 @@ export async function POST(
 
     await db.$transaction(async (tx) => {
       // Upsert completion
-      await tx.cpaCompletion.upsert({
-        where: { taskId_userId: { taskId, userId: user.id } },
-        create: {
+      await tx.cpaCompletion.create({
+        data: {
           taskId, userId: user.id,
           status: 'COMPLETED',
           rewardAmount: reward,
@@ -235,18 +223,7 @@ export async function POST(
           shared: body.shared ?? false,
           purchased: body.purchased ?? false,
           strikeCount: strikes,
-        },
-        update: {
-          status: 'COMPLETED',
-          rewardAmount: reward,
-          videoWatched: body.videoWatched ?? false,
-          shared: body.shared ?? false,
-          purchased: body.purchased ?? false,
-          strikeCount: strikes,
-          reviewedAt: null,
-          reviewedBy: null,
-          adminNotes: null,
-          completedAt: new Date(),
+          completionDate: today,
         },
       })
 

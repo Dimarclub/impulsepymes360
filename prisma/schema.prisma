@@ -971,7 +971,8 @@ model CpaCompletion {
   reviewedBy    String?
   adminNotes    String?
   completedAt   DateTime @default(now())
-  @@unique([taskId, userId])
+  completionDate String?  // fecha del día en formato YYYY-MM-DD (para validar 1 vez por día)
+  @@unique([taskId, userId, completionDate])
 }
 
 // ---------- Registro de compras externas (CPA) ----------
