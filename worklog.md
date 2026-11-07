@@ -2183,3 +2183,68 @@ Stage Summary:
 - TypeScript: 0 errores en mis archivos (verificado con bunx tsc --noEmit | grep cursos). Errores restantes en chat.tsx, resenas.tsx, dashboard/route.ts, deliveries/[id]/route.ts son de otros agentes en paralelo.
 - Dev server: GET / 200 OK consistente. Sin tests escritos según indicación.
 - Record escrito en /agent-ctx/41-cursos-full-stack-developer.md.
+
+---
+Task ID: 43-reservas
+Agent: full-stack-developer (Reservas Hotel/Auto/Tour/Equipo)
+Task: Construir módulo de Reservas genérico con disponibilidad por día + QR de check-in + admin de resources y bookings.
+
+Work Log:
+- Leído worklog.md, prisma/schema.prisma (modelos Room / RoomAvailability / Booking + Supplier + User), src/lib/security/auth.ts (requireSession, requireRole, isOwnerOrAdmin), src/lib/db.ts (PrismaClient con PRISMA_VERSION 'v9-reservas' ya configurado), src/lib/types.ts (ModuleId 'reservas' y 'reservas-admin' ya wired), src/lib/permissions.ts (reservas: CLIENT/AFFILIATE/SUPPLIER/PARTNER; reservas-admin: SUPPLIER + ADMIN vía '*'), src/app/page.tsx (case 'reservas' / 'reservas-admin' ya mapeados a <ReservasModule /> y <ReservasAdminModule />), y módulo existente citas.tsx como referencia visual para el calendario mensual.
+- Verificado que las relaciones Prisma están en camelCase (room.bookings, room.supplier, booking.room, booking.user, supplier.rooms, supplier.bookings) — usado camelCase en TODAS las consultas include/select.
+- API endpoints creados bajo `src/app/api/reservas/`:
+  * `route.ts` — GET (catálogo autenticado con filtros ?city=&type=&checkIn=&checkOut=&guests=; valida disponibilidad real consultando RoomAvailability por día del rango; incluye supplier y _count.bookings) + POST (crea Room para SUPPLIER/ADMIN e inicializa RoomAvailability para 90 días con available=quantity)
+  * `mine/route.ts` — GET para SUPPLIER/ADMIN: lista Rooms del supplier + stats (totalRooms, totalBookings, monthRevenue del mes actual con status activo, avgOccupation basado en activeBookings/totalCapacity)
+  * `[id]/route.ts` — GET detalle Room con supplier + availability próximos 30 días + bookings activos; PATCH actualiza campos (si cambia quantity reajusta availability futura para que available no exceda el nuevo máximo); DELETE elimina Room (cascade availability)
+  * `[id]/availability/route.ts` — GET rango de fechas (array {date, available}; para días sin registro asume room.quantity); PATCH upsert de cupos manuales con body {date, available} o {range:{from,to}, available}
+  * `search/route.ts` — POST con body {checkIn, checkOut, guests?, city?, type?}; valida co<=ci; retorna results con room + supplier + nights + unitPrice + subtotal + serviceFee 5% + total + available (min availability del rango)
+  * `book/route.ts` — POST crea Booking: valida room activo, co>ci, qty<=room.quantity, cupos disponibles día por día; cálculo nights×pricePerNight×qty + 5% serviceFee; bookingCode = "RES-"+6 chars alfanuméricos (excluyendo 0/O/1/I para evitar confusiones); qrCode = 8 chars; transacción: decrementa RoomAvailability.available por qty en cada día (crea si no existe) + crea Booking; si viene affiliateCode busca User sponsor; notifica a supplier (BOOKING_RECEIVED) y user (BOOKING_CONFIRMED); retorna 201
+  * `my-bookings/route.ts` — GET lista bookings del usuario actual ordenados por checkIn asc, incluye room + supplier
+  * `supplier-bookings/route.ts` — GET lista bookings de los rooms del supplier; filtro ?status=; retorna bookings + stats {pending, confirmed, checkedIn, checkedOut, cancelled, revenue (suma de total con status CONFIRMED/CHECKED_IN/CHECKED_OUT)}
+  * `bookings/[id]/route.ts` — GET detalle con permisos (owner del booking | supplier del room | admin); PATCH transiciones de status con timestamps (confirmedAt/cancelledAt/checkedInAt/checkedOutAt); si pasa a CANCELLED restaura cupos (incrementa available por qty en cada día del rango); notifica al user con mensaje personalizado por estado
+  * `scan/route.ts` — POST body {qrCode}; busca booking por qrCode; verifica supplier del room es el actual; CHECKED_IN si estaba CONFIRMED o CHECKED_OUT si estaba CHECKED_IN; retorna {ok, booking, action}; notifica al user
+  * `admin/route.ts` — GET solo ADMIN: lista TODOS los bookings con filtros ?status=&supplierId=&from=&to=; retorna bookings + stats {total, pending, confirmed, revenue}
+- NOTA: el task spec original ponía [bookingId] como sibling de [id] bajo /api/reservas/, pero Next.js 16 rechaza slugs con nombres distintos al mismo nivel ("You cannot use different slug names for the same dynamic path"). Reestructurado a `/api/reservas/bookings/[id]/route.ts` y actualizadas las URLs en los componentes (cancel desde reservas.tsx y refresh/patch desde reservas-admin.tsx).
+- Componente `src/components/dimar/modules/reservas.tsx` (~1141 líneas, 'use client'):
+  * Tabs "Buscar" | "Mis Reservas"
+  * Tab Buscar: Card buscador (tipo select con iconos Hotel/Car/Mountain/Wrench, ciudad, check-in/out date, huéspedes) → POST /api/reservas/search; fallback a GET /api/reservas (catálogo) si no se busca por fechas; grid sm:2 lg:3 de cards RoomCard con imagen (placeholder según tipo si no imageUrl), badge tipo + icono, nombre, ciudad+supplier, descripcion, amenities como chips bg-muted, "Hasta X personas" + "Y unidad(es)", precio emerald bold + cálculo dinámico "noches × precio = total" si hay fechas; botón "Reservar" abre ReserveDialog
+  * ReserveDialog: form completo (fechas, quantity max room.quantity, guests, datos huésped name/email/phone, paymentMethod select, affiliateCode opcional, notes), resumen dinámico con subtotal + serviceFee 5% + total emerald; botón "Confirmar reserva" emerald → POST /api/reservas/book; éxito → BookingSuccessDialog con QR (api.qrserver.com size=150x150), bookingCode mono, badge "Pendiente de confirmación"
+  * Tab Mis Reservas: GET /api/reservas/my-bookings; sección "Próximas" (checkOut>=hoy y no CANCELLED) e "Historial" (resto); cada BookingCard muestra imagen + nombre + supplier, bookingCode mono, fechas checkIn→checkOut, noches, quantity, guests, total emerald, badge status (PENDING amber, CONFIRMED emerald, CHECKED_IN cyan, CHECKED_OUT muted, CANCELLED rose, NO_SHOW red, REJECTED red) con icono; si CONFIRMED/CHECKED_IN → botón "Ver QR" que abre QrShowDialog (api.qrserver.com + texto "Muestra este QR en el check-in"); si PENDING/CONFIRMED → botón "Cancelar" con ConfirmCancelDialog → PATCH /api/reservas/bookings/[id] status=CANCELLED; empty state con CTA "Explorar recursos"
+  * Convenciones: USD Intl.NumberFormat('es-EC'), fechas es-EC, paleta esmeralda+ámbar SIN azul/índigo
+- Componente `src/components/dimar/modules/reservas-admin.tsx` (~1669 líneas, 'use client'):
+  * Tabs "Mis Recursos" | "Reservas Recibidas" | "Calendario" — solo SUPPLIER y ADMIN
+  * Tab Mis Recursos: 4 StatCards (total recursos, total reservas, ingresos mes, ocupación promedio); grid sm:2 lg:3 de RoomAdminCards (imagen, badge tipo+activo, nombre, ciudad, amenities chips, capacity+quantity+bookings, precio emerald, 3 acciones: Editar/Disp./Borrar); botón "Nuevo recurso" → RoomFormDialog con form completo (name, type select con iconos, description, capacity, pricePerNight, quantity, amenities como tags input con Enter para agregar + X para quitar, imageUrl, address, city, isActive Switch); RoomFormDialog reutilizado para crear/editar; AvailabilityDialog con calendario mensual navegable (color coding: emerald=cupo completo, amber=parcial, rose=sin cupo, clickable para editar cupo del día → EditDayDialog con input number; botón "Bloquear rango" → BlockRangeDialog con from/to que set available=0); ConfirmDeleteDialog antes de DELETE
+  * Tab Reservas Recibidas: 4 StatCards (pendientes, confirmadas, en check-in, ingresos); filtros segmented por status con conteo dinámico; búsqueda por bookingCode/guestName/email/room name; botón "Escanear QR" cyan → ScanDialog con input manual de qrCode y resultado visible; tabla scroll-thin con columnas (código, huésped, recurso, fechas, noches, unidades, total, status badge con icono, pago badge, acción eye); click en fila → BookingDetailDialog con info completa + acciones rápidas contextuales (Confirmar emerald/Rechazar red para PENDING; Check-in cyan/Cancelar rose para CONFIRMED; Check-out muted para CHECKED_IN; No-show red; Marcar pagado emerald si UNPAID)
+  * Tab Calendario: selector de Room (dropdown), calendario mensual con navegación, cada celda muestra "#res / %" o "Disp: N", color coding por % ocupación (emerald 0-50%, amber 51-80%, rose 81-100%); click en día con reservas → DayBookingsDialog con lista de bookings del día
+  * Mismas convenciones de colores/formato que reservas.tsx
+- Seed actualizado en prisma/seed.ts: 8 recursos de ejemplo (2 Hotel, 2 Auto, 2 Tour, 2 Equipamiento) distribuidos entre sup1/sup2/sup4/sup5 con availability 90 días (70% cupo completo, 20% parcial, 10% sin cupo).
+- Eliminado `skipDuplicates: true` de createMany (SQLite + Prisma 6.19 no lo soporta para RoomAvailability).
+- Lint: `bun run lint` → exit 0 (0 errors 0 warnings en todo el proyecto).
+- Dev server: GET / 200 OK. Endpoints /api/reservas* responden 401 sin sesión (esperado) y 200 con sesión autenticada.
+
+Stage Summary:
+- Archivos creados (API):
+  * /home/z/my-project/src/app/api/reservas/route.ts (178 líneas)
+  * /home/z/my-project/src/app/api/reservas/mine/route.ts (74)
+  * /home/z/my-project/src/app/api/reservas/[id]/route.ts (174)
+  * /home/z/my-project/src/app/api/reservas/[id]/availability/route.ts (126)
+  * /home/z/my-project/src/app/api/reservas/search/route.ts (120)
+  * /home/z/my-project/src/app/api/reservas/book/route.ts (195)
+  * /home/z/my-project/src/app/api/reservas/my-bookings/route.ts (41)
+  * /home/z/my-project/src/app/api/reservas/supplier-bookings/route.ts (63)
+  * /home/z/my-project/src/app/api/reservas/bookings/[id]/route.ts (160)
+  * /home/z/my-project/src/app/api/reservas/scan/route.ts (85)
+  * /home/z/my-project/src/app/api/reservas/admin/route.ts (69)
+- Archivos creados (componentes):
+  * /home/z/my-project/src/components/dimar/modules/reservas.tsx (~1141 líneas)
+  * /home/z/my-project/src/components/dimar/modules/reservas-admin.tsx (~1669 líneas)
+- Modificado: prisma/seed.ts (añadido bloque Reservas con 8 rooms + availability 90 días)
+- Decisiones clave:
+  * Reestructuración /api/reservas/[bookingId] → /api/reservas/bookings/[id] por restricción de Next.js 16 (slugs distintos al mismo nivel dinámico prohibidos).
+  * QR generado con api.qrserver.com (sin dependencias server-side) usando booking.qrCode (8 chars) como data.
+  * Transacciones Prisma para operaciones atómicas (book + decrement cupos; cancel + restore cupos).
+  * Notificaciones creadas en db.notification para supplier (BOOKING_RECEIVED) y user (BOOKING_CONFIRMED/CANCELLED/CHECKED_IN/CHECKED_OUT) sin bloquear el response.
+  * Cálculo de ocupación promedio en /mine: activeBookings / totalCapacity × 100 (capped a 100%).
+  * Validación de cupos día por día en /book: si falta un día en RoomAvailability se asume room.quantity; si hay registros se usa el valor guardado; en ambos casos debe ser >= qty solicitado.
+  * Sin useEffect con setState síncrono: todos los dialogs con estado de formulario se inicializan vía useState con valor inicial (preset) — no extraído como sub-componente porque los presets ya están disponibles al montar.
+- Record escrito en /agent-ctx/43-reservas-full-stack-developer.md.

@@ -59,6 +59,8 @@ import { CitasModule } from '@/components/dimar/modules/citas'
 import { BandejaModule } from '@/components/dimar/modules/bandeja'
 import { CursosModule } from '@/components/dimar/modules/cursos'
 import { ChatModule } from '@/components/dimar/modules/chat'
+import { ReservasModule } from '@/components/dimar/modules/reservas'
+import { ReservasAdminModule } from '@/components/dimar/modules/reservas-admin'
 import { Footer } from '@/components/dimar/footer'
 import { canAccessModule, defaultModuleForRole } from '@/lib/permissions'
 
@@ -155,6 +157,8 @@ function HomeContent() {
       case 'bandeja': return <BandejaModule />
       case 'cursos': return <CursosModule />
       case 'chat': return <ChatModule />
+      case 'reservas': return <ReservasModule />
+      case 'reservas-admin': return <ReservasAdminModule />
       default: return <MarketplaceModule />
     }
   }

@@ -56,6 +56,8 @@ export type ModuleId =
   | 'bandeja'
   | 'cursos'
   | 'chat'
+  | 'reservas'
+  | 'reservas-admin'
 
 export type UserRole = 'CLIENT' | 'AFFILIATE' | 'SUPPLIER' | 'COURIER' | 'PARTNER' | 'ADMIN'
 

@@ -228,6 +228,44 @@ async function main() {
   await db.advertisement.create({ data: { title: 'Fresca y Sano - Orgánicos', imageUrl: 'https://picsum.photos/seed/ad4/800/200', targetUrl: '#', placement: 'FOOTER', supplierId: sup4.id, startDate: new Date(), endDate: new Date(Date.now() + 10 * 86400000), status: 'ACTIVE', price: 90 } })
   console.log('✓ Anuncios creados')
 
+  // ---------- Reservas (Rooms + Availability + Bookings) ----------
+  await db.room.deleteMany()
+  await db.booking.deleteMany()
+  const roomsSeed = [
+    { supplier: sup1, name: 'Habitación Doble Deluxe', type: 'HOTEL_ROOM', description: 'Habitación con vista a la ciudad, desayuno incluido.', capacity: 2, pricePerNight: 65, quantity: 8, amenities: JSON.stringify(['WiFi', 'A/C', 'Desayuno', 'TV Cable']), imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=70', address: 'Av. 9 de Octubre 100', city: 'Guayaquil' },
+    { supplier: sup1, name: 'Suite Ejecutiva', type: 'HOTEL_ROOM', description: 'Suite amplia con sala y escritorio.', capacity: 4, pricePerNight: 120, quantity: 4, amenities: JSON.stringify(['WiFi', 'A/C', 'Minibar', 'Desayuno', 'Parking']), imageUrl: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&q=70', address: 'Av. 9 de Octubre 100', city: 'Guayaquil' },
+    { supplier: sup5, name: 'Toyota Yaris Automático', type: 'CAR', description: 'Vehículo compacto, full equipo, GPS incluido.', capacity: 5, pricePerNight: 45, quantity: 6, amenities: JSON.stringify(['A/C', 'GPS', 'Seguro', 'Full equipo']), imageUrl: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=70', address: 'Vía a Daule km 5', city: 'Daule' },
+    { supplier: sup5, name: 'Chevrolet D-Max 4x4', type: 'CAR', description: 'Pickup doble cabina para todo terreno.', capacity: 5, pricePerNight: 75, quantity: 3, amenities: JSON.stringify(['4x4', 'A/C', 'Seguro', 'Portaequipajes']), imageUrl: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&q=70', address: 'Vía a Daule km 5', city: 'Daule' },
+    { supplier: sup4, name: 'Tour Manglares de Churute', type: 'TOUR', description: 'Recorrido en lancha por el estuario, almuerzo típico incluido.', capacity: 12, pricePerNight: 35, quantity: 12, amenities: JSON.stringify(['Guía bilingüe', 'Almuerzo', 'Botiquín']), imageUrl: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&q=70', address: 'Reserva Churute', city: 'Guayaquil' },
+    { supplier: sup4, name: 'Tour Whale Watching Puerto López', type: 'TOUR', description: 'Avistamiento de ballenas jorobadas (junio-septiembre).', capacity: 10, pricePerNight: 80, quantity: 10, amenities: JSON.stringify(['Guía', 'Snacks', 'Chaleco salvavidas']), imageUrl: 'https://images.unsplash.com/photo-1567893185543-788a9a0bca8f?w=600&q=70', address: 'Puerto López', city: 'Manabí' },
+    { supplier: sup2, name: 'Taladro Percutor Bosch', type: 'EQUIPMENT', description: 'Taladro profesional con set de brocas incluido.', capacity: 1, pricePerNight: 12, quantity: 5, amenities: JSON.stringify(['Maletín', 'Brocas', 'Cargador']), imageUrl: 'https://images.unsplash.com/photo-1572981779307-09b8d0a3eb76?w=600&q=70', address: 'Av. Amazonas 200', city: 'Quito' },
+    { supplier: sup2, name: 'Andamio Modular 3m', type: 'EQUIPMENT', description: 'Andamio de aluminio para trabajos en altura.', capacity: 1, pricePerNight: 18, quantity: 4, amenities: JSON.stringify(['Fácil armado', 'Ruedas con freno']), imageUrl: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=70', address: 'Av. Amazonas 200', city: 'Quito' },
+  ]
+  for (const r of roomsSeed) {
+    const room = await db.room.create({
+      data: {
+        supplierId: r.supplier.id,
+        name: r.name, type: r.type, description: r.description, capacity: r.capacity,
+        pricePerNight: r.pricePerNight, quantity: r.quantity, amenities: r.amenities,
+        imageUrl: r.imageUrl, address: r.address, city: r.city, isActive: true,
+      },
+    })
+    // Availability 90 días
+    const today = new Date()
+    const availRows: { roomId: string; date: Date; available: number }[] = []
+    for (let i = 0; i < 90; i++) {
+      const d = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate() + i))
+      // 70% con cupo completo, 20% parcial, 10% sin cupo
+      const rnd = (i + r.name.length) % 10
+      let available = r.quantity
+      if (rnd >= 7 && rnd < 9) available = Math.max(0, Math.floor(r.quantity / 2))
+      else if (rnd === 9) available = 0
+      availRows.push({ roomId: room.id, date: d, available })
+    }
+    await db.roomAvailability.createMany({ data: availRows })
+  }
+  console.log('✓ Reservas: 8 recursos creados con disponibilidad 90 días')
+
   // ---------- CRM ----------
   const crmDefs = [
     { name: 'Distribuidora El Sol', email: 'compras@elsol.com', company: 'El Sol Cía.', stage: 'PROPOSAL', value: 5000, source: 'MARKETPLACE' },

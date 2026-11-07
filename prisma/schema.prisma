@@ -67,6 +67,7 @@ model User {
   unifiedMessages   UnifiedMessage[]
   chatSessions      ChatSession[]
   funnels           Funnel[]
+  bookingsAsUser    Booking[]          @relation("BookingUser")
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -103,6 +104,8 @@ model Supplier {
   ads         Advertisement[]
   offers      Offer[]
   fairBooths  FairBooth[]
+  rooms       Room[]
+  bookings    Booking[]
   createdAt   DateTime  @default(now())
 }
 
@@ -1259,6 +1262,76 @@ model CourseEnrollment {
   completedAt DateTime?
 
   @@unique([courseId, userId])
+}
+
+// ---------- Reservas (Hoteles / Autos / Tours / Equipos) ----------
+
+model Room {
+  id            String   @id @default(cuid())
+  supplierId    String
+  supplier      Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  name          String   // "Habitación Doble", "Toyota Yaris", "Tour Manglares", "Taladro Bosch"
+  type          String   // HOTEL_ROOM, CAR, TOUR, EQUIPMENT
+  description   String?
+  capacity      Int      @default(2)  // # personas o cupos
+  pricePerNight Float    // precio por unidad de tiempo (noche/día/tour)
+  currency      String   @default("USD")
+  quantity      Int      @default(1)  // cuántas unidades de este recurso existen
+  amenities     String?  // JSON array: ["wifi","desayuno","ac"]
+  imageUrl      String?
+  gallery       String?  // JSON array
+  address       String?
+  city          String?
+  isActive      Boolean  @default(true)
+  bookings      Booking[]
+  availability  RoomAvailability[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model RoomAvailability {
+  id          String   @id @default(cuid())
+  roomId      String
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  date        DateTime // día específico (sin hora, medianoche UTC)
+  available   Int      // cupos disponibles ese día
+  @@unique([roomId, date])
+}
+
+model Booking {
+  id            String   @id @default(cuid())
+  bookingCode   String   @unique // "RES-XXXXXX" para QR y búsqueda
+  roomId        String
+  room          Room     @relation(fields: [roomId], references: [id])
+  supplierId    String
+  supplier      Supplier @relation(fields: [supplierId], references: [id])
+  userId        String?  // cliente registrado (nullable para reservas públicas sin cuenta)
+  user          User?    @relation("BookingUser", fields: [userId], references: [id])
+  guestName     String
+  guestEmail    String
+  guestPhone    String
+  checkIn       DateTime
+  checkOut      DateTime
+  nights        Int      // # de noches / días / tours
+  guests        Int      @default(1)
+  quantity      Int      @default(1) // # de unidades reservadas (ej: 2 habitaciones)
+  unitPrice     Float    // precio por noche guardado al momento de reservar
+  subtotal      Float
+  serviceFee    Float    @default(0)
+  total         Float
+  currency      String   @default("USD")
+  status        String   @default("PENDING") // PENDING, CONFIRMED, CHECKED_IN, CHECKED_OUT, CANCELLED, NO_SHOW, REJECTED
+  paymentStatus String   @default("UNPAID") // UNPAID, DEPOSIT, PAID, REFUNDED
+  paymentMethod String?
+  qrCode        String?  // código corto para escaneo en check-in
+  notes         String?
+  affiliateCode String?  // para atribuir comisión al afiliado
+  confirmedAt   DateTime?
+  cancelledAt   DateTime?
+  checkedInAt   DateTime?
+  checkedOutAt  DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 // ---------- Bandeja Unificada (Multi-canal) ----------

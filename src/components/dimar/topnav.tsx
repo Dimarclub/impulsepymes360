@@ -6,7 +6,7 @@ import {
   Search, ShoppingCart, ChevronDown, User, LogIn, UserPlus, LogOut, Menu, X,
   Home, Users, Store, Building2, Phone, Sparkles, Loader2, Settings,
   LayoutDashboard, Truck, Mail, Megaphone, ClipboardList, Rocket, Zap, Globe, MapPin, Grid3x3, PiggyBank, Network, HandCoins, Bell, DollarSign, Package, ShoppingBag, CreditCard, Bike, LayoutGrid, Newspaper, Book, Tag, Award, Calendar,
-  Filter, FileText, BrainCircuit, ClipboardCheck, MessageSquare, Star, CalendarClock, Inbox, GraduationCap, MessagesSquare,
+  Filter, FileText, BrainCircuit, ClipboardCheck, MessageSquare, Star, CalendarClock, Inbox, GraduationCap, MessagesSquare, Hotel,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -294,7 +294,7 @@ export function TopNav() {
             {(displayUser?.role === 'ADMIN' || displayUser?.role === 'SUPPLIER') && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', ['embudos','facturacion','ai-hub','formularios','encuestas','resenas','citas','bandeja','cursos','chat'].includes(activeModule) ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><BrainCircuit className="size-4" />CRM Hub<ChevronDown className="size-3" /></button>
+                  <button className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-md transition-colors', ['embudos','facturacion','ai-hub','formularios','encuestas','resenas','citas','bandeja','cursos','chat','reservas','reservas-admin'].includes(activeModule) ? 'text-primary bg-primary/10' : 'text-foreground hover:text-primary hover:bg-muted/60')}><BrainCircuit className="size-4" />CRM Hub<ChevronDown className="size-3" /></button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-60 max-h-[80vh] overflow-y-auto">
                   <DropdownMenuLabel className="text-primary font-bold">CRM Hub · Todo en uno</DropdownMenuLabel>
@@ -305,6 +305,7 @@ export function TopNav() {
                   <DropdownMenuItem onClick={() => setModule('citas')}><CalendarClock className="size-4 mr-2" /> Citas / Calendario</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setModule('bandeja')}><Inbox className="size-4 mr-2" /> Bandeja Unificada</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setModule('chat')}><MessagesSquare className="size-4 mr-2" /> Chat en Vivo</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setModule('reservas')}><Hotel className="size-4 mr-2" /> Reservas (Hotel/Auto/Tour)</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Marketing</DropdownMenuLabel>
                   <DropdownMenuItem onClick={() => setModule('ai-hub')}><BrainCircuit className="size-4 mr-2" /> Centro de IA</DropdownMenuItem>
@@ -333,6 +334,7 @@ export function TopNav() {
                     <DropdownMenuItem onClick={() => setModule('cpa-admin')}><Award className="size-4 mr-2" /> Tareas CPA (admin)</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setModule('album-admin')}><Book className="size-4 mr-2" /> Álbum de cromos (admin)</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setModule('ferias')}><Calendar className="size-4 mr-2" /> Ferias (calendario)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('reservas-admin')}><Hotel className="size-4 mr-2" /> Reservas (admin global)</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setModule('finanzas')}><DollarSign className="size-4 mr-2" /> Finanzas</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Operación</DropdownMenuLabel>
@@ -406,6 +408,7 @@ export function TopNav() {
               {navItem('CRM Hub · Bandeja', 'bandeja', Inbox)}
               {navItem('CRM Hub · Cursos', 'cursos', GraduationCap)}
               {navItem('CRM Hub · Chat', 'chat', MessagesSquare)}
+              {navItem('CRM Hub · Reservas', 'reservas', Hotel)}
             </div>
           </div>
         )}
