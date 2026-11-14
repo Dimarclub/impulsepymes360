@@ -27,12 +27,10 @@ interface Plan {
   id: string
   name: string
   price: number
-  pages: number
-  emails: number
-  products: number
-  sobres: number
-  qr: number
-  qrProd: number
+  webSections: number
+  bagSpaces: number
+  directorioIntSpaces: number
+  calendarioSpaces: number
   popular: boolean
 }
 
@@ -45,23 +43,34 @@ interface Addon {
 }
 
 const PLANS: Plan[] = [
-  { id: 'basico', name: 'Básico', price: 122, pages: 3, emails: 1, products: 5, sobres: 11, qr: 2, qrProd: 1, popular: false },
-  { id: 'emprendedor', name: 'Emprendedor', price: 253, pages: 5, emails: 3, products: 15, sobres: 25, qr: 3, qrProd: 2, popular: false },
-  { id: 'comercial', name: 'Comercial', price: 363, pages: 7, emails: 5, products: 25, sobres: 35, qr: 4, qrProd: 3, popular: true },
-  { id: 'premium', name: 'Premium', price: 478, pages: 10, emails: 7, products: 35, sobres: 45, qr: 5, qrProd: 4, popular: false },
-  { id: 'elite', name: 'Élite', price: 592, pages: 12, emails: 10, products: 45, sobres: 56, qr: 5, qrProd: 4, popular: false },
-  { id: 'corporativo', name: 'Corporativo', price: 736, pages: 15, emails: 15, products: 60, sobres: 66, qr: 6, qrProd: 5, popular: false },
+  { id: 'starter',      name: 'Starter',      price: 0,   webSections: 10, bagSpaces: 67,  directorioIntSpaces: 2, calendarioSpaces: 2, popular: false },
+  { id: 'emprendedor',  name: 'Emprendedor',  price: 155, webSections: 20, bagSpaces: 120, directorioIntSpaces: 2, calendarioSpaces: 2, popular: false },
+  { id: 'comercial',    name: 'Comercial',    price: 265, webSections: 30, bagSpaces: 220, directorioIntSpaces: 2, calendarioSpaces: 2, popular: true  },
+  { id: 'premium',      name: 'Premium',      price: 315, webSections: 40, bagSpaces: 260, directorioIntSpaces: 2, calendarioSpaces: 2, popular: false },
+  { id: 'elite',        name: 'Élite',        price: 345, webSections: 50, bagSpaces: 280, directorioIntSpaces: 2, calendarioSpaces: 2, popular: false },
+  { id: 'corporativo',  name: 'Corporativo',  price: 395, webSections: 60, bagSpaces: 320, directorioIntSpaces: 2, calendarioSpaces: 2, popular: false },
 ]
 
 const ADDONS: Addon[] = [
   { id: 'sobre-individual', name: 'Sobre individual (hasta 10 sobres/día)', price: 2.25, unit: '/ unidad', icon: 'package' },
-  { id: 'entrega-express', name: 'Entrega Express (retiro y entrega inmediata)', price: 4.0, unit: '/ unidad', icon: 'truck' },
-  { id: 'solo-publibags-qr', name: 'Solo espacio PubliBags con QR (sin plan integral)', price: 67.0, unit: '/ mes', icon: 'mapPin' },
+  { id: 'entrega-express',  name: 'Entrega Express (retiro y entrega inmediata)', price: 4.00, unit: '/ unidad', icon: 'truck' },
+  { id: 'combo-publibags',   name: 'Combo PubliBags (Inversión: 2 bolsos + 2 calendarios + 2 empastados)', price: 44.00, unit: '/ combo', icon: 'mapPin' },
 ]
 
 const INCLUDED_ALL = [
   { icon: 'globe', label: 'Dominio propio (.com / .ec)' },
   { icon: 'mapPin', label: 'Espacio en directorio + álbum coleccionable' },
+  { icon: 'mail', label: 'Email marketing' },
+  { icon: 'sparkles', label: 'Social Studio (contenido redes)' },
+  { icon: 'zap', label: 'Autoposter (programación)' },
+  { icon: 'clipboardCheck', label: 'Formularios' },
+  { icon: 'messageSquare', label: 'Encuestas' },
+  { icon: 'star', label: 'Reseñas' },
+  { icon: 'messagesSquare', label: 'Chat en vivo' },
+  { icon: 'filter', label: 'CRM (embudos, contactos)' },
+  { icon: 'brainCircuit', label: 'Centro de IA' },
+  { icon: 'inbox', label: 'Bandeja unificada' },
+  { icon: 'calendarClock', label: 'Reservas' },
 ] as const
 
 // ---------- Paleta oscura (mismo sistema que PubliBags) ----------
@@ -364,7 +373,7 @@ function Hero({ onSeePlans, onWhats }: { onSeePlans: () => void; onWhats: () => 
           }}
         >
           Un ecosistema omnicanal para multiplicar tu presencia y tus ventas.
-          Sitio web, marketplace, emails, sobres Fuerza Delta y espacios PubliBags con QR en un solo plan.
+          Sitio web, todos los servicios digitales, espacios en bolso reutilizable, directorio y calendario en un solo plan.
         </p>
 
         {/* Métricas rápidas */}
@@ -420,12 +429,10 @@ function Hero({ onSeePlans, onWhats }: { onSeePlans: () => void; onWhats: () => 
 // ===================== TABLA DE COMPARACIÓN (desktop) =====================
 function ComparisonTable({ onChoose, onAddon }: { onChoose: (p: Plan) => void; onAddon: (a: Addon) => void }) {
   const rows: { label: string; icon: 'globe' | 'mail' | 'package' | 'shoppingBag' | 'truck' | 'mapPin'; get: (p: Plan) => string }[] = [
-    { label: 'Sitio web (páginas)', icon: 'globe', get: (p) => `${p.pages}` },
-    { label: 'Emails corporativos', icon: 'mail', get: (p) => `${p.emails}` },
-    { label: 'Productos marketplace', icon: 'shoppingBag', get: (p) => `${p.products}` },
-    { label: 'Sobres Fuerza Delta', icon: 'truck', get: (p) => `${p.sobres}` },
-    { label: 'PubliBags — QR', icon: 'mapPin', get: (p) => `${p.qr} QR` },
-    { label: 'PubliBags — Productos', icon: 'package', get: (p) => `${p.qrProd} prod` },
+    { label: 'Sitio web (secciones)', icon: 'globe', get: (p) => `${p.webSections}` },
+    { label: 'Espacios en bolso reutilizable', icon: 'mapPin', get: (p) => `${p.bagSpaces}` },
+    { label: 'Directorio comercial internacional', icon: 'globe', get: (p) => `${p.directorioIntSpaces} espacios` },
+    { label: 'Calendario-directorio', icon: 'package', get: (p) => `${p.calendarioSpaces} espacios` },
   ]
   const iconFor = (k: string, size = 14) => {
     switch (k) {
@@ -742,11 +749,11 @@ function PlanCards({ onChoose }: { onChoose: (p: Plan) => void }) {
                 </div>
 
                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 16px' }}>
-                  <FeatureRow icon="globe" label="Sitio web" value={`${p.pages} páginas`} />
-                  <FeatureRow icon="mail" label="Emails" value={`${p.emails}`} />
-                  <FeatureRow icon="shoppingBag" label="Marketplace" value={`${p.products} productos`} />
-                  <FeatureRow icon="truck" label="Sobres Fuerza Delta" value={`${p.sobres}`} />
-                  <FeatureRow icon="mapPin" label="PubliBags" value={`${p.qr} QR + ${p.qrProd} prod`} />
+                  <FeatureRow icon="globe" label="Sitio web" value={`${p.webSections} secciones`} />
+                  <FeatureRow icon="mapPin" label="Bolso reutilizable" value={`${p.bagSpaces} espacios`} />
+                  <FeatureRow icon="globe" label="Directorio internacional" value={`${p.directorioIntSpaces} espacios`} />
+                  <FeatureRow icon="package" label="Calendario-directorio" value={`${p.calendarioSpaces} espacios`} />
+                  <FeatureRow icon="check" label="Servicios digitales" value="Todos incluidos" />
                   <FeatureRow icon="check" label="Dominio propio" value="Incluido" />
                 </ul>
 

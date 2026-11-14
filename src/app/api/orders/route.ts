@@ -41,16 +41,31 @@ export async function POST(req: NextRequest) {
   const subtotal = items.reduce((s, it) => s + it.price * it.quantity, 0)
 
   // Calcular comisión total basada en el commissionRate de cada producto
+  // NUEVO MODELO: marketplace = 1% × 3 niveles (N1 + N2 + N3 = 3% total)
+  // El combo-publibags NO genera comisión marketplace — genera BagInvestment (5% mensual compuesto)
   const products = await db.product.findMany({
     where: { id: { in: items.map((it) => it.productId) } },
-    select: { id: true, commissionRate: true },
+    select: { id: true, commissionRate: true, slug: true, supplierId: true },
   })
-  const productRateMap = new Map(products.map((p) => [p.id, p.commissionRate || 5]))
-  // Comisión ponderada: suma de (precio × cantidad × rate/100) por item
-  const commission = +items.reduce((s, it) => {
-    const rate = productRateMap.get(it.productId) || 5
-    return s + (it.price * it.quantity * rate / 100)
-  }, 0).toFixed(2)
+  const productMap = new Map(products.map((p) => [p.id, p]))
+
+  // Detectar si hay items del combo-publibags (inversión)
+  const comboItems = items.filter((it) => {
+    const p = productMap.get(it.productId)
+    return p?.slug === 'combo-publibags'
+  })
+  const marketplaceItems = items.filter((it) => {
+    const p = productMap.get(it.productId)
+    return p?.slug !== 'combo-publibags'
+  })
+
+  // Comisión marketplace: 3% total (1% N1 + 1% N2 + 1% N3) sobre el subtotal de marketplaceItems
+  const marketplaceSubtotal = +marketplaceItems.reduce((s, it) => s + it.price * it.quantity, 0).toFixed(2)
+  const commission = +(marketplaceSubtotal * 0.03).toFixed(2) // 3% total
+
+  // Inversión en bolsos: monto total de comboItems (1 combo = $44)
+  const investmentAmount = +comboItems.reduce((s, it) => s + it.price * it.quantity, 0).toFixed(2)
+  const comboQuantity = comboItems.reduce((s, it) => s + it.quantity, 0)
 
   const total = +subtotal.toFixed(2)
   const orderNumber = 'DM-' + String(1000 + Math.floor(Math.random() * 9000))
@@ -72,30 +87,51 @@ export async function POST(req: NextRequest) {
     include: { items: true },
   })
 
-  // Generar comisiones: 5% base = 1% N0 + 1% N1 + 1% N2 + 1% N3 + 1% plataforma
-  // Si el producto tiene commissionRate > 5, el excedente va como bono extra al N0
+  // ===== Crear BagInvestment si hay compra de combo (inversión, no comisión marketplace) =====
+  if (comboQuantity > 0 && investmentAmount > 0) {
+    await db.bagInvestment.create({
+      data: {
+        userId,
+        comboQuantity,
+        amount: investmentAmount,
+        monthlyRate: 0.05, // 5% mensual
+        currentBalance: investmentAmount, // arranca con el monto invertido
+        lastCompoundAt: new Date(),
+        totalEarned: 0,
+        orderId: order.id,
+        status: 'ACTIVE',
+      },
+    })
+  }
+
+  // ===== Generar comisiones marketplace (1% N1 + 1% N2 + 1% N3) sobre el subtotal del marketplace =====
+  // N3 (clientes/proveedores) solo consumen — NO ganan nada
+  // Solo N1 y N2 ganan del árbol de sponsors arriba del comprador
   const buyer = await db.user.findUnique({ where: { id: userId } })
-  if (buyer) {
-    // Comisión base: N0 = 1%, N1-N3 = 1% c/u (sobre el subtotal)
-    const n0Rate = 0.01
-    const nRate = 0.01
-    const n0Amount = +(subtotal * n0Rate).toFixed(2)
+  if (buyer && marketplaceSubtotal > 0) {
+    const n1Amount = +(marketplaceSubtotal * 0.01).toFixed(2) // 1% al N1
+    const n2Amount = +(marketplaceSubtotal * 0.01).toFixed(2) // 1% al N2
+    const n3Amount = +(marketplaceSubtotal * 0.01).toFixed(2) // 1% al N3
 
-    // Bono extra para N0 si los productos tienen commissionRate > 5%
-    const extraCommission = +items.reduce((s, it) => {
-      const rate = productRateMap.get(it.productId) || 5
-      const extra = Math.max(0, rate - 5) // excedente sobre el 5% base
-      return s + (it.price * it.quantity * extra / 100)
-    }, 0).toFixed(2)
-
-    await db.commission.create({ data: { userId: buyer.id, orderId: order.id, sourceUserId: buyer.id, amount: +(n0Amount + extraCommission).toFixed(2), level: 0, rate: 1 + (extraCommission > 0 ? (extraCommission / subtotal * 100) : 0), status: 'PENDING' } })
     let current = buyer
+    const sponsors = []
     for (let lvl = 1; lvl <= 3; lvl++) {
       if (!current.sponsorId) break
       const sponsor = await db.user.findUnique({ where: { id: current.sponsorId } })
       if (!sponsor) break
-      await db.commission.create({ data: { userId: sponsor.id, orderId: order.id, sourceUserId: buyer.id, amount: +(subtotal * 0.01).toFixed(2), level: lvl, rate: 1, status: 'PENDING' } })
+      sponsors.push({ user: sponsor, level: lvl })
       current = sponsor
+    }
+
+    // N1 = sponsors[0], N2 = sponsors[1], N3 = sponsors[2]
+    if (sponsors[0]) {
+      await db.commission.create({ data: { userId: sponsors[0].user.id, orderId: order.id, sourceUserId: buyer.id, amount: n1Amount, level: 1, rate: 1, status: 'PENDING' } })
+    }
+    if (sponsors[1]) {
+      await db.commission.create({ data: { userId: sponsors[1].user.id, orderId: order.id, sourceUserId: buyer.id, amount: n2Amount, level: 2, rate: 1, status: 'PENDING' } })
+    }
+    if (sponsors[2]) {
+      await db.commission.create({ data: { userId: sponsors[2].user.id, orderId: order.id, sourceUserId: buyer.id, amount: n3Amount, level: 3, rate: 1, status: 'PENDING' } })
     }
   }
 

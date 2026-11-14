@@ -7,7 +7,7 @@ const globalForPrisma = globalThis as unknown as {
 
 // Bump this version when the Prisma schema gains new models so the cached
 // client in dev mode is recreated with the new types/prototype.
-const PRISMA_VERSION = 'v9-reservas'
+const PRISMA_VERSION = 'v10-bag-investment'
 
 const cached =
   globalForPrisma.prisma && globalForPrisma.prismaVersion === PRISMA_VERSION

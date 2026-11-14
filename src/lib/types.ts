@@ -58,6 +58,7 @@ export type ModuleId =
   | 'chat'
   | 'reservas'
   | 'reservas-admin'
+  | 'bag-investment'
 
 export type UserRole = 'CLIENT' | 'AFFILIATE' | 'SUPPLIER' | 'COURIER' | 'PARTNER' | 'ADMIN'
 

@@ -2248,3 +2248,58 @@ Stage Summary:
   * Validación de cupos día por día en /book: si falta un día en RoomAvailability se asume room.quantity; si hay registros se usa el valor guardado; en ambos casos debe ser >= qty solicitado.
   * Sin useEffect con setState síncrono: todos los dialogs con estado de formulario se inicializan vía useState con valor inicial (preset) — no extraído como sub-componente porque los presets ya están disponibles al montar.
 - Record escrito en /agent-ctx/43-reservas-full-stack-developer.md.
+
+---
+Task ID: 44-bag-investment
+Agent: full-stack-developer (Inversión en Bolsos PubliBags)
+Task: Construir módulo de Inversión en Bolsos PubliBags con 5% interés compuesto mensual + proyección + retiros.
+
+Work Log:
+- Leído worklog.md (resumen 43-reservas), prisma/schema.prisma (BagInvestment líneas 538-556, BagCompoundEntry 558-568, CooperativeAccount 746-759, CooperativeTransaction 761-776, User con bagInvestments BagInvestment[] en línea 71), src/lib/security/auth.ts (requireSession, requireRole, isOwnerOrAdmin), src/lib/db.ts (PRISMA_VERSION ya configurado a 'v10-bag-investment'), src/lib/types.ts (ModuleId), src/lib/permissions.ts (ROLE_MODULES), src/lib/store.ts (Zustand con toast/setModule), src/app/page.tsx (switch de módulos), src/components/dimar/topnav.tsx (nav principal y móvil), y módulos referencia cooperativa.tsx (gradiente emerald→amber) y affiliates.tsx (red).
+- Confirmado vía src/app/api/orders/route.ts (líneas 90-105) que los BagInvestment se crean automáticamente cuando un order contiene productos con slug 'combo-publibags' (1 combo = $44, monthlyRate 0.05, currentBalance inicial = monto invertido, lastCompoundAt = now).
+- Relaciones Prisma en camelCase verificadas en TODAS las consultas: db.bagInvestment.findMany({ include: { compoundings, user } }), db.cooperativeAccount.findUnique({ where: { userId } }), db.cooperativeTransaction.create({ data: { accountId, type, amount } }), db.notification.create({ data: { userId, type, title, message, link } }).
+- API endpoints creados bajo src/app/api/bag-investment/:
+  * route.ts (GET auth, ~120 líneas) — lista BagInvestment del usuario actual con compoundings; calcula elegibilidad (eligible = !!user.sponsorId, N1/N2/N3-con-red ganan interés, N3 puro no); stats: total invertido, balance activo, interés ganado, proyección 12m (balance × 1.05^12), # activas, # retiradas, próximo compound (lastCompoundAt más antiguo + 30 días). Retorna { ok, eligible, user, investments, stats }.
+  * compound/route.ts (POST auth, ~75 líneas) — valida elegibilidad: si no user.sponsorId → 400 { ok: false, message: "Necesitas construir tu red para ganar interés..." }; para cada ACTIVE con lastCompoundAt >30 días: interestEarned = currentBalance × 0.05 (4 decimales), endingBalance = currentBalance + interestEarned; transacción atómica crea BagCompoundEntry (periodStart=last, periodEnd=now, startingBalance, interestEarned, endingBalance, appliedAt=now) + actualiza BagInvestment (currentBalance, totalEarned += interestEarned, lastCompoundAt=now). Retorna { ok, updated, totalInterest, message }.
+  * withdraw/route.ts (POST auth, ~95 líneas) — body { investmentId }; verifica ownership y status=ACTIVE; obtiene/crea CooperativeAccount; transacción atómica marca inversión WITHDRAWN + crea CooperativeTransaction type=INVESTMENT_WITHDRAWAL (amount=currentBalance, referenceId=inv.id) + incrementa CooperativeAccount.balance y totalEarned; notifica al usuario (tipo INVESTMENT_WITHDRAWAL). Retorna { ok, amount, newWalletBalance }.
+  * admin/route.ts (GET ADMIN via requireRole('ADMIN'), ~80 líneas) — lista TODOS los BagInvestment con user + últimos 10 compoundings; stats globales: total invertido, balance activo, interés pagado, # inversionistas activos, # total inversionistas, # activas, # retiradas, monto retirado. Retorna { ok, investments, stats }.
+- Componente src/components/dimar/modules/bag-investment.tsx (~1192 líneas, 'use client'):
+  * Header: título "Inversión en Bolsos PubliBags" + botón "Actualizar interés" (POST /compound) + botón "Comprar Combo PubliBags" (setModule('marketplace')).
+  * Tabs: "Mis Inversiones" | "Calculadora" | "Admin Global" (solo ADMIN).
+  * Hero card gradiente emerald→amber con patrón radial decorativo: balance total gigante (4xl-6xl emerald bold), invertido (muteado), interés ganado (amber-100), proy. 12m, badge elegibilidad "N1/N2 — ganas interés" (emerald) o "N3 — construye tu red" (amber).
+  * Stats cards (4): Inversiones activas (emerald), Balance total (emerald), Interés ganado (amber), Próximo compound (amber).
+  * Lista de inversiones en grid 1/2 columnas; cada InvestmentCard: header con icono + # combos + fecha creación + status badge (ACTIVE=emerald, WITHDRAWN=muted, CANCELLED=red); 3 columnas Invertido/Balance actual (emerald)/Interés ganado (amber); Progress bar del balance vs proyección 12m; fechas último compound y tasa; botón Retirar (solo ACTIVE y eligible) → WithdrawDialog; botón Ver historial → Collapsible con lista de compoundings (periodo start→end + badge emerald + 3 columnas inicio/interés/final).
+  * Empty state: PiggyBank en gradiente emerald→amber + "Aún no has invertido en bolsos PubliBags" + CTA "Comprar Combo PubliBags $44" (setModule('marketplace')) + 3 mini-cards describiendo combo (2 bolsos + 2 calendarios + 2 empastados).
+  * Sección educativa "¿Cómo funciona?": 4 pasos numerados con iconos (ShoppingBag/Network/TrendingUp/Banknote) en cards emerald/amber alternando + InfoBox emerald con diferencia marketplace (3% comisión N1+N2+N3) vs combo PubliBags (5% interés compuesto mensual).
+  * Calculadora interactiva: input monto (default $44) + botones rápidos (1/2/3/5 combos), Slider meses 1-60 (default 12), 3 cards resumen (Invertido/Interés total amber/Balance final emerald), gráfico de barras CSS (barra ini + una por mes, gradient emerald, height proporcional max 160px), tabla de proyección con scroll horizontal (sticky header, filas alternadas: mes × balance inicio × interés × balance final × interés acumulado).
+  * AdminPanel (solo ADMIN): 4 StatCards (total invertido, balance activo, interés pagado, inversionistas activos) + tabla con scroll de TODAS las inversiones (inversionista con email+rol, combos, invertido, balance, interés, estado, creada, último compound).
+  * WithdrawDialog extraído como sub-componente y montado condicionalmente con {withdrawOpen && <WithdrawDialog/>} (sin useEffect con setState síncrono, cumple react-hooks/set-state-in-effect): resumen + InfoBox amber + botones Cancelar/Confirmar retiro.
+  * Helpers: fmtUsd (Intl.NumberFormat es-EC USD), fmtDate/fmtDateLong (es-EC 2-digit month short year).
+  * Paleta esmeralda + ámbar (sin azul/índigo). Responsive mobile-first. Hooks shadcn: Card, Button, Input, Label, Badge, Separator, Skeleton, Slider, Progress, Dialog, Table, Tabs, Collapsible.
+- Wiring:
+  * src/lib/types.ts — añadido 'bag-investment' al union ModuleId después de 'reservas-admin'.
+  * src/lib/permissions.ts — añadido 'bag-investment' a CLIENT, AFFILIATE, SUPPLIER, PARTNER (ADMIN tiene '*'; COURIER no compra combos).
+  * src/app/page.tsx — import BagInvestmentModule + case 'bag-investment': return <BagInvestmentModule />.
+  * src/components/dimar/topnav.tsx — import Wallet de lucide-react; añadido 'bag-investment' al array de módulos activos del dropdown CRM Hub (para highlight); en dropdown CRM Hub (desktop) después de Reservas: <DropdownMenuItem onClick={() => setModule('bag-investment')}><Wallet className="size-4 mr-2" /> Inversión Bolsos</DropdownMenuItem>; en menú móvil: navItem('CRM Hub · Inversión Bolsos', 'bag-investment', Wallet).
+- Fix incidental (no parte del task): conflicto preexistente en src/app/w/[slug]/ (route.ts + page.tsx coexistían — Next.js 16 rechaza, bloqueaba todo el dev server con GET / 500). Eliminé route.ts (stub redirect, menos completo) y dejé page.tsx (renderiza standalone site con PublicWebsiteView). Dev server restablecido a GET / 200 OK.
+- Lint: `bun run lint` → exit 0 (0 errors 0 warnings en todo el proyecto).
+- Dev server: GET / 200 OK. Endpoints /api/bag-investment* responden 401 sin sesión (esperado).
+- Record escrito en /agent-ctx/44-bag-investment-full-stack-developer.md.
+
+Stage Summary:
+- 5 archivos creados (~1560 líneas totales):
+  * 4 rutas API (route, compound, withdraw, admin)
+  * 1 componente bag-investment.tsx (~1192 líneas, feature-complete con hero gradiente, stats, lista de inversiones con historial expandible, empty state, sección educativa, calculadora interactiva con gráfico CSS + tabla de proyección, y admin panel global)
+- 4 archivos modificados: types.ts (ModuleId), permissions.ts (4 roles), page.tsx (case), topnav.tsx (Wallet icon + dropdown + mobile).
+- 1 archivo eliminado: src/app/w/[slug]/route.ts (fix incidental para desbloquear dev server).
+- Decisiones clave:
+  * Elegibilidad basada en user.sponsorId (N1/N2 o N3-con-red → eligible=true; N3 puro → eligible=false, no gana interés).
+  * Cálculo compuesto mensual con 4 decimales: interest = balance × 0.05; newBalance = balance + interest.
+  * Validación ventana 30 días (>= 30 × 86400000 ms) para re-aplicar en día 30.
+  * Transacciones Prisma atómicas en compound (create entry + update investment) y withdraw (mark withdrawn + create cooperative tx + increment account balance).
+  * WithdrawDialog extraído como sub-componente y montado condicionalmente con {open && <Body/>} para evitar useEffect con setState síncrono.
+  * Calculadora con useMemo para recalcular rows solo cuando cambian amount o months; gráfico CSS bars con height proporcional (max 160px).
+  * Stats globales admin: total invertido, balance activo, interés pagado, # inversionistas activos (Set de userIds activos).
+  * PRISMA_VERSION 'v10-bag-investment' ya estaba configurado en db.ts — no requirió bump.
+- Lint: `bun run lint` → exit 0 (0 errors 0 warnings en todo el proyecto, incluyendo mis archivos).
+- Dev server: GET / 200 OK consistente. Sin tests escritos según indicación.

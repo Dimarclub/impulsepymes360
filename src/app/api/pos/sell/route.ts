@@ -101,12 +101,27 @@ export async function POST(req: NextRequest) {
   }
 
   // Calcular subtotal, comisión total (ponderada por commissionRate de cada producto)
+  // NUEVO MODELO: marketplace = 1% × 3 niveles (N1 + N2 + N3 = 3% total)
+  // El combo-publibags NO genera comisión marketplace — genera BagInvestment (5% mensual compuesto)
   const subtotal = +items.reduce((s, it) => s + it.price * it.quantity, 0).toFixed(2)
-  const productRateMap = new Map(products.map((p) => [p.id, p.commissionRate || 9]))
-  const commission = +items.reduce((s, it) => {
-    const rate = productRateMap.get(it.productId) || 9
-    return s + (it.price * it.quantity * rate / 100)
-  }, 0).toFixed(2)
+  const productMap = new Map(products.map((p) => [p.id, p]))
+
+  // Detectar si hay items del combo-publibags (inversión)
+  const comboItems = items.filter((it) => {
+    const p = productMap.get(it.productId)
+    return p?.slug === 'combo-publibags'
+  })
+  const marketplaceItems = items.filter((it) => {
+    const p = productMap.get(it.productId)
+    return p?.slug !== 'combo-publibags'
+  })
+
+  const marketplaceSubtotal = +marketplaceItems.reduce((s, it) => s + it.price * it.quantity, 0).toFixed(2)
+  const investmentAmount = +comboItems.reduce((s, it) => s + it.price * it.quantity, 0).toFixed(2)
+  const comboQuantity = comboItems.reduce((s, it) => s + it.quantity, 0)
+
+  // Comisión marketplace: 3% total (1% N1 + 1% N2 + 1% N3)
+  const commission = +(marketplaceSubtotal * 0.03).toFixed(2)
   const total = subtotal
 
   const orderNumber = 'DM-' + String(2000 + Math.floor(Math.random() * 7999))
@@ -151,47 +166,83 @@ export async function POST(req: NextRequest) {
     return newOrder
   })
 
-  // ===== Generar comisiones N0 + N1-N3 (sobre subtotal) =====
-  try {
-    const n0Amount = +(subtotal * 0.03).toFixed(2)
-    const extraCommission = +items.reduce((s, it) => {
-      const rate = productRateMap.get(it.productId) || 9
-      const extra = Math.max(0, rate - 9)
-      return s + (it.price * it.quantity * extra / 100)
-    }, 0).toFixed(2)
-
-    await db.commission.create({
-      data: {
-        userId: buyerUser.id,
-        orderId: order.id,
-        sourceUserId: buyerUser.id,
-        amount: +(n0Amount + extraCommission).toFixed(2),
-        level: 0,
-        rate: 3 + (extraCommission > 0 ? (extraCommission / subtotal * 100) : 0),
-        status: 'PENDING',
-      },
-    })
-
-    let current: { sponsorId: string | null } = buyerUser
-    for (let lvl = 1; lvl <= 3; lvl++) {
-      if (!current.sponsorId) break
-      const sponsor = await db.user.findUnique({
-        where: { id: current.sponsorId },
-        select: { id: true, sponsorId: true },
-      })
-      if (!sponsor) break
-      await db.commission.create({
+  // ===== Crear BagInvestment si hay compra de combo (inversión, no comisión marketplace) =====
+  if (comboQuantity > 0 && investmentAmount > 0) {
+    try {
+      await db.bagInvestment.create({
         data: {
-          userId: sponsor.id,
+          userId: buyerUser!.id,
+          comboQuantity,
+          amount: investmentAmount,
+          monthlyRate: 0.05,
+          currentBalance: investmentAmount,
+          lastCompoundAt: new Date(),
+          totalEarned: 0,
           orderId: order.id,
-          sourceUserId: buyerUser.id,
-          amount: +(subtotal * 0.02).toFixed(2),
-          level: lvl,
-          rate: 2,
-          status: 'PENDING',
+          status: 'ACTIVE',
         },
       })
-      current = sponsor
+    } catch (invErr) {
+      console.error('[pos/sell] bag investment error:', invErr)
+    }
+  }
+
+  // ===== Generar comisiones marketplace (1% N1 + 1% N2 + 1% N3) =====
+  try {
+    if (marketplaceSubtotal > 0) {
+      const sponsors = []
+      let current: { sponsorId: string | null } = buyerUser
+      for (let lvl = 1; lvl <= 3; lvl++) {
+        if (!current.sponsorId) break
+        const sponsor = await db.user.findUnique({
+          where: { id: current.sponsorId },
+          select: { id: true, sponsorId: true },
+        })
+        if (!sponsor) break
+        sponsors.push(sponsor)
+        current = sponsor
+      }
+
+      // N1 = sponsors[0], N2 = sponsors[1], N3 = sponsors[2] — 1% cada uno
+      if (sponsors[0]) {
+        await db.commission.create({
+          data: {
+            userId: sponsors[0].id,
+            orderId: order.id,
+            sourceUserId: buyerUser.id,
+            amount: +(marketplaceSubtotal * 0.01).toFixed(2),
+            level: 1,
+            rate: 1,
+            status: 'PENDING',
+          },
+        })
+      }
+      if (sponsors[1]) {
+        await db.commission.create({
+          data: {
+            userId: sponsors[1].id,
+            orderId: order.id,
+            sourceUserId: buyerUser.id,
+            amount: +(marketplaceSubtotal * 0.01).toFixed(2),
+            level: 2,
+            rate: 1,
+            status: 'PENDING',
+          },
+        })
+      }
+      if (sponsors[2]) {
+        await db.commission.create({
+          data: {
+            userId: sponsors[2].id,
+            orderId: order.id,
+            sourceUserId: buyerUser.id,
+            amount: +(marketplaceSubtotal * 0.01).toFixed(2),
+            level: 3,
+            rate: 1,
+            status: 'PENDING',
+          },
+        })
+      }
     }
   } catch (commissionErr) {
     console.error('[pos/sell] commission error:', commissionErr)

@@ -68,6 +68,7 @@ model User {
   chatSessions      ChatSession[]
   funnels           Funnel[]
   bookingsAsUser    Booking[]          @relation("BookingUser")
+  bagInvestments    BagInvestment[]
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -497,22 +498,74 @@ model AutomationRule {
 
 model Plan {
   id            String   @id @default(cuid())
-  name          String   // STARTER, CRECIMIENTO, PREMIUM, ENTERPRISE
+  name          String   // STARTER, EMPRENDEDOR, COMERCIAL, PREMIUM, ELITE, CORPORATIVO
   displayName   String
-  price         Float    // precio mensual USD
+  price         Float    // precio mensual USD (Plan 1 = 0 gratis)
   description   String
   // Límites del plan
-  maxProducts   Int      @default(10)
-  maxAdSpaces   Int      @default(1)  // espacios PubliBags
-  maxShipments  Int      @default(5)  // envíos Fuerza Delta por mes
-  maxAffiliateRate Float @default(1)  // % máximo que el proveedor puede ofrecer a afiliados
+  maxWebSections Int     @default(10) // secciones Web Express
+  // Servicios digitales — TODOS incluidos en TODOS los planes
+  hasEmail      Boolean  @default(true)
+  hasSocialStudio Boolean @default(true)
+  hasAutoposter Boolean  @default(true)
+  hasForms      Boolean  @default(true)
+  hasSurveys    Boolean  @default(true)
+  hasReviews    Boolean  @default(true)
+  hasChat       Boolean  @default(true)
+  hasCrm        Boolean  @default(true)
+  hasAiHub      Boolean  @default(true)
+  hasInbox      Boolean  @default(true)
+  hasReservas   Boolean  @default(true)
+  // Espacios físicos
+  bagSpaces     Int      @default(67) // espacios en bolso reutilizable (inversión)
+  directorioInternationalSpaces Int @default(2) // espacios en directorio comercial internacional
+  calendarioSpaces Int    @default(2) // espacios en calendario-directorio
+  // Marketplace
+  maxProducts   Int      @default(999999) // sin límite en nuevos planes
+  maxAffiliateRate Float @default(3)  // % máximo comisión marketplace (1% N1 + 1% N2 + 1% N3 = 3%)
+  // Legacy (mantenidos por compat)
+  maxAdSpaces   Int      @default(0)  // espacios PubliBags (deprecado, usar bagSpaces)
   hasWebExpress Boolean  @default(true)
   hasDirectorio Boolean  @default(true)
-  hasLogistica  Boolean  @default(true)
-  hasSocial     Boolean  @default(false)
+  hasLogistica  Boolean  @default(false) // mensajería eliminada de planes
+  hasSocial     Boolean  @default(true)
   featured      Boolean  @default(false)
   subscriptions Subscription[]
   createdAt     DateTime @default(now())
+}
+
+// ---------- Inversión en Bolsos PubliBags (5% mensual compuesto) ----------
+
+model BagInvestment {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comboQuantity Int      @default(1) // # de combos comprados (cada combo = $44)
+  amount        Float    // monto invertido en USD
+  monthlyRate   Float    @default(0.05) // 5% mensual
+  // Estado del interés compuesto
+  currentBalance Float   @default(0) // balance acumulado con interés compuesto
+  lastCompoundAt DateTime? // última vez que se aplicó interés compuesto
+  totalEarned   Float    @default(0) // total de interés ganado hasta ahora
+  // Referencia al pedido que generó la inversión
+  orderId       String?
+  status        String   @default("ACTIVE") // ACTIVE, WITHDRAWN, CANCELLED
+  // Historial de aplicación del interés (1 entrada por mes)
+  compoundings   BagCompoundEntry[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model BagCompoundEntry {
+  id            String   @id @default(cuid())
+  investmentId  String
+  investment    BagInvestment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  periodStart   DateTime // inicio del mes
+  periodEnd     DateTime // fin del mes
+  startingBalance Float
+  interestEarned Float
+  endingBalance  Float
+  appliedAt     DateTime @default(now())
 }
 
 model Provider {
