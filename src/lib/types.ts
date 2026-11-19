@@ -59,6 +59,7 @@ export type ModuleId =
   | 'reservas'
   | 'reservas-admin'
   | 'bag-investment'
+  | 'dima'
 
 export type UserRole = 'CLIENT' | 'AFFILIATE' | 'SUPPLIER' | 'COURIER' | 'PARTNER' | 'ADMIN'
 

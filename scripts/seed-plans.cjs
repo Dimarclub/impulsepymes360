@@ -31,12 +31,12 @@ const db = new PrismaClient()
 
 // ---------- Data: 6 planes nuevos ----------
 const PLANS = [
-  { id: 'starter',      name: 'Starter',      displayName: 'Plan Starter',      price: 0,   webSections: 10, bagSpaces: 67,  popular: false },
-  { id: 'emprendedor',  name: 'Emprendedor', displayName: 'Plan Emprendedor',  price: 155, webSections: 20, bagSpaces: 120, popular: false },
-  { id: 'comercial',    name: 'Comercial',   displayName: 'Plan Comercial',   price: 265, webSections: 30, bagSpaces: 220, popular: true  },
-  { id: 'premium',      name: 'Premium',     displayName: 'Plan Premium',     price: 315, webSections: 40, bagSpaces: 260, popular: false },
-  { id: 'elite',        name: 'Élite',       displayName: 'Plan Élite',       price: 345, webSections: 50, bagSpaces: 280, popular: false },
-  { id: 'corporativo',  name: 'Corporativo', displayName: 'Plan Corporativo', price: 395, webSections: 60, bagSpaces: 320, popular: false },
+  { id: 'starter',      name: 'Starter',      displayName: 'Plan Starter',      price: 0,   webSections: 10, bagSpaces: 67,  dimaPhrases: 5,  popular: false },
+  { id: 'emprendedor',  name: 'Emprendedor', displayName: 'Plan Emprendedor',  price: 155, webSections: 20, bagSpaces: 120, dimaPhrases: 10, popular: false },
+  { id: 'comercial',    name: 'Comercial',   displayName: 'Plan Comercial',   price: 265, webSections: 30, bagSpaces: 220, dimaPhrases: 15, popular: true  },
+  { id: 'premium',      name: 'Premium',     displayName: 'Plan Premium',     price: 315, webSections: 40, bagSpaces: 260, dimaPhrases: 30, popular: false },
+  { id: 'elite',        name: 'Élite',       displayName: 'Plan Élite',       price: 345, webSections: 50, bagSpaces: 280, dimaPhrases: 35, popular: false },
+  { id: 'corporativo',  name: 'Corporativo', displayName: 'Plan Corporativo', price: 395, webSections: 60, bagSpaces: 320, dimaPhrases: 40, popular: false },
 ]
 
 // Combo PubliBags — el producto de inversión
@@ -282,6 +282,7 @@ async function main() {
       hasInbox: true,
       hasReservas: true,
       bagSpaces: p.bagSpaces,
+      dimaPhrases: p.dimaPhrases,
       directorioInternationalSpaces: 2,
       calendarioSpaces: 2,
       maxProducts: 999999,

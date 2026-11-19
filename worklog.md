@@ -2303,3 +2303,71 @@ Stage Summary:
   * PRISMA_VERSION 'v10-bag-investment' ya estaba configurado en db.ts — no requirió bump.
 - Lint: `bun run lint` → exit 0 (0 errors 0 warnings en todo el proyecto, incluyendo mis archivos).
 - Dev server: GET / 200 OK consistente. Sin tests escritos según indicación.
+
+---
+Task ID: 45-dima-robot
+Agent: full-stack-developer (Robot Dima PWA + onboarding mejorado)
+Task: Construir Robot Dima (buscador con voz IA, PWA instalable) + onboarding mejorado del proveedor (frases + sucursales) + módulo Dima dentro del portal (suscripción + inversión POP + red de afiliados + Dima Stars).
+
+Work Log:
+- Leído worklog.md (resumen 44-bag-investment), prisma/schema.prisma (modelos DimaSubscription 1451-1472, SearchPhrase 1476-1490, SupplierBranch 1494-1511, PopPurchase 1515-1535, DimaStar 1539-1547, AppReferral 1551-1570, Supplier con `branches` y `searchPhrases`, Plan con `dimaPhrases` 532), src/lib/security/auth.ts, src/lib/db.ts (PRISMA_VERSION 'v11-dima-robot' ya configurado), src/lib/types.ts, src/lib/permissions.ts, src/lib/store.ts, src/app/page.tsx, src/components/dimar/topnav.tsx. Módulos referencia: presentacion.tsx y publibags.tsx (paleta dark #0B1120 + emerald #00D4AA). Skill LLM leído para el patrón del SDK.
+- Relaciones Prisma en camelCase verificadas en todas las consultas.
+- API endpoints creados (15) bajo src/app/api/dima/:
+  * _lib.ts — helpers creditAccount + getSponsorChain + constantes REFERRAL_SIGNUP ($5/$2/$1) y REFERRAL_MONTHLY ($2/$1/$0.50)
+  * search/route.ts (POST público) — z-ai-web-dev-sdk extrae intención+ciudad+sector+categoría. Busca en SearchPhrase (ACTIVE, paidUntil>=now o null), Product (ACTIVE), Supplier con branches, Category. Ranking: premium→100+50+rating, suppliers por city/sector→60+rating+10, products→40+rating+featured, categories→20. Incrementa searchCount en frases matcheadas (fire-and-forget). Retorna results + aiContext.
+  * subscribe/route.ts (POST auth) — crea/actualiza DimaSubscription PLUS con investedAmount+=monto, currentBalance+=monto, currentPeriodEnd=+30/365d, referredBy opcional. Crea AppReferral N1/N2/N3 recorriendo sponsors. Acredita signup commissions a CooperativeAccount. Transacción Prisma atómica.
+  * pay-monthly/route.ts (POST auth) — cobro recurrente $20/$200, paga comisiones mensuales ($2/$1/$0.50) a cada sponsor, actualiza currentPeriodEnd, AppReferral.totalEarned+lastPaidAt. Transacción atómica.
+  * compound/route.ts (POST auth) — aplica 5% mensual compuesto a DimaSubscription+PopPurchases si >= 30 días desde lastCompoundAt. 4 decimales.
+  * my-subscription/route.ts (GET auth) — fetch paralelo: subscription + popPurchases + dimaStars + appReferrals (made/from) + user. Stats: capital, balance, interés, stars, cashback, comisiones, referralsByLevel.
+  * phrases/route.ts (GET/POST SUPPLIER+ADMIN) — GET lista + stats (planLimit, includedCount, extraCount, extraCost). POST crea frase: si existingCount<Plan.dimaPhrases → incluida (monthlyPrice=0); sino → $1/mes con paidUntil=+30d. Resuelve Plan vía Provider→Subscription→Plan.dimaPhrases.
+  * phrases/[id]/route.ts (PATCH/DELETE owner) — actualiza phrase/category/isPremium/status/monthlyPrice/paidUntil; elimina.
+  * branches/route.ts (GET/POST SUPPLIER+ADMIN) — GET lista + stats (total/active/cities). POST crea (máx 5, si isMain desmarca las otras en tx).
+  * branches/[id]/route.ts (PATCH/DELETE owner) — actualiza campos + isMain toggle; elimina.
+  * pop-purchase/route.ts (GET/POST auth) — POST crea PopPurchase con qrCode único (DIMA-+8chars), otorga 1 DimaStar (PURCHASE). GET lista + stats.
+  * stars/route.ts (GET/POST auth) — GET lista + total + cashbackDisponible (Math.floor(total/10)). POST canje cashback: calcula disponible-canjeado, transfiere a CooperativeAccount con tx "Dima Cashback".
+  * referrals/route.ts (GET auth) — lista AppReferrals + stats (n1/n2/n3, comisiones) + top 10 buscadores del mes (db.dimaStar.groupBy).
+  * track-scan/route.ts (POST público) — incrementa scanCount en PopPurchase, otorga DimaStar (SEARCH) al usuario.
+  * track-download/route.ts (POST público) — incrementa downloadCount, si el nuevo usuario es PLUS+paid crea AppReferral N1 (signup $5 + monthly $2) + acredita al dueño del QR.
+- PWA standalone creada:
+  * public/dima-manifest.json (name "Dima — Robot buscador con voz", display standalone, theme_color #00D4AA, icons 192/512 SVG, shortcuts)
+  * public/dima-icon.svg (robot head emerald con antenna ámbar)
+  * public/sw-dima.js (service worker mínimo: install precache /dima+manifest+icons, network-first con fallback a cache)
+  * src/app/dima/page.tsx (Server Component con metadata manifest+appleWebApp+viewport themeColor, wraps AppSessionProvider + DimaApp)
+  * src/app/dima/dima-app.tsx (~1020 líneas, 'use client') — dark theme #0B1120/emerald #00D4AA. Navbar minimal con "Instalar app" (PWA beforeinstallprompt) + "Iniciar sesión" (useSession+signIn/signOut). Hero: avatar robot 🤖 + botón micrófono ~120px con WebkitSpeechRecognition (lang es-EC, interimResults, animación ondas pulsantes), input + sugerencias chips + búsqueda avanzada. AI Context badge chips. Results: cards con tipo/descripción/city/sector/whatsapp/rating + frases chips emerald + botones ver detalles/whatsapp/llamar. DetailDialog con info+sucursal+mapa placeholder+frases. Sección "¿Cómo funciona Dima?" (3 pasos numerados + InfoBox proveedor $1/mes). Sección "Dima Plus" gradiente emerald→amber con 5 beneficios+toggle anual. LoginModal + SubscribeDialog. Footer minimal. Service worker registration en useEffect.
+- Portal module src/components/dimar/modules/dima.tsx (~770 líneas, 'use client'):
+  * Tabs: "Mi Dima" | "Inversión POP" | "Mi Red" | "Dima Stars"
+  * Mi Dima: card hero gradiente (plan/next-cobro/balance/interés/proyección/capital) + CTA Free→Plus con toggle anual + acciones Plus (Pagar ahora, Aplicar interés, Inversión POP, Ver mi red) + card "Mis frases" (solo SUPPLIER) con stats searchCount + pausar/eliminar + dialog crear frase
+  * Inversión POP: 4 StatCards + lista de PopPurchases con QR toggle (api.qrserver.com 160x160) + Progress + botón "Comprar material POP" → Dialog con items (BOLSO $2.5/IMAN $1.0/CALENDARIO $1.5/EMPASTADO $3.0) + total auto-calc + proyección 12m + InfoBox explicativo
+  * Mi Red: card "Mi link de afiliado" (/dima?ref=${affiliateCode}) + botón copiar + WhatsApp + QR + 4 StatCards (N1/N2/N3/comisión mensual) + lista de AppReferrals
+  * Dima Stars: card gradiente amber con total estrellas + cashback + botón canjear + top 10 buscadores del mes con ranking + historial de estrellas
+- Onboarding mejorado: src/app/api/auth/register/route.ts modificado para SUPPLIER acepta branches[] (máx 5), phrases[] (máx 5 plan Starter), categories[], subcategories[]. Transacción atómica crea User + Supplier + SupplierBranch[] + SearchPhrase[] (incluidas en plan, monthlyPrice=0, paidUntil=null).
+- Supplier backoffice extendido: src/components/dimar/modules/supplier-backoffice.tsx con 2 nuevas pestañas (grid-cols-3 md:grid-cols-10):
+  * "Dima · Frases": 4 StatCards + lista de frases con badges (premium/incluida/extra), searchCount/clickCount, botones pausar/activar/eliminar + dialog crear frase con costo dinámico + InfoBox explicativo
+  * "Dima · Sucursales": 4 StatCards (total/activas/ciudades/máx 5) + grid de sucursales con info + botones editar/eliminar + dialog crear/editar con form completo (name/city/sector/address/phone/whatsapp/hours/isMain)
+- Wiring:
+  * src/lib/types.ts — 'dima' añadido a ModuleId después de 'bag-investment'
+  * src/lib/permissions.ts — 'dima' añadido a CLIENT, AFFILIATE, SUPPLIER, PARTNER + PUBLIC_MODULES
+  * src/app/page.tsx — import DimaModule + case 'dima': return <DimaModule />
+  * src/components/dimar/topnav.tsx — import Bot. CRM Hub dropdown: sección "Robot Dima" al inicio con "Dima · Robot IA". Fila principal: botón "Dima" emerald-100/emerald-700 bold después de Inicio. Mobile: navItem('Dima · Robot IA', 'dima', Bot) después de Inicio + navItem('CRM Hub · Dima Robot', 'dima', Bot) al inicio del bloque CRM Hub. 'dima' añadido al array de módulos activos del CRM Hub.
+- Fix incidental: SQLite no soporta `mode: 'insensitive'` en Prisma — removidas las 13 ocurrencias de src/app/api/dima/search/route.ts. SQLite es case-insensitive por defecto para ASCII en LIKE.
+- Lint: `bun run lint` → exit 0 (0 errors 0 warnings). Después de remover 4 directivas eslint-disable @next/next/no-img-element unused que ESLint detectó.
+- Dev server: GET / 200 OK, GET /dima 200 OK, GET /dima-manifest.json 200 OK, GET /dima-icon.svg 200 OK. POST /api/dima/search (público) → 200 con results + aiContext. GET /api/dima/my-subscription → 401 sin sesión (esperado).
+- Record escrito en /agent-ctx/45-dima-robot-full-stack-developer.md.
+
+Stage Summary:
+- Archivos creados (20):
+  * API (15): src/app/api/dima/_lib.ts, search, subscribe, pay-monthly, compound, my-subscription, phrases, phrases/[id], branches, branches/[id], pop-purchase, stars, referrals, track-scan, track-download (route.ts cada uno)
+  * PWA standalone (5): src/app/dima/page.tsx, src/app/dima/dima-app.tsx (~1020 líneas), public/dima-manifest.json, public/dima-icon.svg, public/sw-dima.js
+  * Portal module (1): src/components/dimar/modules/dima.tsx (~770 líneas)
+- Archivos modificados (6): src/lib/types.ts, src/lib/permissions.ts, src/app/page.tsx, src/components/dimar/topnav.tsx, src/app/api/auth/register/route.ts, src/components/dimar/modules/supplier-backoffice.tsx
+- Decisiones clave:
+  * z-ai-web-dev-sdk solo en backend (search route) con prompt estricto "Devuelve EXCLUSIVAMENTE un JSON válido" + regex para extraer el JSON del response. AI context se propaga al cliente para mostrar chips.
+  * Referral chain se construye en tx atómica: si referredBy viene, recorre sponsors hasta 3 niveles (N1/N2/N3) creando un AppReferral por cada nivel con signup+monthly commission.
+  * Cashback Dima Stars: cada 10 stars = $1, transferible a CooperativeAccount. Trackeo de stars ya canjeadas revisando CooperativeTransactions con description "Dima Cashback".
+  * SearchPhrase incluida vs extra: si existingCount < Plan.dimaPhrases → monthlyPrice=0, paidUntil=null. Sino → $1/mes, paidUntil=now+30d. Resuelve Plan vía Provider→Subscription→Plan.dimaPhrases.
+  * Ranking en /search: premium (150+), suppliers con frases (100+rating), suppliers por city/sector (60+rating+10), products (40+rating+featured), categories (20).
+  * PWA: manifest + service worker mínimo (network-first con fallback a cache, ignora /api/), icono SVG emerald con antenna ámbar, install prompt capturado vía beforeinstallprompt.
+  * Voice: WebkitSpeechRecognition (lang es-EC, interimResults), ondas pulsantes animadas con CSS keyframes cuando listening. Fallback si no soportado.
+  * Sin useEffect con setState síncrono: LoginModal y SubscribeDialog montados condicionalmente con {open && ...} desde el padre. Form states inicializan frescos en cada apertura.
+- Lint: `bun run lint` → exit 0 (0 errors 0 warnings en todo el proyecto).
+- Dev server: GET / 200 OK consistente. Sin tests escritos según indicación.

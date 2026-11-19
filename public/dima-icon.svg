@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="40" fill="#0B1120"/>
+  <rect x="20" y="20" width="152" height="152" rx="32" fill="#00D4AA" opacity="0.08"/>
+  <!-- Robot head -->
+  <rect x="48" y="58" width="96" height="80" rx="20" fill="#00D4AA"/>
+  <!-- Antenna -->
+  <line x1="96" y1="38" x2="96" y2="58" stroke="#00D4AA" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="96" cy="34" r="6" fill="#F5A623"/>
+  <!-- Eyes -->
+  <circle cx="74" cy="98" r="10" fill="#0B1120"/>
+  <circle cx="118" cy="98" r="10" fill="#0B1120"/>
+  <circle cx="78" cy="94" r="3" fill="#E8EDF5"/>
+  <circle cx="122" cy="94" r="3" fill="#E8EDF5"/>
+  <!-- Mouth (smile) -->
+  <path d="M 76 122 Q 96 134 116 122" stroke="#0B1120" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg>

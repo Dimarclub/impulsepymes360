@@ -1,0 +1,36 @@
+{
+  "name": "Dima — Robot buscador con voz",
+  "short_name": "Dima",
+  "description": "Escanea y habla con Dima. Buscador con IA que te conecta con proveedores cerca de ti.",
+  "start_url": "/dima",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B1120",
+  "theme_color": "#00D4AA",
+  "icons": [
+    {
+      "src": "/dima-icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/dima-icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Buscar con voz",
+      "short_name": "Voz",
+      "url": "/dima?action=voice"
+    },
+    {
+      "name": "Mis inversión Dima",
+      "short_name": "Inversión",
+      "url": "/dima?tab=investment"
+    }
+  ]
+}

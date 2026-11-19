@@ -62,6 +62,7 @@ import { ChatModule } from '@/components/dimar/modules/chat'
 import { ReservasModule } from '@/components/dimar/modules/reservas'
 import { ReservasAdminModule } from '@/components/dimar/modules/reservas-admin'
 import { BagInvestmentModule } from '@/components/dimar/modules/bag-investment'
+import { DimaModule } from '@/components/dimar/modules/dima'
 import { Footer } from '@/components/dimar/footer'
 import { canAccessModule, defaultModuleForRole } from '@/lib/permissions'
 
@@ -161,6 +162,7 @@ function HomeContent() {
       case 'reservas': return <ReservasModule />
       case 'reservas-admin': return <ReservasAdminModule />
       case 'bag-investment': return <BagInvestmentModule />
+      case 'dima': return <DimaModule />
       default: return <MarketplaceModule />
     }
   }

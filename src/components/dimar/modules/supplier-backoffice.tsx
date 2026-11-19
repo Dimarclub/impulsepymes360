@@ -27,6 +27,7 @@ import {
   Truck, MapPin, User, Phone, ClipboardList, Send, Tag, Trash2, Image as ImageIcon, Calendar,
   Award, DollarSign, Eye, Pause, Play, Video,
   ShoppingCart, Search, Minus, Printer, Receipt, Banknote, CreditCard, Smartphone, Building2,
+  Bot, Sparkles, Navigation,
 } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
@@ -44,7 +45,7 @@ export function SupplierBackofficeModule() {
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-8 max-w-3xl">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-10 max-w-3xl">
           <TabsTrigger value="overview"><Store className="size-4 md:mr-1.5" /><span className="hidden md:inline">Resumen</span></TabsTrigger>
           <TabsTrigger value="marketing"><Megaphone className="size-4 md:mr-1.5" /><span className="hidden md:inline">Marketing</span></TabsTrigger>
           <TabsTrigger value="logistics"><Truck className="size-4 md:mr-1.5" /><span className="hidden md:inline">Logística</span></TabsTrigger>
@@ -53,6 +54,8 @@ export function SupplierBackofficeModule() {
           <TabsTrigger value="ofertas"><Tag className="size-4 md:mr-1.5" /><span className="hidden md:inline">Ofertas</span></TabsTrigger>
           <TabsTrigger value="cpa"><Award className="size-4 md:mr-1.5" /><span className="hidden md:inline">Tareas CPA</span></TabsTrigger>
           <TabsTrigger value="pos"><ShoppingCart className="size-4 md:mr-1.5" /><span className="hidden md:inline">POS</span></TabsTrigger>
+          <TabsTrigger value="dima-frases"><Sparkles className="size-4 md:mr-1.5" /><span className="hidden md:inline">Dima · Frases</span></TabsTrigger>
+          <TabsTrigger value="dima-sucursales"><MapPin className="size-4 md:mr-1.5" /><span className="hidden md:inline">Dima · Sucursales</span></TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="mt-4"><OverviewTab /></TabsContent>
@@ -63,6 +66,8 @@ export function SupplierBackofficeModule() {
         <TabsContent value="ofertas" className="mt-4"><OfertasTab /></TabsContent>
         <TabsContent value="cpa" className="mt-4"><CpaTab /></TabsContent>
         <TabsContent value="pos" className="mt-4"><PosTab /></TabsContent>
+        <TabsContent value="dima-frases" className="mt-4"><DimaFrasesTab /></TabsContent>
+        <TabsContent value="dima-sucursales" className="mt-4"><DimaSucursalesTab /></TabsContent>
       </Tabs>
     </div>
   )
@@ -1884,5 +1889,450 @@ function PosTab() {
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+// ============ DIMA — FRASES ============
+function DimaFrasesTab() {
+  const toast = useAppStore((s) => s.toast)
+  const [data, setData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [phraseOpen, setPhraseOpen] = useState(false)
+
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    try {
+      const r = await fetch('/api/dima/phrases')
+      if (!r.ok) { setData(null); return }
+      setData(await r.json())
+    } catch { setData(null) }
+    finally { setLoading(false) }
+  }, [])
+
+  useEffect(() => { fetchData() }, [fetchData])
+
+  if (loading) return <Skeleton className="h-64" />
+
+  const phrases = data?.phrases || []
+  const planLimit = data?.planLimit || 5
+  const includedCount = data?.includedCount || 0
+  const extraCount = data?.extraCount || 0
+  const extraCost = data?.extraCost || 0
+
+  const toggleStatus = async (p: any) => {
+    const next = p.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE'
+    try {
+      const r = await fetch(`/api/dima/phrases/${p.id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: next }),
+      })
+      if (!r.ok) { toast('Error', 'error'); return }
+      toast(`Frase ${next === 'ACTIVE' ? 'activada' : 'pausada'}`, 'success')
+      fetchData()
+    } catch { toast('Error', 'error') }
+  }
+
+  const remove = async (p: any) => {
+    if (!confirm('¿Eliminar esta frase?')) return
+    try {
+      const r = await fetch(`/api/dima/phrases/${p.id}`, { method: 'DELETE' })
+      if (!r.ok) { toast('Error', 'error'); return }
+      toast('Frase eliminada', 'success')
+      fetchData()
+    } catch { toast('Error', 'error') }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card><CardContent className="p-4 text-center"><Sparkles className="size-5 mx-auto text-primary mb-1" /><p className="text-xl font-bold">{phrases.length}</p><p className="text-xs text-muted-foreground">Frases totales</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><CheckCircle2 className="size-5 mx-auto text-emerald-600 mb-1" /><p className="text-xl font-bold text-emerald-600">{includedCount}</p><p className="text-xs text-muted-foreground">Incluidas en el plan</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><Plus className="size-5 mx-auto text-amber-600 mb-1" /><p className="text-xl font-bold text-amber-600">{extraCount}</p><p className="text-xs text-muted-foreground">Frases extra</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><DollarSign className="size-5 mx-auto text-amber-600 mb-1" /><p className="text-xl font-bold text-amber-600">{fmtUsd(extraCost)}</p><p className="text-xs text-muted-foreground">Costo mensual extra</p></CardContent></Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2"><Bot className="size-5 text-primary" /> Dima — Frases de posicionamiento</CardTitle>
+              <CardDescription>
+                Plan {data?.plan || 'STARTER'}: {planLimit} frases incluidas · {phrases.length}/{planLimit} usadas
+              </CardDescription>
+            </div>
+            <Button onClick={() => setPhraseOpen(true)}>
+              <Plus className="size-4 mr-1" /> Añadir frase
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {phrases.length === 0 ? (
+            <div className="text-center py-12">
+              <Sparkles className="size-12 mx-auto text-muted-foreground/50 mb-3" />
+              <p className="text-sm text-muted-foreground mb-2">No tienes frases de posicionamiento.</p>
+              <p className="text-xs text-muted-foreground mb-3">
+                Las frases hacen que tu negocio aparezca primero cuando un usuario busca esas palabras con Dima.
+              </p>
+              <Button size="sm" onClick={() => setPhraseOpen(true)}>
+                <Plus className="size-4 mr-1" /> Crear primera frase
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-96 overflow-y-auto scroll-thin">
+              {phrases.map((p: any) => (
+                <div key={p.id} className="flex items-center gap-3 rounded-lg border p-3">
+                  <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    {p.isPremium ? <Star className="size-4 text-amber-500" fill="currentColor" /> : <Sparkles className="size-4 text-primary" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{p.phrase}</p>
+                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                      {p.category && <Badge variant="outline" className="text-[10px]">{p.category}</Badge>}
+                      <Badge variant={p.status === 'ACTIVE' ? 'default' : 'secondary'} className="text-[10px]">
+                        {p.status === 'ACTIVE' ? 'Activa' : 'Pausada'}
+                      </Badge>
+                      {p.monthlyPrice > 0 ? (
+                        <span className="text-amber-600 font-medium">{fmtUsd(p.monthlyPrice)}/mes</span>
+                      ) : (
+                        <span className="text-emerald-600 font-medium">Incluida</span>
+                      )}
+                      <span>· {p.searchCount} búsquedas · {p.clickCount} clicks</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button size="icon" variant="ghost" onClick={() => toggleStatus(p)} title={p.status === 'ACTIVE' ? 'Pausar' : 'Activar'}>
+                      {p.status === 'ACTIVE' ? <Pause className="size-4" /> : <Play className="size-4" />}
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => remove(p)} title="Eliminar">
+                      <Trash2 className="size-4 text-red-500" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Sparkles className="size-5 text-primary" />
+            </div>
+            <div className="text-sm">
+              <p className="font-medium">¿Cómo funcionan las frases Dima?</p>
+              <p className="text-muted-foreground text-xs mt-1 leading-relaxed">
+                Cada frase incluida en tu plan es gratis. Cada frase extra cuesta <strong className="text-primary">$1/mes</strong>.
+                Las frases activas aparecen primero cuando un usuario busca con Dima (voz o texto).
+                Si no pagas, las frases se pausan automáticamente.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {phraseOpen && (
+        <AddPhraseDialog
+          planLimit={planLimit}
+          currentCount={phrases.length}
+          onClose={() => setPhraseOpen(false)}
+          onSuccess={() => { fetchData(); setPhraseOpen(false) }}
+        />
+      )}
+    </div>
+  )
+}
+
+function AddPhraseDialog({
+  planLimit, currentCount, onClose, onSuccess,
+}: {
+  planLimit: number
+  currentCount: number
+  onClose: () => void
+  onSuccess: () => void
+}) {
+  const toast = useAppStore((s) => s.toast)
+  const [phrase, setPhrase] = useState('')
+  const [category, setCategory] = useState('')
+  const [creating, setCreating] = useState(false)
+  const willBeIncluded = currentCount < planLimit
+
+  const submit = async () => {
+    if (!phrase.trim() || phrase.trim().length < 2) { toast('Escribe una frase válida', 'error'); return }
+    setCreating(true)
+    try {
+      const r = await fetch('/api/dima/phrases', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phrase, category: category || undefined }),
+      })
+      const d = await r.json()
+      if (!r.ok) { toast(d.error || 'Error', 'error'); return }
+      toast(d.included ? 'Frase creada (incluida en el plan)' : `Frase creada. Costo: ${fmtUsd(d.monthlyCost)}/mes`, 'success')
+      onSuccess()
+    } catch { toast('Error', 'error') }
+    finally { setCreating(false) }
+  }
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Añadir frase de posicionamiento</DialogTitle>
+          <DialogDescription>
+            {willBeIncluded
+              ? 'Esta frase será incluida en tu plan (sin costo extra).'
+              : 'Has superado las frases incluidas. Costo extra: $1/mes.'}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label>Frase</Label>
+            <Textarea
+              value={phrase}
+              onChange={(e) => setPhrase(e.target.value)}
+              placeholder="ej: distribuidores mayoristas de bazar y papelería en Quito"
+              rows={3}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Sé específico. Cuantas más palabras clave, mejor coincidirá con las búsquedas.
+            </p>
+          </div>
+          <div>
+            <Label>Categoría (opcional)</Label>
+            <Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="BAZAR, PAPELERIA, RESTAURANTE…" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button onClick={submit} disabled={creating}>
+            {creating ? <Loader2 className="size-4 mr-1 animate-spin" /> : <Plus className="size-4 mr-1" />}
+            {willBeIncluded ? 'Crear frase (incluida)' : 'Crear frase ($1/mes)'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ============ DIMA — SUCURSALES ============
+function DimaSucursalesTab() {
+  const toast = useAppStore((s) => s.toast)
+  const [data, setData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [branchOpen, setBranchOpen] = useState(false)
+  const [editBranch, setEditBranch] = useState<any | null>(null)
+
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    try {
+      const r = await fetch('/api/dima/branches')
+      if (!r.ok) { setData(null); return }
+      setData(await r.json())
+    } catch { setData(null) }
+    finally { setLoading(false) }
+  }, [])
+
+  useEffect(() => { fetchData() }, [fetchData])
+
+  if (loading) return <Skeleton className="h-64" />
+
+  const branches = data?.branches || []
+  const stats = data?.stats || { total: branches.length, active: 0, cities: 0 }
+
+  const remove = async (b: any) => {
+    if (!confirm(`¿Eliminar sucursal "${b.name}"?`)) return
+    try {
+      const r = await fetch(`/api/dima/branches/${b.id}`, { method: 'DELETE' })
+      if (!r.ok) { toast('Error', 'error'); return }
+      toast('Sucursal eliminada', 'success')
+      fetchData()
+    } catch { toast('Error', 'error') }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card><CardContent className="p-4 text-center"><MapPin className="size-5 mx-auto text-primary mb-1" /><p className="text-xl font-bold">{stats.total}</p><p className="text-xs text-muted-foreground">Sucursales totales</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><CheckCircle2 className="size-5 mx-auto text-emerald-600 mb-1" /><p className="text-xl font-bold text-emerald-600">{stats.active}</p><p className="text-xs text-muted-foreground">Activas</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><Building2 className="size-5 mx-auto text-amber-600 mb-1" /><p className="text-xl font-bold text-amber-600">{stats.cities}</p><p className="text-xs text-muted-foreground">Ciudades cubiertas</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><Navigation className="size-5 mx-auto text-primary mb-1" /><p className="text-xl font-bold">{branches.length}/5</p><p className="text-xs text-muted-foreground">Máx. permitidas</p></CardContent></Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2"><MapPin className="size-5 text-primary" /> Dima — Sucursales</CardTitle>
+              <CardDescription>Máximo 5 sucursales. Las sucursales mejoran tu posicionamiento en búsquedas locales.</CardDescription>
+            </div>
+            <Button onClick={() => setBranchOpen(true)} disabled={branches.length >= 5}>
+              <Plus className="size-4 mr-1" /> Añadir sucursal
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {branches.length === 0 ? (
+            <div className="text-center py-12">
+              <MapPin className="size-12 mx-auto text-muted-foreground/50 mb-3" />
+              <p className="text-sm text-muted-foreground mb-2">No tienes sucursales registradas.</p>
+              <p className="text-xs text-muted-foreground mb-3">
+                Agrega sucursales para que Dima te conecte con clientes por ciudad y sector.
+              </p>
+              <Button size="sm" onClick={() => setBranchOpen(true)}>
+                <Plus className="size-4 mr-1" /> Crear primera sucursal
+              </Button>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-3">
+              {branches.map((b: any) => (
+                <div key={b.id} className="rounded-lg border p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-medium text-sm flex items-center gap-1.5">
+                        {b.isMain && <Star className="size-3.5 text-amber-500" fill="currentColor" />}
+                        {b.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {[b.city, b.sector].filter(Boolean).join(' · ') || b.city || '—'}
+                      </p>
+                    </div>
+                    <Badge variant={b.isActive ? 'default' : 'secondary'} className="text-[10px]">
+                      {b.isActive ? 'Activa' : 'Inactiva'}
+                    </Badge>
+                  </div>
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <p className="flex items-start gap-1.5"><MapPin className="size-3.5 mt-0.5" /> {b.address}</p>
+                    {b.phone && <p className="flex items-center gap-1.5"><Phone className="size-3.5" /> {b.phone}</p>}
+                    {b.hours && <p className="flex items-center gap-1.5"><Calendar className="size-3.5" /> {b.hours}</p>}
+                  </div>
+                  <div className="flex gap-1 pt-2 border-t">
+                    <Button size="sm" variant="outline" className="flex-1" onClick={() => setEditBranch(b)}>
+                      Editar
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => remove(b)} title="Eliminar">
+                      <Trash2 className="size-4 text-red-500" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {branchOpen && (
+        <BranchDialog onClose={() => setBranchOpen(false)} onSuccess={() => { fetchData(); setBranchOpen(false) }} />
+      )}
+      {editBranch && (
+        <BranchDialog
+          branch={editBranch}
+          onClose={() => setEditBranch(null)}
+          onSuccess={() => { fetchData(); setEditBranch(null) }}
+        />
+      )}
+    </div>
+  )
+}
+
+function BranchDialog({
+  branch, onClose, onSuccess,
+}: {
+  branch?: any
+  onClose: () => void
+  onSuccess: () => void
+}) {
+  const toast = useAppStore((s) => s.toast)
+  const [form, setForm] = useState({
+    name: branch?.name || '',
+    city: branch?.city || '',
+    sector: branch?.sector || '',
+    address: branch?.address || '',
+    phone: branch?.phone || '',
+    whatsapp: branch?.whatsapp || '',
+    hours: branch?.hours || '',
+    isMain: branch?.isMain || false,
+  })
+  const [saving, setSaving] = useState(false)
+
+  const submit = async () => {
+    if (!form.name.trim() || !form.city.trim() || !form.address.trim()) {
+      toast('Nombre, ciudad y dirección son obligatorios', 'error')
+      return
+    }
+    setSaving(true)
+    try {
+      const url = branch ? `/api/dima/branches/${branch.id}` : '/api/dima/branches'
+      const method = branch ? 'PATCH' : 'POST'
+      const r = await fetch(url, {
+        method, headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      const d = await r.json()
+      if (!r.ok) { toast(d.error || 'Error', 'error'); return }
+      toast(branch ? 'Sucursal actualizada' : 'Sucursal creada', 'success')
+      onSuccess()
+    } catch { toast('Error', 'error') }
+    finally { setSaving(false) }
+  }
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{branch ? 'Editar sucursal' : 'Nueva sucursal'}</DialogTitle>
+          <DialogDescription>
+            Las sucursales ayudan a Dima a posicionarte en búsquedas por ciudad y sector.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div>
+              <Label>Nombre *</Label>
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Sucursal Centro" />
+            </div>
+            <div>
+              <Label>Ciudad *</Label>
+              <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="Quito" />
+            </div>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div>
+              <Label>Sector</Label>
+              <Input value={form.sector} onChange={(e) => setForm({ ...form, sector: e.target.value })} placeholder="Centro" />
+            </div>
+            <div>
+              <Label>Horario</Label>
+              <Input value={form.hours} onChange={(e) => setForm({ ...form, hours: e.target.value })} placeholder="Lun-Vie 9-18" />
+            </div>
+          </div>
+          <div>
+            <Label>Dirección *</Label>
+            <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Av. Amazonas N34-451" />
+          </div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div>
+              <Label>Teléfono</Label>
+              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="02 234 5678" />
+            </div>
+            <div>
+              <Label>WhatsApp</Label>
+              <Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} placeholder="0991234567" />
+            </div>
+          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={form.isMain} onChange={(e) => setForm({ ...form, isMain: e.target.checked })} />
+            Marcar como sucursal principal
+          </label>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button onClick={submit} disabled={saving}>
+            {saving ? <Loader2 className="size-4 mr-1 animate-spin" /> : <Plus className="size-4 mr-1" />}
+            {branch ? 'Guardar cambios' : 'Crear sucursal'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

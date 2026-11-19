@@ -69,6 +69,12 @@ model User {
   funnels           Funnel[]
   bookingsAsUser    Booking[]          @relation("BookingUser")
   bagInvestments    BagInvestment[]
+  // Dima — Robot buscador
+  dimaSubscription  DimaSubscription?
+  dimaStars         DimaStar[]
+  appReferralsMade  AppReferral[]      @relation("ReferrerReferrals")
+  appReferralsFrom  AppReferral[]      @relation("ReferredReferrals")
+  popPurchases      PopPurchase[]
 
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -107,6 +113,8 @@ model Supplier {
   fairBooths  FairBooth[]
   rooms       Room[]
   bookings    Booking[]
+  branches    SupplierBranch[]
+  searchPhrases SearchPhrase[]
   createdAt   DateTime  @default(now())
 }
 
@@ -517,9 +525,11 @@ model Plan {
   hasInbox      Boolean  @default(true)
   hasReservas   Boolean  @default(true)
   // Espacios físicos
-  bagSpaces     Int      @default(67) // espacios en bolso reutilizable (inversión)
+  bagSpaces     Int      @default(67) // legacy: espacios en bolso reutilizable
   directorioInternationalSpaces Int @default(2) // espacios en directorio comercial internacional
   calendarioSpaces Int    @default(2) // espacios en calendario-directorio
+  // Dima Robot — frases de posicionamiento incluidas en el plan
+  dimaPhrases   Int      @default(5) // # de frases para el robot Dima incluidas (5/10/15/30/35/40)
   // Marketplace
   maxProducts   Int      @default(999999) // sin límite en nuevos planes
   maxAffiliateRate Float @default(3)  // % máximo comisión marketplace (1% N1 + 1% N2 + 1% N3 = 3%)
@@ -1430,4 +1440,131 @@ model ChatMessage {
   sender      String   // VISITOR, AGENT, BOT
   body        String
   createdAt   DateTime @default(now())
+}
+
+// =====================================================================
+// DIMA — Robot buscador con voz asistido por IA
+// =====================================================================
+
+// ---------- Suscripción Dima Plus ($20/mes = inversión al 5% compuesto) ----------
+
+model DimaSubscription {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan          String   @default("PLUS") // FREE, PLUS
+  pricePerMonth Float    @default(20) // $20/mes PLUS
+  billingCycle  String   @default("MONTHLY") // MONTHLY, ANNUAL
+  status        String   @default("ACTIVE") // ACTIVE, PAST_DUE, CANCELLED
+  // Inversión del pago mensual (5% compuesto)
+  investedAmount Float  @default(0) // total acumulado de los pagos
+  currentBalance Float @default(0) // balance con interés compuesto
+  totalEarned   Float    @default(0) // interés total ganado
+  lastCompoundAt DateTime?
+  // Fechas
+  startedAt    DateTime @default(now())
+  currentPeriodEnd DateTime? // fecha del próximo cobro
+  cancelledAt  DateTime?
+  // Referido que trajo a este usuario
+  referredBy   String?  // userId del patrocinador (N1)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ---------- Frases de posicionamiento para Dima ($1/mes c/u) ----------
+
+model SearchPhrase {
+  id            String   @id @default(cuid())
+  supplierId    String
+  supplier      Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  phrase        String   // ej: "distribuidores mayoristas de bazar y papelería"
+  category      String?  // categoría asociada (ej: BAZAR, PAPELERIA)
+  isPremium     Boolean  @default(false) // frase destacada
+  status        String   @default("ACTIVE") // ACTIVE, PAUSED (si no paga)
+  monthlyPrice  Float    @default(1) // $1/mes
+  paidUntil     DateTime? // hasta cuándo está paga
+  searchCount   Int      @default(0) // # de veces que matcheó en búsquedas
+  clickCount    Int      @default(0) // # de veces que el usuario hizo click
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ---------- Sucursales del proveedor (multi-ubicación) ----------
+
+model SupplierBranch {
+  id            String   @id @default(cuid())
+  supplierId    String
+  supplier      Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  name          String   // ej: "Sucursal Centro", "Matriz Quito Norte"
+  city          String
+  sector        String?  // ej: "Centro", "Norte", "Sur"
+  address       String
+  phone         String?
+  whatsapp      String?
+  latitude      Float?
+  longitude     Float?
+  hours         String?  // horario de atención
+  isMain        Boolean  @default(false) // sucursal principal
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ---------- Compra de material POP (inversión 5% compuesto) ----------
+
+model PopPurchase {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount        Float    // monto de la compra (libre)
+  items         String   @default("[]") // JSON: [{type: "BOLSO", quantity: 10, unitPrice: 2.5}, ...]
+  // Inversión
+  monthlyRate   Float    @default(0.05) // 5% mensual
+  currentBalance Float   @default(0) // balance con interés compuesto
+  totalEarned   Float    @default(0) // interés ganado
+  lastCompoundAt DateTime?
+  // QR tracking
+  qrCode        String?  // código del QR unificado de Dima
+  scanCount     Int      @default(0) // # de veces que escanearon su QR
+  downloadCount Int      @default(0) // # de descargas de la app atribuidas
+  // Estado
+  status        String   @default("ACTIVE") // ACTIVE, WITHDRAWN
+  orderId       String?  // referencia al pedido que generó la compra
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ---------- Dima Stars (rankings + cashback) ----------
+
+model DimaStar {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount        Int      @default(1) // estrellas otorgadas (normalmente 1)
+  reason        String   // PURCHASE, SEARCH, REFERRAL, TOP_MONTH
+  referenceId   String?  // orderId o referralId
+  createdAt     DateTime @default(now())
+}
+
+// ---------- Referidos de la app Dima (comisiones N1/N2/N3) ----------
+
+model AppReferral {
+  id            String   @id @default(cuid())
+  // Quién refiere
+  referrerId    String
+  referrer      User     @relation("ReferrerReferrals", fields: [referrerId], references: [id], onDelete: Cascade)
+  // Quién fue referido
+  referredId    String   @unique
+  referred      User     @relation("ReferredReferrals", fields: [referredId], references: [id], onDelete: Cascade)
+  // Nivel en la red (1 = directo, 2 = subreferido, 3 = sub-subreferido)
+  level         Int      // 1, 2, 3
+  // Comisiones
+  signupCommission Float @default(0) // $5 (N1), $2 (N2), $1 (N3)
+  monthlyCommission Float @default(0) // $2 (N1), $1 (N2), $0.50 (N3)
+  totalEarned   Float    @default(0) // total acumulado de comisiones
+  lastPaidAt   DateTime? // última vez que se pagó la comisión mensual
+  // Estado
+  status        String   @default("ACTIVE") // ACTIVE, INACTIVE (si el referido deja de pagar)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
