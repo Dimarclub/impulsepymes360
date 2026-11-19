@@ -14,3 +14,20 @@ export async function notifyOrderReceived(userId: string, orderNumber: string, t
 export async function notifyCommissionEarned(userId: string, amount: number, level: number, sourceName: string) {
   return notify({ userId, type: 'COMMISSION_EARNED', title: `Comisión: $${amount.toFixed(2)}`, message: `Nivel ${level} — venta de ${sourceName}.`, link: '/?module=affiliate-backoffice' })
 }
+
+export async function notifyShipmentAssigned(
+  userId: string,
+  shipmentId: string,
+  recipientName: string,
+  recipientAddress: string,
+  estimatedPrice: number
+) {
+  return notify({
+    userId,
+    type: 'SHIPMENT_ASSIGNED',
+    title: 'Nuevo envío asignado',
+    message: `Entregar a ${recipientName} en ${recipientAddress}. Precio: $${estimatedPrice.toFixed(2)}.`,
+    link: '/?module=fuerza',
+    metadata: { shipmentId },
+  })
+}
