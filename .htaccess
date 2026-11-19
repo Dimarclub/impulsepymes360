@@ -1,0 +1,14 @@
+# Hostinger .htaccess — redirige tráfico del dominio a la app Node.js
+RewriteEngine On
+
+# Forzar HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Proxy reverso al puerto de la app Node.js
+RewriteRule ^(.*)$ http://localhost:3000/$1 [P,L]
+
+# Headers de seguridad
+Header set X-Content-Type-Options "nosniff"
+Header set X-Frame-Options "SAMEORIGIN"
+Header set X-XSS-Protection "1; mode=block"
