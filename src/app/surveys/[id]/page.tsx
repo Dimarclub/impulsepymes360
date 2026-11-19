@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import { db } from '@/lib/db'
 import { PublicSurvey } from './public-survey'
 
+export const dynamic = 'force-dynamic'
+
 interface SurveyQuestion {
   text: string
   type: 'text' | 'rating' | 'choice' | 'scale'

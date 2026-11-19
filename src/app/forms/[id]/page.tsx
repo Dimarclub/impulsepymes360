@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import { db } from '@/lib/db'
 import { PublicForm } from './public-form'
 
+export const dynamic = 'force-dynamic'
+
 interface FormField {
   name: string
   label: string

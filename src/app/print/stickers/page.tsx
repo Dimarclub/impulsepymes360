@@ -1,4 +1,7 @@
 import { db } from '@/lib/db'
+
+export const dynamic = 'force-dynamic'
+
 import {
   PLAN_STICKER_CONFIG,
   STICKER_DIMENSIONS,
