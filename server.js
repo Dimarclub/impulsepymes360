@@ -1,4 +1,4 @@
-# Production server entry point for Hostinger
+// Production server entry point for Hostinger
 const { createServer } = require('http')
 const { parse } = require('url')
 const next = require('next')
