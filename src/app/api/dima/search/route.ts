@@ -160,9 +160,13 @@ export async function POST(req: NextRequest) {
     })
 
     // ---- 6. Ranking y armado de resultados ----
+    // CAMBIO: añadimos `supplierId` y `storeUrl` para que el frontend pueda
+    // enlazar al storefront público del proveedor en /proveedor/[id].
     type Result = {
       type: 'SUPPLIER' | 'PRODUCT' | 'CATEGORY'
       id: string
+      supplierId: string | null  // siempre el Supplier.id del proveedor (para /proveedor/[id])
+      storeUrl: string | null    // URL absoluta al storefront del proveedor
       name: string
       description?: string | null
       city?: string | null
@@ -180,6 +184,11 @@ export async function POST(req: NextRequest) {
 
     const results: Result[] = []
 
+    // Helper para construir la URL pública del proveedor.
+    // Todos los tipos de resultado que tengan supplierId enlazan a la misma tienda.
+    const buildStoreUrl = (supplierId: string | null | undefined): string | null =>
+      supplierId ? `/proveedor/${supplierId}` : null
+
     for (const sp of matchedPhrases) {
       if (!sp.supplier) continue
       const supplier = suppliers.find((s) => s.id === sp.supplierId)
@@ -188,6 +197,8 @@ export async function POST(req: NextRequest) {
       results.push({
         type: 'SUPPLIER',
         id: sp.supplierId,
+        supplierId: sp.supplierId,
+        storeUrl: buildStoreUrl(sp.supplierId),
         name: sp.supplier.companyName,
         description: sp.supplier.category || sp.phrase,
         city: branch?.city || sp.supplier.city || null,
@@ -214,6 +225,8 @@ export async function POST(req: NextRequest) {
       results.push({
         type: 'SUPPLIER',
         id: s.id,
+        supplierId: s.id,
+        storeUrl: buildStoreUrl(s.id),
         name: s.companyName,
         description: s.category || null,
         city: branch?.city || s.city || null,
@@ -234,9 +247,14 @@ export async function POST(req: NextRequest) {
     }
 
     for (const p of products) {
+      // CAMBIO: un producto arrastra el supplierId para que el cliente pueda
+      // saltar a la tienda del proveedor que lo vende.
+      const sid = p.supplierId || p.supplier?.id || null
       results.push({
         type: 'PRODUCT',
         id: p.id,
+        supplierId: sid,
+        storeUrl: buildStoreUrl(sid),
         name: p.name,
         description: p.description,
         city: p.supplier?.city || null,
@@ -257,6 +275,8 @@ export async function POST(req: NextRequest) {
       results.push({
         type: 'CATEGORY',
         id: c.id,
+        supplierId: null,
+        storeUrl: null,
         name: c.name,
         description: c.slug,
         city: null,
@@ -281,6 +301,8 @@ export async function POST(req: NextRequest) {
       results: finalResults.map((r) => ({
         type: r.type,
         id: r.id,
+        supplierId: r.supplierId,   // CAMBIO: incluido en la respuesta
+        storeUrl: r.storeUrl,        // CAMBIO: URL lista para usar en el frontend
         name: r.name,
         description: r.description,
         city: r.city,
