@@ -9,8 +9,8 @@ export const authOptions: NextAuthOptions = {
     // No usamos página de login dedicada; el login se hace via dialog en /
     signIn: '/',
   },
-  //信任多個來源 host，避免從外部域名開啟時 NextAuth 拒絕
-  useSecureCookies: false,
+  // En producción (Vercel) usar cookies seguras; en dev local no
+  useSecureCookies: process.env.NODE_ENV === 'production',
   providers: [
     CredentialsProvider({
       name: 'Dimarclub',
@@ -53,6 +53,21 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as string
       }
       return session
+    },
+    async redirect({ url, baseUrl }) {
+      // Permite redirects relativos y la URL base correcta
+      // Evita redirigir a localhost cuando estamos en Vercel
+      if (url.startsWith('/')) {
+        return `${baseUrl}${url}`
+      }
+      // Si la URL es del mismo origen, permite el redirect
+      const baseUrlObj = new URL(baseUrl)
+      const urlObj = new URL(url)
+      if (urlObj.origin === baseUrlObj.origin) {
+        return url
+      }
+      // Default: vuelve al baseUrl (donde está el portal)
+      return baseUrl
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
