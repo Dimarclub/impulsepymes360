@@ -152,7 +152,6 @@ export default async function SupplierStorefrontPage({
           {/* Cover */}
           <div className="relative h-40 md:h-56 bg-gradient-to-br from-primary/30 to-accent/30">
             {coverUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={coverUrl}
                 alt={supplier.companyName}
@@ -168,7 +167,6 @@ export default async function SupplierStorefrontPage({
               {/* Logo / avatar */}
               <div className="size-20 md:size-28 rounded-2xl border-4 border-white bg-primary/10 flex items-center justify-center overflow-hidden shadow-lg shrink-0">
                 {logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
                   <img src={logoUrl} alt={supplier.companyName} className="w-full h-full object-cover" />
                 ) : (
                   <Store className="size-10 md:size-12 text-primary" />
@@ -326,7 +324,6 @@ export default async function SupplierStorefrontPage({
                 >
                   <div className="aspect-square bg-muted/30 relative">
                     {p.imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={p.imageUrl}
                         alt={p.name}
