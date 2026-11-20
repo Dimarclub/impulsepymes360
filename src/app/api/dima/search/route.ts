@@ -79,13 +79,18 @@ export async function POST(req: NextRequest) {
     }
 
     // ---- 2. Búsqueda en SearchPhrase (status=ACTIVE) ----
+    // Incluimos branches del supplier para que los resultados traigan
+    // whatsapp/sector/address de la sucursal principal incluso cuando el
+    // proveedor se encuentra solo por frase (no por texto de perfil).
     const now = new Date()
     const allPhrases = await db.searchPhrase.findMany({
       where: {
         status: 'ACTIVE',
         OR: [{ paidUntil: null }, { paidUntil: { gte: now } }],
       },
-      include: { supplier: true },
+      include: {
+        supplier: { include: { branches: { where: { isActive: true } } } },
+      },
     })
 
     const qLower = q.toLowerCase()
@@ -160,9 +165,13 @@ export async function POST(req: NextRequest) {
     })
 
     // ---- 6. Ranking y armado de resultados ----
+    // CAMBIO: añadimos `supplierId` y `storeUrl` para que el frontend pueda
+    // enlazar al storefront público del proveedor en /proveedor/[id].
     type Result = {
       type: 'SUPPLIER' | 'PRODUCT' | 'CATEGORY'
       id: string
+      supplierId: string | null  // siempre el Supplier.id del proveedor (para /proveedor/[id])
+      storeUrl: string | null    // URL absoluta al storefront del proveedor
       name: string
       description?: string | null
       city?: string | null
@@ -180,27 +189,49 @@ export async function POST(req: NextRequest) {
 
     const results: Result[] = []
 
+    // Helper para construir la URL pública del proveedor.
+    // Todos los tipos de resultado que tengan supplierId enlazan a la misma tienda.
+    const buildStoreUrl = (supplierId: string | null | undefined): string | null =>
+      supplierId ? `/proveedor/${supplierId}` : null
+
+    // Agrupar frases matcheadas por supplierId para evitar resultados
+    // duplicados: antes, un proveedor con 5 frases que matcheaban aparecía
+    // 5 veces. Ahora aparece 1 sola vez con las 5 frases en matchedPhrases.
+    const phrasesBySupplier = new Map<string, typeof matchedPhrases>()
     for (const sp of matchedPhrases) {
       if (!sp.supplier) continue
-      const supplier = suppliers.find((s) => s.id === sp.supplierId)
-      const branches = supplier?.branches || []
+      const arr = phrasesBySupplier.get(sp.supplierId) || []
+      arr.push(sp)
+      phrasesBySupplier.set(sp.supplierId, arr)
+    }
+
+    for (const [sid, phrases] of phrasesBySupplier) {
+      const first = phrases[0]
+      const supplier = first.supplier
+      // Las branches ya vienen incluidas en sp.supplier.branches; si no,
+      // buscamos en el array `suppliers` (puede traer más datos si matcheó por texto).
+      const fallback = suppliers.find((s) => s.id === sid)
+      const branches = supplier?.branches || fallback?.branches || []
       const branch = branches.find((b) => b.isMain) || branches[0] || null
+      const isPremium = phrases.some((p) => p.isPremium)
       results.push({
         type: 'SUPPLIER',
-        id: sp.supplierId,
-        name: sp.supplier.companyName,
-        description: sp.supplier.category || sp.phrase,
-        city: branch?.city || sp.supplier.city || null,
+        id: sid,
+        supplierId: sid,
+        storeUrl: buildStoreUrl(sid),
+        name: supplier.companyName,
+        description: supplier.category || phrases[0].phrase,
+        city: branch?.city || supplier.city || null,
         sector: branch?.sector || null,
-        address: branch?.address || sp.supplier.address || null,
-        phone: branch?.phone || sp.supplier.phone || null,
+        address: branch?.address || supplier.address || null,
+        phone: branch?.phone || supplier.phone || null,
         whatsapp: branch?.whatsapp || null,
-        rating: sp.supplier.rating || 0,
+        rating: supplier.rating || 0,
         imageUrl: null,
-        matchedPhrases: [sp.phrase],
+        matchedPhrases: phrases.map((p) => p.phrase),
         branch: branch ? { name: branch.name, address: branch.address, city: branch.city } : null,
-        isPremium: sp.isPremium,
-        score: 100 + (sp.isPremium ? 50 : 0) + (sp.supplier.rating || 0),
+        isPremium,
+        score: 100 + (isPremium ? 50 : 0) + (supplier.rating || 0),
       })
     }
 
@@ -214,6 +245,8 @@ export async function POST(req: NextRequest) {
       results.push({
         type: 'SUPPLIER',
         id: s.id,
+        supplierId: s.id,
+        storeUrl: buildStoreUrl(s.id),
         name: s.companyName,
         description: s.category || null,
         city: branch?.city || s.city || null,
@@ -234,9 +267,14 @@ export async function POST(req: NextRequest) {
     }
 
     for (const p of products) {
+      // CAMBIO: un producto arrastra el supplierId para que el cliente pueda
+      // saltar a la tienda del proveedor que lo vende.
+      const sid = p.supplierId || p.supplier?.id || null
       results.push({
         type: 'PRODUCT',
         id: p.id,
+        supplierId: sid,
+        storeUrl: buildStoreUrl(sid),
         name: p.name,
         description: p.description,
         city: p.supplier?.city || null,
@@ -257,6 +295,8 @@ export async function POST(req: NextRequest) {
       results.push({
         type: 'CATEGORY',
         id: c.id,
+        supplierId: null,
+        storeUrl: null,
         name: c.name,
         description: c.slug,
         city: null,
@@ -281,6 +321,8 @@ export async function POST(req: NextRequest) {
       results: finalResults.map((r) => ({
         type: r.type,
         id: r.id,
+        supplierId: r.supplierId,   // CAMBIO: incluido en la respuesta
+        storeUrl: r.storeUrl,        // CAMBIO: URL lista para usar en el frontend
         name: r.name,
         description: r.description,
         city: r.city,

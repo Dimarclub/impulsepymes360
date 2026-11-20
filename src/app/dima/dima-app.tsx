@@ -33,6 +33,8 @@ type ResultType = 'SUPPLIER' | 'PRODUCT' | 'CATEGORY'
 interface SearchResult {
   type: ResultType
   id: string
+  supplierId?: string | null  // Supplier.id → usado para /proveedor/[id]
+  storeUrl?: string | null    // URL pública del storefront del proveedor
   name: string
   description?: string | null
   city?: string | null
@@ -682,6 +684,24 @@ function ResultCard({ result, onOpen }: { result: SearchResult; onOpen: () => vo
         <button onClick={(e) => { e.stopPropagation(); onOpen() }} style={{ flex: 1, background: C.emerald, color: '#0B1120', border: 'none', padding: '8px', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
           Ver detalles
         </button>
+        {/* CAMBIO: acceso directo al storefront del proveedor en /proveedor/[id]
+            sin necesidad de abrir el modal. */}
+        {(() => {
+          const storeUrl =
+            result.storeUrl ||
+            (result.type === 'SUPPLIER' ? `/proveedor/${result.id}` : null) ||
+            (result.supplierId ? `/proveedor/${result.supplierId}` : null)
+          if (!storeUrl) return null
+          return (
+            <a
+              href={storeUrl}
+              onClick={(e) => e.stopPropagation()}
+              style={{ background: `${C.emerald}22`, color: C.emerald, border: `1px solid ${C.emerald}55`, padding: '8px 12px', borderRadius: 8, fontSize: 13, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 600 }}
+            >
+              <Store size={14} /> Tienda
+            </a>
+          )
+        })()}
         {result.whatsapp && (
           <a
             href={`https://wa.me/${result.whatsapp.replace(/\D/g, '')}`}
@@ -757,9 +777,24 @@ function DetailDialog({ result, onClose }: { result: SearchResult; onClose: () =
             </div>
           )}
           <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
-            <a href="/" onClick={(e) => e.preventDefault()} style={{ flex: 1, background: C.emerald, color: '#0B1120', padding: 12, borderRadius: 10, textAlign: 'center', fontWeight: 600, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-              <Store size={16} /> Ir a la tienda
-            </a>
+            {/* CAMBIO: botón "Ir a la tienda" funcional.
+                Antes tenía href="/" + e.preventDefault() → enlace muerto.
+                Ahora apunta al storefront público del proveedor en /proveedor/[id]. */}
+            {(() => {
+              const storeUrl =
+                result.storeUrl ||
+                (result.type === 'SUPPLIER' ? `/proveedor/${result.id}` : null) ||
+                (result.supplierId ? `/proveedor/${result.supplierId}` : null)
+              if (!storeUrl) return null
+              return (
+                <a
+                  href={storeUrl}
+                  style={{ flex: 1, background: C.emerald, color: '#0B1120', padding: 12, borderRadius: 10, textAlign: 'center', fontWeight: 600, fontSize: 14, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                >
+                  <Store size={16} /> Ir a la tienda
+                </a>
+              )
+            })()}
             {result.whatsapp && (
               <a href={`https://wa.me/${result.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" style={{ background: C.card2, color: C.text, border: `1px solid ${C.border}`, padding: '12px 16px', borderRadius: 10, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 14 }}>
                 <MessageCircle size={16} /> WhatsApp
