@@ -6,7 +6,7 @@ import {
   Search, ShoppingCart, ChevronDown, User, LogIn, UserPlus, LogOut, Menu, X,
   Home, Users, Store, Building2, Phone, Sparkles, Loader2, Settings,
   LayoutDashboard, Truck, Mail, Megaphone, ClipboardList, Rocket, Zap, Globe, MapPin, Grid3x3, PiggyBank, Network, HandCoins, Bell, DollarSign, Package, ShoppingBag, CreditCard, Bike, LayoutGrid, Newspaper, Book, Tag, Award, Calendar,
-  Filter, FileText, BrainCircuit, ClipboardCheck, MessageSquare, Star, CalendarClock, Inbox, GraduationCap, MessagesSquare, Hotel, Wallet, Bot,
+  Filter, FileText, BrainCircuit, ClipboardCheck, MessageSquare, Star, CalendarClock, Inbox, GraduationCap, MessagesSquare, Hotel, Wallet, Bot, ShieldCheck,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -340,6 +340,7 @@ export function TopNav() {
                     <DropdownMenuItem onClick={() => setModule('album-admin')}><Book className="size-4 mr-2" /> Álbum de cromos (admin)</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setModule('ferias')}><Calendar className="size-4 mr-2" /> Ferias (calendario)</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setModule('reservas-admin')}><Hotel className="size-4 mr-2" /> Reservas (admin global)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setModule('dima-admin')}><ShieldCheck className="size-4 mr-2" /> Dima (admin global)</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setModule('finanzas')}><DollarSign className="size-4 mr-2" /> Finanzas</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Operación</DropdownMenuLabel>

@@ -2420,3 +2420,63 @@ Stage Summary:
   * Toast via sonner (ya en layout.tsx global). Toast.info con action 'Iniciar sesión' para guiar al login desde reseñas.
 - Lint: `bun run lint` → exit 0 (0 errors 0 warnings).
 - Dev server: /dima 200 OK, todas las APIs 200/201/400/409 según esperado, search retorna el supplier recién registrado como resultado SUPPLIER con matchedPhrases. Sin tests escritos según indicación.
+
+---
+Task ID: 47-dima-admin
+Agent: full-stack-developer (Admin Global Dima)
+Task: Crear módulo admin global de Dima con dashboard, gestión de suscripciones, frases, sucursales, inversiones POP, moderación de reseñas y reporte de referidos.
+
+Work Log:
+- Leído worklog.md, src/components/dimar/modules/dima.tsx (~886 líneas, referencia visual del módulo usuario), src/app/api/dima/* (endpoints existentes), prisma/schema.prisma (modelos DimaSubscription, SearchPhrase, SupplierBranch, PopPurchase, DimaStar, AppReferral, Review, Supplier, User), src/lib/security/auth.ts (requireRole), src/lib/permissions.ts, src/lib/types.ts, src/components/dimar/topnav.tsx y módulos admin existentes (ferias, album-admin, reservas-admin) como referencia visual.
+- Paleta esmeralda + ámbar (sin azul/índigo), badges con variantes bg-emerald-100/amber-100/cyan-100 + dark modes. Uso de bg-primary/text-primary-foreground en botones principales y headers de tab. StatCard component reutilizable con tints (emerald/amber/cyan/rose).
+- Creados 9 endpoints API admin (todos con requireRole('ADMIN')):
+  * src/app/api/dima/admin/route.ts (GET dashboard global, 244 líneas): stats totales (plusActive, dimaFree, proveedoresConFrases, frasesActivas, sucursalesActivas, capitalTotalInvertido=Subs+POP, interesTotalPagado, descargasAtribuidas, starsOtorgadasMes, resenasPendientes/Publicadas, popPurchasesCount/Active/Withdrawn, scansTotales, referralsTotal, promedioGlobal) + top 10 afiliados (agrupado por referrerId con totalEarned + monthlyRecurring + count) + top 10 buscadores del mes (groupBy DimaStars este mes + cashback acumulado = floor(starsTotal/10)).
+  * src/app/api/dima/admin/subscriptions/route.ts (GET 65 líneas): lista DimaSubscription con user info (id/name/email/avatarUrl/city/role). Filtros ?status=ACTIVE|PAST_DUE|CANCELLED&plan=FREE|PLUS.
+  * src/app/api/dima/admin/phrases/route.ts (GET 61 líneas): lista SearchPhrase con supplier info (id/companyName/city/category/phone/userId/verified/rating). Filtros ?status=ACTIVE|PAUSED&supplierId=X.
+  * src/app/api/dima/admin/phrases/[id]/route.ts (PATCH 43 líneas): cambia status ACTIVE/PAUSED. Usado para pausar frases de proveedores que no pagaron.
+  * src/app/api/dima/admin/branches/route.ts (GET 64 líneas): lista SupplierBranch con supplier info. Filtros ?city=X&supplierId=X&active=true|false.
+  * src/app/api/dima/admin/purchases/route.ts (GET 60 líneas): lista PopPurchase con user info. Filtros ?status=ACTIVE|WITHDRAWN.
+  * src/app/api/dima/admin/reviews/route.ts (GET 79 líneas): lista reviews con user info (supplier user) + supplier info resuelto (lookup Supplier where userId===Review.userId porque Review.userId es el supplier). Filtros ?status=PENDING|PUBLISHED|HIDDEN (default PENDING).
+  * src/app/api/dima/admin/reviews/[id]/route.ts (PATCH 67 líneas): aprobar (PUBLISHED) o rechazar (HIDDEN). Recalcula supplier.rating promedio tras aprobación.
+  * src/app/api/dima/admin/referrals/route.ts (GET 80 líneas): lista AppReferral con referrer + referred info + stats agregadas (totalSignupCommission, totalMonthlyRecurring, totalEarned, byLevel n1/n2/n3).
+- Creado src/components/dimar/modules/dima-admin.tsx (~2008 líneas, 'use client'):
+  * Componente principal DimaAdminModule con Tabs (7 tabs): Dashboard, Suscripciones, Frases, Sucursales, Inversión POP, Reseñas, Referidos. TabsList responsive con overflow-x-auto en mobile.
+  * Tab 1 Dashboard: header "Dima · Admin Global" con botón Actualizar; 8 stat cards en grid 2/4 (plusActive, dimaFree, proveedoresConFrases, frasesActivas, capitalTotalInvertido, interesTotalPagado, descargasAtribuidas, starsOtorgadasMes); 2 cards lado a lado con tabs internos: "Top 10 Afiliados" (tabla user/referidos/ganado/recurrente) y "Top 10 Buscadores del mes" (tabla user/starsMes/cashback); segunda fila de 4 stat cards (sucursales activas, resenas pendientes, resenas publicadas, referidos totales).
+  * Tab 2 Suscripciones: filtros segmented (Todas/Activas/Vencidas/Canceladas), búsqueda por email/nombre, tabla con user(avatar+name+email)/plan(badge FREE=muted/PLUS=emerald)/status(badge)/investedAmount/currentBalance/totalEarned/createdAt/currentPeriodEnd. Click en fila → dialog detalle con stats y fechas. Sub-componente SubscriptionDetailDialog montado con {selected && <Body/>} para state fresco.
+  * Tab 3 Frases: filtros segmented (Todas/Activas/Pausadas), búsqueda por frase/supplier, tabla con supplier(companyName+city)/frase/categoría(badge)/isPremium(badge)/status(badge)/monthlyPrice/paidUntil/searchCount/clickCount. Acciones por fila: botón Pausar/Activar (PATCH /api/dima/admin/phrases/[id]) y botón Ver supplier (toast info). Toast feedback success/error tras toggle.
+  * Tab 4 Sucursales: filtros dropdown por ciudad y por supplier, tabla con supplier(companyName)/name/city/sector/address/phone/isMain(badge)/isActive(badge). Click en fila → dialog BranchDetailDialog con info completa + iframe OpenStreetMap si hay lat/lng (placeholder si no).
+  * Tab 5 Inversión POP: 5 stats cards (total compras, capital total invertido, interés total ganado, scans totales, descargas atribuidas), filtros segmented (Todas/Activas/Retiradas), tabla con user(name+email)/amount/currentBalance/totalEarned/scanCount/downloadCount/status(badge ACTIVE=emerald/WITHDRAWN=muted)/createdAt. Click → dialog PurchaseDetailDialog con stats, items parseados del JSON, qrCode, lastCompoundAt.
+  * Tab 6 Reseñas (moderación): 4 stat cards (pendientes, publicadas, ocultas, hint), filtros segmented (Pendientes/Publicadas/Ocultas), tabla con proveedor/customerName/rating(StarRating component 1-5)/title+comment/status(badge PENDING=amber/PUBLISHED=emerald/HIDDEN=muted)/createdAt. Acciones por fila PENDING: botones Aprobar (emerald) y Rechazar (rose) → PATCH /api/dima/admin/reviews/[id]. Click fila → dialog ReviewDetailDialog con info completa + acciones aprobar/rechazar en footer.
+  * Tab 7 Referidos: 4 stat cards (referidos totales, comisiones signup, recurrente/mes, total pagado), búsqueda por referrer/referred, tabla con referrer(avatar+name+email)/referred(name+email)/level(badge N1=emerald/N2=amber/N3=cyan)/signupCommission/monthlyCommission/totalEarned/status(badge ACTIVE=emerald/INACTIVE=muted)/createdAt.
+- Helpers compartidos: fmtUsd (Intl.NumberFormat es-EC USD), fmtDate y fmtDateTime, initials (toma primera+última letra), StarRating (render 1-5 estrellas amber con valor), EmptyState, TableLoading (5 skeletons), StatCard (con tint emerald/amber/cyan/rose).
+- Status badges mapeados con clases Tailwind consistentes (PLAN_BADGE, SUB_STATUS_BADGE, PHRASE_STATUS_BADGE, PURCHASE_STATUS_BADGE, REVIEW_STATUS_BADGE, REFERRAL_LEVEL_BADGE, REFERRAL_STATUS_BADGE) + dark mode variants. STATUS_LABELS para traducir ACTIVE/PAST_DUE/etc.
+- Sin useEffect con setState síncrono: cada tab inicializa loading=true vía useState y hace setLoading(false) dentro de try/finally en el callback async, no en el cuerpo del effect. fetchAll envuelto en useCallback con dependencia toast. Refresh manual botón Actualizar.
+- Diálogos extraídos como sub-componentes Body montados con {selected && <Body/>}: SubscriptionDetailDialog, BranchDetailDialog, PurchaseDetailDialog, ReviewDetailDialog. State fresco en cada apertura, evita set-state-in-effect.
+- Prisma relations en camelCase: db.dimaSubscription.findMany, db.searchPhrase.findMany, db.supplierBranch.findMany, db.popPurchase.findMany, db.review.findMany, db.appReferral.findMany, db.dimaStar.aggregate/findMany, db.user.findUnique, db.supplier.findMany/findUnique/update. Sin PascalCase en relaciones (verificado con include: { user: true, supplier: { select: ... } }).
+- Wiring completado:
+  * src/lib/types.ts: añadido 'dima-admin' al ModuleId union (después de 'dima').
+  * src/lib/permissions.ts: 'dima-admin' cubierto por ADMIN vía '*' (no se añadió a otros roles, ya que ADMIN='*' del array). Verificado canAccessModule('ADMIN', 'dima-admin') === true, otros roles === false.
+  * src/app/page.tsx: import DimaAdminModule + case 'dima-admin': return <DimaAdminModule /> después de case 'dima'.
+  * src/components/dimar/topnav.tsx: import ShieldCheck desde lucide-react + añadido DropdownMenuItem "Dima (admin global)" con ShieldCheck en el dropdown Admin (después de "Reservas (admin global)", antes de "Finanzas").
+- Lint: `bun run lint` → exit 0 (0 errors 0 warnings en todo el proyecto). Sin fixes intermedios necesarios.
+- Sin tests escritos según indicación.
+
+Stage Summary:
+- Archivos creados (10):
+  * 9 endpoints API: src/app/api/dima/admin/route.ts (244), subscriptions/route.ts (65), phrases/route.ts (61), phrases/[id]/route.ts (43), branches/route.ts (64), purchases/route.ts (60), reviews/route.ts (79), reviews/[id]/route.ts (67), referrals/route.ts (80). Total ~763 líneas API.
+  * 1 módulo UI: src/components/dimar/modules/dima-admin.tsx (~2008 líneas, 'use client', 7 tabs completos con tablas, filtros, dialogs de detalle y acciones admin).
+- Archivos modificados (3):
+  * src/lib/types.ts (+1 línea: añadido 'dima-admin' a ModuleId).
+  * src/app/page.tsx (+2 líneas: import + case 'dima-admin').
+  * src/components/dimar/topnav.tsx (+2 líneas: import ShieldCheck + DropdownMenuItem en Admin).
+- Lint: `bun run lint` → exit 0 (0 errors 0 warnings).
+- Dev server: GET / 200 OK en ~16ms consistentes. Endpoints admin nuevos responden 200 con requireRole('ADMIN') protegiendo acceso (401 si no hay sesión, 403 si rol insuficiente).
+- Decisiones clave:
+  * TopSearchers usa db.dimaStar.findMany (take 2000) filtrado en JS por createdAt >= startOfMonth en lugar de groupBy con raw where gte (más simple y predecible), luego Promise.all para resolver nombres + cashback acumulado (aggregate por userId).
+  * TopAffiliates agrupa AppReferrals en JS por referrerId (Map) para combinar múltiples levels del mismo referrer en una sola fila con totalEarned + monthlyRecurring sumados.
+  * Review.userId es el supplier userId (recibe la reseña), no el reviewer. El endpoint admin reviews resuelve supplier con lookup Supplier where userId===Review.userId, coherente con /api/dima/reviews existente.
+  * PATCH reviews/[id] recalcula supplier.rating con aggregate tras PUBLISHED para mantener consistencia.
+  * PopPurchase no tiene comboQuantity (es BagInvestment). Tabla usa amount, items (JSON parseado en dialog), currentBalance, totalEarned, scanCount, downloadCount, status, createdAt — todos campos reales del modelo PopPurchase.
+  * PopPurchase no tiene tabla de historial de compoundings. Dialog detalle muestra items parseados del JSON items + stats actuales + lastCompoundAt como referencia del último compounding (no hay log histórico en el modelo).
+  * BranchDetailDialog usa iframe OpenStreetMap embed si hay lat/lng (sin API key requerido), placeholder "Sin coordenadas registradas" si no.
+  * Sin useEffect+setState síncrono: loading=true initial state, setLoading(false) en callback async dentro de try/finally. Diálogos extraídos como sub-componentes montados con {selected && <Body/>}.
