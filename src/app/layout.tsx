@@ -17,11 +17,12 @@ export const metadata: Metadata = {
     "Dimarclub", "marketplace", "afiliados", "B2C", "comisiones",
     "red de afiliados", "logística", "CRM", "email marketing", "Ecuador",
   ],
-  icons: { icon: "/logo.svg" },
+  icons: { icon: "/icon.png", apple: "/icon.png", shortcut: "/icon.png" },
   openGraph: {
     title: "Dimarclub",
     description: "Compra, recomienda y gana. El marketplace con comunidad.",
     siteName: "Dimarclub",
+    images: [{ url: "/icon.png", width: 628, height: 425, alt: "Dimarclub" }],
     type: "website",
   },
 };
