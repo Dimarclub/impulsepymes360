@@ -2371,3 +2371,52 @@ Stage Summary:
   * Sin useEffect con setState síncrono: LoginModal y SubscribeDialog montados condicionalmente con {open && ...} desde el padre. Form states inicializan frescos en cada apertura.
 - Lint: `bun run lint` → exit 0 (0 errors 0 warnings en todo el proyecto).
 - Dev server: GET / 200 OK consistente. Sin tests escritos según indicación.
+
+---
+Task ID: 46-dima-reviews-register
+Agent: full-stack-developer (Reseñas + Registro proveedores en Dima)
+Task: Añadir sistema de reseñas desde Dima (calificar + comentar proveedores) + botón de registro de nuevos proveedores con formulario completo.
+
+Work Log:
+- Lectura contexto: src/app/dima/dima-app.tsx (1052→1867 líneas), src/app/api/dima/search/route.ts (provee supplierId/storeUrl), src/app/api/resenas/{route,[id]/route}.ts (modelo: Review.userId = supplier recibiendo, customerName/Email = reviewer), src/app/api/auth/register/route.ts (patrón transacción atómica User+Supplier+Branches+Phrases con bcrypt), prisma/schema.prisma Review/Supplier/SupplierBranch/SearchPhrase/User.reviewsReceived, src/lib/security/auth.ts (getSessionUser/requireRole), src/lib/db.ts, src/lib/store.ts, src/app/layout.tsx (Sonner Toaster ya global).
+- API 1: src/app/api/dima/reviews/route.ts (~240 líneas)
+  * GET (público): query ?supplierId=X → findUnique Supplier → findMany Review where {userId: supplier.userId, status:'PUBLISHED'} include user (id/name/avatarUrl). Calcula average, total, distribution {5..1}. Retorna {ok, reviews[], stats}.
+  * POST (auth opcional): body {supplierId, rating 1-5, title?, comment?, customerName?, customerEmail?}. Valida supplierId existe, rating entero 1-5. Sesión opcional vía getSessionUser: si logueado → customerName/Email desde auth + status='PUBLISHED'; si no → customerName/Email del body + status='PENDING' (moderación). Crea Review con userId=supplier.userId (el supplier recibe la reseña y la verá en su panel). Si PUBLISHED: recalcula Supplier.rating con db.review.aggregate + update.
+- API 2: src/app/api/dima/register-supplier/route.ts (~218 líneas)
+  * POST (público): body {name, email, password, phone?, companyName, city, category?, address?, branchName?, branchCity?, branchAddress?, branchPhone?, phrases[]}. Validaciones: email regex, password ≥6, companyName+city no vacíos, email único (409 si existe). Transacción atómica: bcrypt hash password → tx.user.create(role=SUPPLIER, affiliateCode auto-generado) → tx.supplier.create(companyName/phone/address/city/category/verified=false) → tx.supplierBranch.create(isMain=true, isActive=true, defaults "Matriz"/address/city/phone) → hasta 5 tx.searchPhrase.create(monthlyPrice=0, paidUntil=null, status=ACTIVE, isPremium=false, phrase lowercase). Categoría validada contra lista cerrada (Bazar/Papelería/Cosméticos/Juguetes/Electrónica/Ropa/Comida/Restaurantes/Servicios/Otro), default Otro. Retorna {ok, user, supplierId, message}.
+- Helper functions en dima-app.tsx (~líneas 74-141):
+  * timeAgo(date): "Hace un momento" / "Hace N min" / "Hace N h" / "Ayer" / "Hace N días" / fecha.toLocaleDateString('es-EC').
+  * initials(name): 2 mayúsculas iniciales para avatar fallback.
+  * StarsBar (componente, no fn): props rating, interactive?, onChange?, size. Render botones estrella con color gold/borderLight según round(rating), disabled si no interactive.
+- Reviews UI (DetailDialog extendido, ~líneas 859-1305):
+  * DetailDialog ahora recibe onOpenLogin. Usa useSession para isAuth. Calcula supplierId = result.supplierId || (type==='SUPPLIER' ? result.id : null). Si supplierId, renderiza <ReviewsSection>.
+  * ReviewsSection: useState reviews/stats/loading=true/writeOpen/refreshKey. useEffect con AbortController fetch GET /api/dima/reviews?supplierId=X, setStates en callbacks (NUNCA síncrono en effect body — pasamos lint react-hooks/set-state-in-effect). Botón "Dejar reseña": si !isAuth → toast.info('Inicia sesión…') con action 'Iniciar sesión' → onOpenLogin; si auth → setWriteOpen(true). Lista últimas 5 reseñas con ReviewCard.
+  * ReviewsSummary: card grande con average.toFixed(1) + StarsBar + total. Distribución: 5 filas [5★→1★] con barra horizontal (pct width) gold + count.
+  * ReviewCard: avatar circular emerald con iniciales, nombre + timeAgo(createdAt), StarsBar pequeño, título bold + comentario con ícono Quote, bloque "Respuesta de la empresa" si review.response.
+  * WriteReviewDialogBody (sub-componente montado con {writeOpen && <Body/>} — state fresco cada apertura): state rating/title/comment/submitting/error. StarsBar interactive (size 32) → setRating. Input title (max 120). Textarea comment (max 2000 con contador). Validación local + POST /api/dima/reviews → toast.success(message) + onPublished (refresh reviews).
+- Register UI (Navbar + Hero + HowItWorks CTA + RegisterSupplierDialogBody, ~líneas 1586-1861):
+  * Navbar: añadido prop onPromote. Botón emerald bold "🏪 Quiero promocionar mi empresa" antes del botón Instalar/Sesión, con boxShadow emerald.
+  * Hero: añadido prop onPromote. Card CTA "¿Tienes un negocio?" con ícono Briefcase emerald + texto + botón emerald "Quiero promocionar mi empresa".
+  * HowItWorks: añadido prop onPromote. Card destacada con ícono Briefcase emerald gradiente + botón emerald grande. InfoBox existente mantiene message sobre $1/mes frase extra.
+  * DimaApp: estado registerOpen. Monta {registerOpen && <RegisterSupplierDialogBody onClose onGoLogin />} (state fresco cada apertura). onGoLogin cierra registro + abre LoginModal.
+  * RegisterSupplierDialogBody: state completo (name/email/password/phone/companyName/city/sector/address/category default 'Bazar'/branchName default 'Matriz'/branchAddress/branchPhone/phrases[5 inputs]). Form organizado en 5 secciones con íconos emerald: "Tus datos" (UserIcon), "Datos de tu empresa" (Building2), "Sucursal principal" (Store), "Frases de posicionamiento" (Search), "Tu plan" (Sparkles). Select native con 10 categorías. Card Plan Starter GRATIS con gradiente emerald→emeraldDark. Validaciones en submit (email regex, password ≥6, companyName+city). POST /api/dima/register-supplier → toast.success + close + onGoLogin. Errores → toast.error + banner rojo. Link "¿Ya tienes cuenta? Inicia sesión" → onGoLogin.
+- Prisma relation names en camelCase: db.review.findMany, db.supplier.findUnique, db.supplierBranch.create, db.searchPhrase.create, db.user.findUnique (sin PascalCase).
+- Sin useEffect con setState síncrono: ReviewsSection inicializa loading=true vía useState (no setLoading(true) en effect). En refresh (refreshKey++) no se resetea loading — se mantiene data anterior hasta que llegue la nueva. WriteReviewDialogBody y RegisterSupplierDialogBody montados con {open && <Body/>} para reinicializar state. AbortController para cancelar fetch en cleanup.
+- Lint: `bun run lint` → exit 0 (0 errors 0 warnings en todo el proyecto). Único fix intermedio: react-hooks/set-state-in-effect en setLoading(true) síncrono → movido a useState initial=true + sin reset en effect.
+- Dev server: GET /dima 200 OK (46ms), POST /api/dima/search 200 OK, GET /api/dima/reviews?supplierId=X 200 OK (TecnoExpress → empty stats), POST /api/dima/reviews (no auth) → 201 PENDING con review creada, POST /api/dima/register-supplier con email inválido → 400, POST con email válido → 201 con user+supplierId+branch (Matriz)+2 phrases creadas en tx, POST con email duplicado → 409, POST /api/dima/search "importadores mayoristas de bazar" → 200 con el nuevo supplier apareciendo como resultado SUPPLIER.
+
+Stage Summary:
+- Archivos creados (2):
+  * src/app/api/dima/reviews/route.ts (~240 líneas, GET público + POST auth-optional, mapea supplierId→userId vía Supplier lookup, recalcula Supplier.rating tras POST PUBLISHED).
+  * src/app/api/dima/register-supplier/route.ts (~218 líneas, POST público con transacción atómica User+Supplier+SupplierBranch(isMain)+SearchPhrase[5] y bcrypt, validaciones 400/409).
+- Archivos modificados (1):
+  * src/app/dima/dima-app.tsx (1052→1867 líneas, +815): import {toast} from 'sonner' + nuevos íconos Briefcase/Send/Quote; helpers timeAgo/initials/StarsBar; estado registerOpen + onPromote pasado a Navbar/Hero/HowItWorks; DetailDialog con useSession + ReviewsSection (fetch/AbortController/StarsBar display/ReviewsSummary barras/ReviewCard avatar+iniciales+timeAgo+respuesta empresa) + WriteReviewDialogBody (StarsBar interactive 32px + title input + comment textarea 2000 + POST /api/dima/reviews + toast.success); RegisterSupplierDialogBody (5 secciones: datos/empresa/sucursal/frases[5]/plan Starter GRATIS, native select 10 categorías, POST /api/dima/register-supplier + toast.success + onGoLogin); navbar emerald "Quiero promocionar mi empresa"; Hero CTA card; HowItWorks CTA card.
+- Decisiones clave:
+  * Review.userId se setea con supplier.userId (no con auth.id) — coherente con /api/resenas existente donde el SUPPLIER ve sus reseñas vía db.review.findMany({where:{userId:auth.id}}). customerName/Email lleva el reviewer.
+  * Auth opcional en POST reviews: logueado → PUBLISHED (confianza); anónimo → PENDING (moderación por el supplier). Status PUBLISHED recalcula Supplier.rating con aggregate.
+  * Register-supplier usa bcrypt + tx atómica + 5 frases gratis plan Starter (monthlyPrice=0, paidUntil=null, status=ACTIVE), misma convención que /api/auth/register.
+  * Sin useEffect+setState síncrono: loading=true initial state, AbortController en cleanup, refreshKey para refetch sin spinner (mantiene data anterior).
+  * Diálogos extraídos como sub-componentes Body montados con {open && <Body/>}: state fresco cada apertura, evita set-state-in-effect y reinicializa formularios.
+  * Toast via sonner (ya en layout.tsx global). Toast.info con action 'Iniciar sesión' para guiar al login desde reseñas.
+- Lint: `bun run lint` → exit 0 (0 errors 0 warnings).
+- Dev server: /dima 200 OK, todas las APIs 200/201/400/409 según esperado, search retorna el supplier recién registrado como resultado SUPPLIER con matchedPhrases. Sin tests escritos según indicación.
