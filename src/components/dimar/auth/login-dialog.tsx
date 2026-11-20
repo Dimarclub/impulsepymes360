@@ -63,10 +63,12 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
 
   const refreshUser = async (): Promise<boolean> => {
     try {
-      const r = await fetch('/api/auth/me')
+      // Pequeña pausa para que la cookie de sesión se establezca
+      await new Promise((resolve) => setTimeout(resolve, 200))
+      const r = await fetch('/api/auth/me', { cache: 'no-store' })
       if (!r.ok) return false
       const me = await r.json()
-      if (me) {
+      if (me && me.id) {
         setUser(me)
         return true
       }
@@ -88,9 +90,15 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
         toast('Credenciales inválidas', 'error')
         return
       }
+      // Si signIn retorna OK pero sin URL, igual el login fue exitoso
+      // Intentamos cargar el usuario; si falla, recargamos la página
       const ok = await refreshUser()
       if (!ok) {
-        toast('No se pudo cargar tu sesión', 'error')
+        // Fallback: recargar la página para que la sesión se establezca correctamente
+        toast('Sesión iniciada. Recargando...', 'success')
+        setTimeout(() => {
+          window.location.reload()
+        }, 800)
         return
       }
       toast('¡Bienvenido!', 'success')
