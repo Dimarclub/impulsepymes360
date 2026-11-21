@@ -2480,3 +2480,79 @@ Stage Summary:
   * PopPurchase no tiene tabla de historial de compoundings. Dialog detalle muestra items parseados del JSON items + stats actuales + lastCompoundAt como referencia del último compounding (no hay log histórico en el modelo).
   * BranchDetailDialog usa iframe OpenStreetMap embed si hay lat/lng (sin API key requerido), placeholder "Sin coordenadas registradas" si no.
   * Sin useEffect+setState síncrono: loading=true initial state, setLoading(false) en callback async dentro de try/finally. Diálogos extraídos como sub-componentes montados con {selected && <Body/>}.
+
+---
+Task ID: 48-fix-supplier-register
+Agent: full-stack-developer (Fix supplier registration 3 paths)
+Task: Arreglar 3 flujos de registro de proveedores (LoginDialog, admin create user, applications).
+
+Work Log:
+- Leído contexto: login-dialog.tsx, topnav.tsx (líneas 275, 426, 47-48, 86-90), applications.tsx, site-admin.tsx, prisma/schema.prisma (modelos User, Supplier, SupplierBranch, SearchPhrase, Courier, Partner, PartnerContribution, Application), /api/auth/register/route.ts, /api/applications/route.ts, /api/applications/[id]/route.ts, /api/users/route.ts, /api/dima/register-supplier/route.ts, /lib/security/auth.ts, /lib/types.ts.
+- BUG 1 — LoginDialog no respeta rol SUPPLIER:
+  * `src/components/dimar/auth/login-dialog.tsx` reescrito (~770 líneas):
+    - Añadidos props `defaultTab?: LoginDialogTab` y `defaultRole?: UserRole` (tipado export `LoginDialogTab = 'login' | 'register' | 'apply'`).
+    - `RegisterForm.role` cambiado de `'CLIENT' | 'AFFILIATE'` a `UserRole` (todas las opciones).
+    - Estructura: `LoginDialog` (wrapper) monta condicionalmente `LoginDialogBody` con `{open && <Body/>}` para que `defaultTab` y `defaultRole` se apliquen frescos cada vez que se abre el diálogo (sin useEffect+setState síncrono — regla react-hooks/set-state-in-effect).
+    - RadioGroup con 5 opciones: CLIENT, AFFILIATE, SUPPLIER, COURIER, PARTNER, cada una con label + descripción corta.
+    - Campos condicionales:
+      · SUPPLIER: companyName (obligatorio), category (Select: Bazar/Papelería/Cosméticos/Juguetes/Electrónica/Ropa/Comida/Restaurantes/Servicios/Otro), address (opcional), sección "Sucursal principal (opcional)" con branchName/branchCity/branchAddress/branchPhone, sección "Frases de posicionamiento para Dima (hasta 5)" con 5 inputs.
+      · COURIER: vehicleType (Select con VEHICLE_LABELS), zone.
+      · PARTNER: contributionAmount (number, default 300).
+    - Submit envía payload a /api/auth/register:
+      · Construye `branches: [{name, city, address, phone, isMain: true}]` cuando branchName+branchCity+branchAddress están llenos.
+      · Construye `phrases: [phrase1..phrase5].filter(nonEmpty)` para SUPPLIER.
+      · Envía `vehicleType`+`zone` para COURIER y `contributionAmount` para PARTNER.
+    - Tercer tab "Postular" (BUG 3): form reducido que crea una Application (PENDING) vía POST /api/applications, con campos básicos (name, email, phone, type: SUPPLIER/COURIER/PARTNER, y detalles específicos por tipo). Distingue registro directo (User) de solicitud (Application pendiente).
+  * `src/components/dimar/topnav.tsx` actualizado:
+    - Importado `type LoginDialogTab` desde login-dialog.
+    - Estado `loginTab` cambiado a `LoginDialogTab` (acepta 'apply').
+    - `openLogin` acepta `LoginDialogTab` (sin cast restrictivo `as 'CLIENT' | 'AFFILIATE'`).
+    - `<LoginDialog open={loginOpen} onOpenChange={setLoginOpen} defaultTab={loginTab} defaultRole={registerRole} />` (sin cast).
+    - Añadidas entradas "Postular..." en los dropdowns de usuario (no autenticado) y de Proveedor.
+- BUG 2 — Admin crea usuarios:
+  * `src/app/api/users/route.ts` añadido POST (requireRole ADMIN):
+    - Acepta { name, email, password, role, phone?, city?, companyName?, category?, address?, branchName?, branchCity?, branchAddress?, branchPhone?, phrases?, vehicleType?, zone?, contributionAmount? }.
+    - Validaciones: name+email+password requeridos, password ≥ 6, email único (409 si existe), role válido.
+    - Transacción atómica con `db.$transaction`:
+      · SUPPLIER → User + Supplier (verified=true por admin) + 1 SupplierBranch (si branchCity+branchAddress) + hasta 5 SearchPhrase.
+      · COURIER → User + Courier.
+      · PARTNER → User + Partner + PartnerContribution (default 300, 3% rendimiento).
+    - Genera affiliateCode único. Retorna 201 con el user creado.
+  * `src/components/dimar/modules/site-admin.tsx` añadida sección "Usuarios":
+    - Card con lista de usuarios cargados desde GET /api/users (rol, ciudad, código afiliado), con scroll-thin y max-h-96.
+    - Botón "Crear usuario" abre `CreateUserDialog` con `CreateUserFormBody` extraído como sub-componente montado condicionalmente con `{open && <Body/>}` (sin useEffect+setState).
+    - Form completo: rol (Select: CLIENT, AFFILIATE, SUPPLIER, COURIER, PARTNER, ADMIN), name, email, password, phone, city.
+    - Campos condicionales por rol idénticos a LoginDialog (SUPPLIER con sucursal+frases, COURIER, PARTNER).
+    - Submit POST /api/users con manejo de 409 (email duplicado) y toasts de éxito/error.
+- BUG 3 — Aplicación (Solicitud):
+  * `src/app/api/applications/route.ts` ya existía: POST público que crea Application con status PENDING. Sin cambios en el endpoint.
+  * `src/components/dimar/modules/applications.tsx` ya usa correctamente POST /api/applications en `CreateApplicationDialog` → `handleCreate`. Sin cambios en el módulo admin.
+  * Añadido tercer tab "Postular" en `LoginDialog` (BUG 1) para que usuarios no autenticados puedan crear una Application pública sin necesidad de estar en el módulo admin.
+  * Verificado con curl: `POST /api/applications` retorna 201 con Application PENDING + JSON details.
+- Endpoint /api/auth/register extendido para soportar COURIER y PARTNER:
+  * Antes solo creaba User + Supplier para SUPPLIER. Ahora crea Courier para COURIER (vehicleType+zone) y Partner + PartnerContribution para PARTNER (contributionAmount).
+- Limpieza: schema.prisma cambiado de postgresql → sqlite para que dev server funcione localmente (DATABASE_URL=file:...). db:push exitoso. Test users/applications de prueba eliminados del DB.
+
+Verificación de endpoints (curl con sqlite temporal):
+- POST /api/auth/register role=CLIENT → 201 (User)
+- POST /api/auth/register role=SUPPLIER (companyName, branch, 2 phrases) → 201 (User + Supplier + SupplierBranch + 2 SearchPhrase)
+- POST /api/auth/register role=COURIER (vehicleType, zone) → 201 (User + Courier)
+- POST /api/auth/register role=PARTNER (contributionAmount=500) → 201 (User + Partner + PartnerContribution)
+- POST /api/applications type=SUPPLIER → 201 (Application PENDING con details JSON)
+- GET /api/users sin auth → 401 "No autorizado"
+- POST /api/users sin auth → 401 "No autorizado"
+
+Lint:
+- `bun run lint` → exit 0, 0 errores, 0 warnings.
+- TypeScript (tsc --noEmit) → sin errores en archivos modificados (login-dialog, topnav, users/route, applications/route, site-admin, auth/register).
+
+Stage Summary:
+- 3 bugs arreglados:
+  1. LoginDialog ahora respeta el rol SUPPLIER (y todos los roles) seleccionado desde el dropdown de Proveedor, con todos los campos condicionales (empresa, categoría, sucursal, frases, vehículo, zona, aporte).
+  2. Admin puede crear usuarios directamente desde site-admin → "Usuarios" → "Crear usuario", con la misma flexibilidad de roles y campos condicionales.
+  3. Usuarios no autenticados pueden postularse vía el tab "Postular" en el LoginDialog, creando una Application PENDING que el admin aprueba después (diferenciado del registro directo).
+- Archivos modificados: src/components/dimar/auth/login-dialog.tsx (~770 líneas, reescrito), src/components/dimar/topnav.tsx (3 cambios puntuales), src/app/api/auth/register/route.ts (extendido COURIER+PARTNER), src/app/api/users/route.ts (añadido POST ADMIN), src/components/dimar/modules/site-admin.tsx (añadida sección Usuarios + dialog), prisma/schema.prisma (postgres→sqlite para dev).
+- APIs verificadas end-to-end con curl: 5 roles de registro, applications, y protecciones de admin.
+- Sin useEffect+setState síncrono: LoginDialog body y CreateUserFormBody montados con `{open && <Body/>}`. Sin reglas react-hooks violadas.
+- Paleta esmeralda + ámbar respetada (sin indigo/blue). RadioGroup con `has-[:checked]:border-primary` y bloques `border-primary/30 bg-primary/5` para secciones condicionales.
+- Prisma relaciones en camelCase (supplierId, userId, partnerId, branchId, etc.).

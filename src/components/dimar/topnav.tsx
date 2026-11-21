@@ -19,7 +19,7 @@ import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
 import type { UserRole, ModuleId } from '@/lib/types'
 import { canAccessModule } from '@/lib/permissions'
-import { LoginDialog } from './auth/login-dialog'
+import { LoginDialog, type LoginDialogTab } from './auth/login-dialog'
 import { NotificationBell } from './notification-bell'
 
 const ROLE_LABELS: Record<UserRole, string> = {
@@ -44,7 +44,7 @@ export function TopNav() {
   const toast = useAppStore((s) => s.toast)
 
   const [loginOpen, setLoginOpen] = useState(false)
-  const [loginTab, setLoginTab] = useState<'login' | 'register'>('login')
+  const [loginTab, setLoginTab] = useState<LoginDialogTab>('login')
   const [registerRole, setRegisterRole] = useState<UserRole>('CLIENT')
   const [marqueeText, setMarqueeText] = useState('')
   const [contactPhone, setContactPhone] = useState('+593992689844')
@@ -83,7 +83,7 @@ export function TopNav() {
   const isAuthenticated = status === 'authenticated' && !!displayUser
   const itemCount = cart.reduce((s, l) => s + l.quantity, 0)
 
-  const openLogin = (tab: 'login' | 'register', role?: UserRole) => {
+  const openLogin = (tab: LoginDialogTab, role?: UserRole) => {
     setLoginTab(tab)
     if (role) setRegisterRole(role)
     setLoginOpen(true)
@@ -171,6 +171,7 @@ export function TopNav() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => openLogin('login')}><LogIn className="size-4 mr-2" /> Iniciar sesión</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => openLogin('register')}><UserPlus className="size-4 mr-2" /> Crear una cuenta</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openLogin('apply')}><FileText className="size-4 mr-2" /> Postular (proveedor / socio / mensajero)</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
                     <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Registrarse como:</DropdownMenuLabel>
@@ -273,6 +274,7 @@ export function TopNav() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => openLogin('login')}><LogIn className="size-4 mr-2" /> Iniciar sesión</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => openLogin('register', 'SUPPLIER')}><UserPlus className="size-4 mr-2" /> No tienes cuenta, crear una</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => openLogin('apply')}><FileText className="size-4 mr-2" /> Postular (solicitud al admin)</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setModule('suppliers')}><Store className="size-4 mr-2" /> Proveedores</DropdownMenuItem>
               </DropdownMenuContent>
@@ -423,7 +425,12 @@ export function TopNav() {
         )}
       </header>
 
-      <LoginDialog open={loginOpen} onOpenChange={setLoginOpen} defaultTab={loginTab} defaultRole={registerRole as 'CLIENT' | 'AFFILIATE'} />
+      <LoginDialog
+        open={loginOpen}
+        onOpenChange={setLoginOpen}
+        defaultTab={loginTab}
+        defaultRole={registerRole}
+      />
 
       <style jsx global>{`
         .marquee-track { white-space: nowrap; animation: marquee 40s linear infinite; }

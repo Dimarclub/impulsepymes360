@@ -4,12 +4,16 @@ import bcrypt from 'bcryptjs'
 
 // Registro público de clientes/afiliados (con código de referido opcional)
 // Para SUPPLIER acepta además: branches[], phrases[], categories[], subcategories[]
+// Para COURIER acepta: vehicleType, zone
+// Para PARTNER acepta: contributionAmount
 export async function POST(req: NextRequest) {
-  const body = await req.json()
+  const body = await req.json().catch(() => ({}))
   const {
     name, email, password, role, sponsorCode, phone, city,
     companyName, taxId, address, category,
     branches, phrases, categories, subcategories,
+    vehicleType, zone,
+    contributionAmount,
   } = body as {
     name: string
     email: string
@@ -35,6 +39,11 @@ export async function POST(req: NextRequest) {
     phrases?: string[]
     categories?: string[]
     subcategories?: string[]
+    // Campos COURIER
+    vehicleType?: string
+    zone?: string
+    // Campos PARTNER
+    contributionAmount?: number
   }
 
   if (!name || !email || !password) {
@@ -59,10 +68,14 @@ export async function POST(req: NextRequest) {
   // Generar código de afiliado único
   const code = name.slice(0, 4).toUpperCase() + '-' + String(Math.floor(Math.random() * 9000) + 1000)
 
-  const isSupplier = role === 'SUPPLIER'
-  const userRole = role === 'AFFILIATE' ? 'AFFILIATE' : isSupplier ? 'SUPPLIER' : 'CLIENT'
+  const requestedRole = role || 'CLIENT'
+  const validRoles = ['CLIENT', 'AFFILIATE', 'SUPPLIER', 'COURIER', 'PARTNER']
+  const userRole = validRoles.includes(requestedRole) ? requestedRole : 'CLIENT'
+  const isSupplier = userRole === 'SUPPLIER'
+  const isCourier = userRole === 'COURIER'
+  const isPartner = userRole === 'PARTNER'
 
-  // Crear usuario + supplier + branches + phrases en una transacción atómica
+  // Crear usuario + entidades asociadas en una transacción atómica
   const user = await db.$transaction(async (tx) => {
     const u = await tx.user.create({
       data: {
@@ -72,6 +85,7 @@ export async function POST(req: NextRequest) {
         role: userRole,
         phone,
         city,
+        address: address || null,
         sponsorId,
         affiliateCode: code,
       },
@@ -131,7 +145,39 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    return { u, supplier }
+    if (isCourier) {
+      await tx.courier.create({
+        data: {
+          userId: u.id,
+          vehicleType: vehicleType || 'MOTORCYCLE',
+          zone: zone || null,
+          available: true,
+        },
+      })
+    }
+
+    if (isPartner) {
+      const amount = Number(contributionAmount) > 0 ? Number(contributionAmount) : 300
+      const monthly = +(amount * 0.03).toFixed(2)
+      await tx.partner.create({
+        data: {
+          userId: u.id,
+          totalContribution: amount,
+          totalReturns: monthly,
+          status: 'ACTIVE',
+          contributions: {
+            create: {
+              amount,
+              returnRate: 3,
+              monthlyReturn: monthly,
+              status: 'ACTIVE',
+            },
+          },
+        },
+      })
+    }
+
+    return { u, supplier, isCourier, isPartner }
   })
 
   return NextResponse.json({
