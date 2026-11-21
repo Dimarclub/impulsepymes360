@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     title: "Dimarclub",
     description: "Compra, recomienda y gana. El marketplace con comunidad.",
     siteName: "Dimarclub",
-    images: [{ url: "/icon.png", width: 628, height: 425, alt: "Dimarclub" }],
+    images: [{ url: "/icon.png" }],
     type: "website",
   },
 };
