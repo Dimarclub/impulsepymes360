@@ -76,6 +76,10 @@ model User {
   appReferralsFrom  AppReferral[]      @relation("ReferredReferrals")
   popPurchases      PopPurchase[]
 
+  // Recuperación de contraseña
+  resetToken        String?
+  resetTokenExpiresAt DateTime?
+
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { signIn } from 'next-auth/react'
-import { Loader2, LogIn, UserPlus, Eye, EyeOff, Sparkles, Send } from 'lucide-react'
+import { Loader2, LogIn, UserPlus, Eye, EyeOff, Sparkles, Send, X } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -167,6 +167,7 @@ function LoginDialogBody({
   const [registerLoading, setRegisterLoading] = useState(false)
   const [applyLoading, setApplyLoading] = useState(false)
   const [showPwd, setShowPwd] = useState(false)
+  const [forgotOpen, setForgotOpen] = useState(false)
 
   const loginForm = useForm<LoginForm>({
     defaultValues: { email: '', password: '' },
@@ -478,7 +479,7 @@ function LoginDialogBody({
               <button
                 type="button"
                 className="text-xs text-muted-foreground hover:text-primary transition"
-                onClick={() => toast('Función disponible próximamente', 'info')}
+                onClick={() => setForgotOpen(true)}
               >
                 ¿Olvidaste tu contraseña?
               </button>
@@ -1021,6 +1022,161 @@ function LoginDialogBody({
           </form>
         </TabsContent>
       </Tabs>
+
+      {forgotOpen && (
+        <ForgotPasswordDialogBody
+          onClose={() => setForgotOpen(false)}
+          onSent={() => {
+            setForgotOpen(false)
+          }}
+        />
+      )}
     </>
+  )
+}
+
+// ============ Forgot Password Dialog ============
+function ForgotPasswordDialogBody({
+  onClose,
+  onSent,
+}: {
+  onClose: () => void
+  onSent: () => void
+}) {
+  const toast = useAppStore((s) => s.toast)
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [sent, setSent] = useState(false)
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email.trim()) return
+
+    setLoading(true)
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      })
+      const data = await res.json()
+
+      // Siempre mostrar el mismo mensaje (evita user enumeration)
+      setSent(true)
+      toast('Si el email existe, recibirás un enlace de recuperación', 'info')
+    } catch (err) {
+      toast('Error al enviar el email. Intenta de nuevo.', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.6)',
+        zIndex: 60,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: 'hsl(var(--background))',
+          border: '1px solid hsl(var(--border))',
+          borderRadius: 12,
+          maxWidth: 420,
+          width: '100%',
+          padding: 24,
+        }}
+        className="bg-background text-foreground"
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>
+            ¿Olvidaste tu contraseña?
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground transition"
+            style={{
+              background: 'transparent',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: 6,
+              width: 32,
+              height: 32,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            aria-label="Cerrar"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+
+        {sent ? (
+          <div style={{ textAlign: 'center', padding: '8px 0' }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>📧</div>
+            <p style={{ color: 'hsl(var(--muted-foreground))', fontSize: 14, lineHeight: 1.6, margin: '0 0 16px' }}>
+              Si el email <strong style={{ color: 'hsl(var(--foreground))' }}>{email}</strong> existe
+              en nuestra base de datos, recibirás un enlace de recuperación en breve.
+            </p>
+            <p style={{ color: 'hsl(var(--muted-foreground))', fontSize: 12, margin: 0 }}>
+              Revisa tu bandeja de entrada y tu carpeta de spam.
+              El enlace expira en 1 hora.
+            </p>
+            <Button onClick={onSent} variant="outline" className="mt-4 w-full">
+              Cerrar
+            </Button>
+          </div>
+        ) : (
+          <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <p style={{ color: 'hsl(var(--muted-foreground))', fontSize: 13, margin: 0, lineHeight: 1.5 }}>
+              Escribe tu email y te enviaremos un enlace para restablecer tu contraseña.
+            </p>
+            <div>
+              <Label htmlFor="forgot-email" className="text-xs mb-1.5 block">
+                Email
+              </Label>
+              <Input
+                id="forgot-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="tucorreo@dominio.com"
+                autoFocus
+                required
+              />
+            </div>
+            <Button type="submit" disabled={loading || !email} className="w-full">
+              {loading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin mr-2" /> Enviando…
+                </>
+              ) : (
+                <>
+                  <Send className="size-4 mr-2" /> Enviar enlace de recuperación
+                </>
+              )}
+            </Button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-xs text-muted-foreground hover:text-foreground transition text-center"
+            >
+              ← Volver
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
   )
 }
