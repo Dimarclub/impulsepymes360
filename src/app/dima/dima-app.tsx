@@ -8,7 +8,7 @@ import {
   Sparkles, TrendingUp, Wallet, Users, Award, Download, ChevronRight,
   ChevronDown, Building2, Package, ShoppingBag, Store, Navigation,
   Zap, Bot, ArrowRight, Volume2, CheckCircle2, Copy, QrCode, Share2,
-  User as UserIcon, LogIn, Home, Briefcase, Send, Quote,
+  User as UserIcon, LogIn, Home, Briefcase, Send, Quote, UserPlus,
 } from 'lucide-react'
 
 // ---------- Paleta oscura (mismo sistema que PubliBags / Presentación) ----------
@@ -154,6 +154,7 @@ export default function DimaApp() {
   const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
   const [loginOpen, setLoginOpen] = useState(false)
+  const [userRegisterOpen, setUserRegisterOpen] = useState(false)
   const [subscribeOpen, setSubscribeOpen] = useState(false)
   const [subscribeLoading, setSubscribeLoading] = useState(false)
   const [subscribed, setSubscribed] = useState(false)
@@ -335,6 +336,7 @@ export default function DimaApp() {
         installable={installable}
         onInstall={installApp}
         onLogin={() => setLoginOpen(true)}
+        onRegister={() => setUserRegisterOpen(true)}
         onLogout={() => signOut({ callbackUrl: '/dima' })}
         onPromote={() => setRegisterOpen(true)}
       />
@@ -427,6 +429,16 @@ export default function DimaApp() {
         />
       )}
 
+      {userRegisterOpen && (
+        <UserRegisterModal
+          onClose={() => setUserRegisterOpen(false)}
+          onSuccess={() => {
+            setUserRegisterOpen(false)
+            setLoginOpen(true)
+          }}
+        />
+      )}
+
       {subscribeOpen && (
         <SubscribeDialog
           annual={annualBilling}
@@ -472,13 +484,14 @@ export default function DimaApp() {
 
 // ============ NAVBAR ============
 function Navbar({
-  userName, isAuth, installable, onInstall, onLogin, onLogout, onPromote,
+  userName, isAuth, installable, onInstall, onLogin, onRegister, onLogout, onPromote,
 }: {
   userName?: string
   isAuth: boolean
   installable: boolean
   onInstall: () => void
   onLogin: () => void
+  onRegister: () => void
   onLogout: () => void
   onPromote: () => void
 }) {
@@ -512,9 +525,14 @@ function Navbar({
               <UserIcon size={14} /> {userName?.split(' ')[0] || 'Yo'}
             </button>
           ) : (
-            <button onClick={onLogin} style={{ background: 'transparent', color: C.emerald, border: `1px solid ${C.emerald}`, padding: '8px 14px', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <LogIn size={14} /> Iniciar sesión
-            </button>
+            <>
+              <button onClick={onRegister} style={{ background: 'transparent', color: C.emerald, border: `1px solid ${C.emerald}`, padding: '8px 14px', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <UserPlus size={14} /> Registrarme
+              </button>
+              <button onClick={onLogin} style={{ background: C.emerald, color: '#0B1120', border: 'none', padding: '8px 14px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <LogIn size={14} /> Iniciar sesión
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -1522,6 +1540,162 @@ function LoginModal({ onClose, onLoginSuccess }: { onClose: () => void; onLoginS
             ¿No tienes cuenta?{' '}
             <a href="/" onClick={(e) => { e.preventDefault(); window.location.href = '/?register=1' }} style={{ color: C.emerald, textDecoration: 'none' }}>
               Regístrate en el portal →
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ============ USER REGISTER MODAL ============
+function UserRegisterModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [phone, setPhone] = useState('')
+  const [city, setCity] = useState('')
+  const [sponsorCode, setSponsorCode] = useState('')
+  const [plan, setPlan] = useState<'FREE' | 'PLUS'>('FREE')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const submit = async () => {
+    if (!name.trim()) return setError('Tu nombre es obligatorio')
+    if (!email.trim()) return setError('Email es obligatorio')
+    if (password.length < 6) return setError('La contraseña debe tener al menos 6 caracteres')
+    setLoading(true)
+    setError(null)
+    try {
+      // 1. Crear cuenta
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          password,
+          role: 'CLIENT',
+          phone: phone.trim() || undefined,
+          city: city.trim() || undefined,
+          sponsorCode: sponsorCode.trim() || undefined,
+        }),
+      })
+      const d = await res.json()
+      if (!res.ok || d.error) {
+        throw new Error(d?.error || 'Error al crear la cuenta')
+      }
+
+      // 2. Si eligió Plus, suscribir automáticamente
+      if (plan === 'PLUS') {
+        await fetch('/api/dima/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            plan: 'PLUS',
+            billingCycle: 'MONTHLY',
+            referredBy: sponsorCode.trim() || undefined,
+          }),
+        }).catch(() => {}) // no bloquear si falla
+      }
+
+      toast.success('¡Cuenta creada! Inicia sesión para continuar.')
+      onSuccess()
+    } catch (e: any) {
+      setError(e?.message || 'Error al registrar')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, overflowY: 'auto' }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, maxWidth: 480, width: '100%', padding: 24, margin: 'auto 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <UserPlus size={18} color={C.emerald} /> Crear cuenta
+          </h3>
+          <button onClick={onClose} style={{ background: C.card2, border: `1px solid ${C.border}`, color: C.text, width: 32, height: 32, borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <X size={16} />
+          </button>
+        </div>
+        <p style={{ color: C.textDim, fontSize: 13, marginBottom: 16 }}>
+          Únete a Dima y empieza a buscar, ahorrar y ganar.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* Plan selector */}
+          <div>
+            <label style={{ display: 'block', fontSize: 12, color: C.textDim, marginBottom: 6 }}>Elige tu plan</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => setPlan('FREE')}
+                style={{
+                  background: plan === 'FREE' ? C.card2 : 'transparent',
+                  border: `1px solid ${plan === 'FREE' ? C.emerald : C.border}`,
+                  borderRadius: 8, padding: 12, cursor: 'pointer', textAlign: 'left',
+                }}
+              >
+                <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Dima Free</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: C.emerald }}>$0/mes</div>
+                <div style={{ fontSize: 11, color: C.textDim, marginTop: 4 }}>Búsquedas libres</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPlan('PLUS')}
+                style={{
+                  background: plan === 'PLUS' ? C.card2 : 'transparent',
+                  border: `1px solid ${plan === 'PLUS' ? C.emerald : C.border}`,
+                  borderRadius: 8, padding: 12, cursor: 'pointer', textAlign: 'left',
+                }}
+              >
+                <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Dima Plus</div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: C.emerald }}>$20/mes</div>
+                <div style={{ fontSize: 11, color: C.textDim, marginTop: 4 }}>+ Inversión 5% + red de afiliados</div>
+              </button>
+            </div>
+          </div>
+          {/* Datos */}
+          <div>
+            <label style={{ display: 'block', fontSize: 12, color: C.textDim, marginBottom: 4 }}>Nombre completo *</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Juan Pérez" style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 8, background: C.card2, border: `1px solid ${C.border}`, color: C.text, fontSize: 14, outline: 'none' }} />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, color: C.textDim, marginBottom: 4 }}>Email *</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tucorreo@dominio.com" style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 8, background: C.card2, border: `1px solid ${C.border}`, color: C.text, fontSize: 14, outline: 'none' }} />
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, color: C.textDim, marginBottom: 4 }}>Teléfono</label>
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="099 123 4567" style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 8, background: C.card2, border: `1px solid ${C.border}`, color: C.text, fontSize: 14, outline: 'none' }} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, color: C.textDim, marginBottom: 4 }}>Ciudad</label>
+              <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Quito" style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 8, background: C.card2, border: `1px solid ${C.border}`, color: C.text, fontSize: 14, outline: 'none' }} />
+            </div>
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, color: C.textDim, marginBottom: 4 }}>Contraseña *</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo 6 caracteres" style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 8, background: C.card2, border: `1px solid ${C.border}`, color: C.text, fontSize: 14, outline: 'none' }} />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, color: C.textDim, marginBottom: 4 }}>Código de referido (opcional)</label>
+            <input value={sponsorCode} onChange={(e) => setSponsorCode(e.target.value)} placeholder="Ej: DIMAR-001" style={{ width: '100%', height: 40, padding: '0 12px', borderRadius: 8, background: C.card2, border: `1px solid ${C.border}`, color: C.text, fontSize: 14, outline: 'none' }} />
+          </div>
+          {error && <p style={{ margin: 0, color: C.rose, fontSize: 13 }}>{error}</p>}
+          <button onClick={submit} disabled={loading} style={{ background: C.emerald, color: '#0B1120', border: 'none', padding: '12px', borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            {loading && <Loader2 size={16} className="dima-spin" />}
+            Crear cuenta {plan === 'PLUS' ? '(Dima Plus $20/mes)' : '(Gratis)'}
+          </button>
+          {plan === 'PLUS' && (
+            <p style={{ textAlign: 'center', color: C.emerald, fontSize: 11, marginTop: 4 }}>
+              💚 Tu pago mensual de $20 se invierte al 5% compuesto + accedes a la red de afiliados
+            </p>
+          )}
+          <p style={{ textAlign: 'center', color: C.textDim, fontSize: 12, marginTop: 4 }}>
+            ¿Ya tienes cuenta?{' '}
+            <a onClick={onClose} style={{ color: C.emerald, textDecoration: 'none', cursor: 'pointer' }}>
+              Iniciar sesión
             </a>
           </p>
         </div>

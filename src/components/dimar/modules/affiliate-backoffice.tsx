@@ -19,7 +19,7 @@ import {
 import {
   Users, Share2, Copy, Link2, Wallet, TrendingUp, QrCode, Gift,
   CheckCircle2, Plus, Network, DollarSign, Megaphone, ArrowRight,
-  ShoppingBag, Award, Zap, Store, PiggyBank,
+  ShoppingBag, Award, Zap, Store, PiggyBank, Bot,
 } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
@@ -113,6 +113,7 @@ function OverviewTab() {
       <div className="grid md:grid-cols-2 gap-3">
         <Button variant="outline" className="justify-start" onClick={() => setModule('marketplace')}><ShoppingBag className="size-4 mr-2" /> Ir a la tienda</Button>
         <Button variant="outline" className="justify-start" onClick={() => setModule('publibags')}><QrCode className="size-4 mr-2" /> Comprar espacio PubliBags — $67</Button>
+        <Button variant="outline" className="justify-start" onClick={() => setModule('dima')}><Bot className="size-4 mr-2 text-emerald-600" /> Mi Dima (suscripción + inversión POP + red + stars)</Button>
         <Button variant="outline" className="justify-start" onClick={() => setModule('benefits')}><Gift className="size-4 mr-2" /> Ver beneficios</Button>
         <Button variant="outline" className="justify-start" onClick={() => setModule('dimarclub')}><Users className="size-4 mr-2" /> Conocer DimarClub</Button>
       </div>

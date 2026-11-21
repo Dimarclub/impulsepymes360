@@ -233,7 +233,7 @@ export function TopNav() {
               )}
             </div>
             {navItem('Inicio', 'dimarclub', Home)}
-            <button onClick={() => setModule('dima')} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300', activeModule === 'dima' && 'ring-2 ring-emerald-400')}><Bot className="size-4" />Dima</button>
+            <button onClick={() => { if (typeof window !== 'undefined') window.location.href = '/dima' }} className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300')}><Bot className="size-4" />Dima</button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className={cn('flex items-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-colors bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300', (activeModule === 'publibags' || activeModule === 'web-express' || activeModule === 'fuerza-delta' || activeModule === 'marketplace' || activeModule === 'social-automation' || activeModule === 'impulsepymes360' || activeModule === 'directorio') && 'ring-2 ring-emerald-400')}><LayoutGrid className="size-4" />Servicios<ChevronDown className="size-3" /></button>
@@ -303,7 +303,8 @@ export function TopNav() {
                   <DropdownMenuLabel className="text-primary font-bold">CRM Hub · Todo en uno</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Robot Dima</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => setModule('dima')}><Bot className="size-4 mr-2 text-primary" /> Dima · Robot IA</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => { if (typeof window !== 'undefined') window.location.href = '/dima' }}><Bot className="size-4 mr-2 text-primary" /> Dima · Robot IA (PWA pública)</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setModule('dima')}><Bot className="size-4 mr-2 text-muted-foreground" /> Dima · Mi cuenta (backoffice)</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Ventas</DropdownMenuLabel>
                   <DropdownMenuItem onClick={() => setModule('embudos')}><Filter className="size-4 mr-2" /> Embudos de Venta</DropdownMenuItem>
@@ -395,7 +396,9 @@ export function TopNav() {
                 </div>
               )}
               {navItem('Inicio', 'dimarclub', Home)}
-              {navItem('Dima · Robot IA', 'dima', Bot)}
+              <a href="/dima" className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md hover:bg-muted transition-colors text-emerald-700 dark:text-emerald-300">
+                <Bot className="size-4" /> Dima (Robot IA)
+              </a>
               {navItem('Publicidad', 'publibags', ShoppingBag)}
               {navItem('Web', 'web-express', Globe)}
               {navItem('Mensajería y Logística', 'fuerza-delta', Truck)}
@@ -407,7 +410,7 @@ export function TopNav() {
               {navItem('Ofertas', 'ofertas', Tag)}
               {navItem('Planes', 'planes', CreditCard)}
               {navItem('Proveedor', 'suppliers', Store)}
-              {navItem('CRM Hub · Dima Robot', 'dima', Bot)}
+              {/* Dima PWA pública - redirige a /dima */}
               {navItem('CRM Hub · Embudos', 'embudos', Filter)}
               {navItem('CRM Hub · Facturación', 'facturacion', FileText)}
               {navItem('CRM Hub · Centro IA', 'ai-hub', BrainCircuit)}
