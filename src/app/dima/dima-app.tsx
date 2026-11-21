@@ -1659,30 +1659,45 @@ function RegisterSupplierDialogBody({
 
     setSubmitting(true)
     try {
-      const res = await fetch('/api/dima/register-supplier', {
+      // Unificado: usa el mismo endpoint que el login-dialog del portal
+      // /api/auth/register acepta branches[] como array de objetos
+      const branches = []
+      const branchNameVal = branchName.trim() || 'Matriz'
+      const branchAddressVal = branchAddress.trim() || address.trim()
+      const branchPhoneVal = branchPhone.trim() || phone.trim()
+      if (branchNameVal || branchAddressVal) {
+        branches.push({
+          name: branchNameVal || 'Matriz',
+          city: city.trim(),
+          sector: sector.trim() || null,
+          address: branchAddressVal || address.trim() || 'Por completar',
+          phone: branchPhoneVal || null,
+          isMain: true,
+        })
+      }
+
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: name.trim(),
           email: email.trim().toLowerCase(),
           password,
+          role: 'SUPPLIER',
           phone: phone.trim() || undefined,
-          companyName: companyName.trim(),
           city: city.trim(),
-          sector: sector.trim() || undefined,
+          companyName: companyName.trim(),
           address: address.trim() || undefined,
           category,
-          branchName: branchName.trim() || 'Matriz',
-          branchAddress: branchAddress.trim() || address.trim() || undefined,
-          branchPhone: branchPhone.trim() || phone.trim() || undefined,
+          branches,
           phrases: phrases.map((p) => p.trim()).filter(Boolean),
         }),
       })
       const d = await res.json()
-      if (!res.ok || !d.ok) {
+      if (!res.ok || d.error) {
         throw new Error(d?.error || 'Error al registrar la cuenta')
       }
-      toast.success('¡Cuenta creada! Revisa tu email para activarla.')
+      toast.success('¡Cuenta creada! Inicia sesión para continuar.')
       onClose()
       onGoLogin()
     } catch (e: any) {
