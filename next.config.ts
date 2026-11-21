@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
+  // Reducir memoria en build: desactivar worker threads (usan RAM extra)
+  // y limitar el cache de páginas estáticas
+  experimental: {
+    // En Next 16 esto reduce el uso de memoria del build
+    staticGenerationMaxConcurrency: 1,
+  },
 };
 
 export default nextConfig;
