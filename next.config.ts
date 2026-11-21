@@ -9,10 +9,6 @@ const nextConfig: NextConfig = {
     // romper el build en Vercel.
     ignoreBuildErrors: true,
   },
-  eslint: {
-    // Ignorar errores de lint en build (se validan en dev)
-    ignoreDuringBuilds: true,
-  },
   reactStrictMode: false,
   // Reducir memoria en build
   experimental: {

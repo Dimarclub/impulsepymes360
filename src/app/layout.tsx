@@ -4,6 +4,9 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 
+// Forzar todas las páginas a dynamic — reduce memoria en build (no SSG)
+export const dynamic = 'force-dynamic'
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
