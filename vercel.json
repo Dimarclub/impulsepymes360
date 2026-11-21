@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "buildCommand": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build",
+  "buildCommand": "npx prisma db push --accept-data-loss && node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build",
   "installCommand": "npm install",
   "regions": ["iad1"],
   "headers": [
