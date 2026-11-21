@@ -1088,26 +1088,26 @@ function ForgotPasswordDialogBody({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: 'hsl(var(--background))',
-          border: '1px solid hsl(var(--border))',
+          background: '#ffffff',
+          border: '1px solid #e5e7eb',
           borderRadius: 12,
           maxWidth: 420,
           width: '100%',
           padding: 24,
-        }}
-        className="bg-background text-foreground"
+          color: '#0f172a',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+      }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>
+          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#0f172a' }}>
             ¿Olvidaste tu contraseña?
           </h3>
           <button
             type="button"
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground transition"
             style={{
               background: 'transparent',
-              border: '1px solid hsl(var(--border))',
+              border: '1px solid #e5e7eb',
               borderRadius: 6,
               width: 32,
               height: 32,
@@ -1115,6 +1115,7 @@ function ForgotPasswordDialogBody({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              color: '#6b7280',
             }}
             aria-label="Cerrar"
           >
@@ -1125,11 +1126,11 @@ function ForgotPasswordDialogBody({
         {sent ? (
           <div style={{ textAlign: 'center', padding: '8px 0' }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>📧</div>
-            <p style={{ color: 'hsl(var(--muted-foreground))', fontSize: 14, lineHeight: 1.6, margin: '0 0 16px' }}>
-              Si el email <strong style={{ color: 'hsl(var(--foreground))' }}>{email}</strong> existe
+            <p style={{ color: '#475569', fontSize: 14, lineHeight: 1.6, margin: '0 0 16px' }}>
+              Si el email <strong style={{ color: '#0f172a' }}>{email}</strong> existe
               en nuestra base de datos, recibirás un enlace de recuperación en breve.
             </p>
-            <p style={{ color: 'hsl(var(--muted-foreground))', fontSize: 12, margin: 0 }}>
+            <p style={{ color: '#6b7280', fontSize: 12, margin: 0 }}>
               Revisa tu bandeja de entrada y tu carpeta de spam.
               El enlace expira en 1 hora.
             </p>
@@ -1139,11 +1140,11 @@ function ForgotPasswordDialogBody({
           </div>
         ) : (
           <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <p style={{ color: 'hsl(var(--muted-foreground))', fontSize: 13, margin: 0, lineHeight: 1.5 }}>
+            <p style={{ color: '#475569', fontSize: 13, margin: 0, lineHeight: 1.5 }}>
               Escribe tu email y te enviaremos un enlace para restablecer tu contraseña.
             </p>
             <div>
-              <Label htmlFor="forgot-email" className="text-xs mb-1.5 block">
+              <Label htmlFor="forgot-email" className="text-xs mb-1.5 block text-slate-700">
                 Email
               </Label>
               <Input
@@ -1170,7 +1171,16 @@ function ForgotPasswordDialogBody({
             <button
               type="button"
               onClick={onClose}
-              className="text-xs text-muted-foreground hover:text-foreground transition text-center"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#6b7280',
+                fontSize: 12,
+                cursor: 'pointer',
+                textAlign: 'center',
+                padding: 0,
+                marginTop: 4,
+              }}
             >
               ← Volver
             </button>
