@@ -9,12 +9,18 @@ const nextConfig: NextConfig = {
     // romper el build en Vercel.
     ignoreBuildErrors: true,
   },
+  eslint: {
+    // Ignorar errores de lint en build (se validan en dev)
+    ignoreDuringBuilds: true,
+  },
   reactStrictMode: false,
-  // Reducir memoria en build: desactivar worker threads (usan RAM extra)
-  // y limitar el cache de páginas estáticas
+  // Reducir memoria en build
   experimental: {
-    // En Next 16 esto reduce el uso de memoria del build
     staticGenerationMaxConcurrency: 1,
+  },
+  // Desactivar el cache de imágenes que consume mucha memoria en build
+  images: {
+    minimumCacheTTL: 0,
   },
 };
 
