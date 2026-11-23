@@ -3,6 +3,8 @@
 // Modo "resend": requiere RESEND_API_KEY y envía via Resend.
 // Para producción, configura EMAIL_PROVIDER=resend y RESEND_API_KEY.
 
+import { Resend } from 'resend'
+
 export interface EmailMessage {
   to: string | string[]
   from?: string
@@ -39,27 +41,17 @@ const DevProvider: EmailProvider = {
 }
 
 // ---------- Resend Provider (real) ----------
-// Carga `resend` dinámicamente en runtime para no romper el build si el
-// paquete no está instalado (es una dependencia opcional).
-async function loadResendSdk(): Promise<any | null> {
-  try {
-    const runtimeRequire = eval('require') as NodeRequire
-    const mod = runtimeRequire('resend')
-    return mod.Resend || mod.default || mod
-  } catch {
-    return null
-  }
-}
-
 const ResendProvider: EmailProvider = {
   async send(msg) {
     try {
-      const Resend = await loadResendSdk()
-      if (!Resend) throw new Error('Resend SDK no disponible. Instala "resend" y configura RESEND_API_KEY.')
+      if (!process.env.RESEND_API_KEY) {
+        throw new Error('Falta RESEND_API_KEY en las variables de entorno')
+      }
       const resend = new Resend(process.env.RESEND_API_KEY)
       const to = Array.isArray(msg.to) ? msg.to : [msg.to]
+      const from = msg.from || process.env.EMAIL_FROM || 'Dimarclub <no-reply@dimarclub.com>'
       const res = await resend.emails.send({
-        from: msg.from || process.env.EMAIL_FROM || 'Dimarclub <no-reply@dimarclub.com>',
+        from,
         to,
         subject: msg.subject,
         html: msg.html,
@@ -70,7 +62,9 @@ const ResendProvider: EmailProvider = {
       }
       return { success: true, messageId: res.data?.id, provider: 'resend' }
     } catch (e) {
-      return { success: false, provider: 'resend', error: (e as Error).message }
+      const errMsg = e instanceof Error ? e.message : String(e)
+      console.error('[email] resend send error:', errMsg)
+      return { success: false, provider: 'resend', error: errMsg }
     }
   },
 }
