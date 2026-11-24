@@ -1,0 +1,4 @@
+name,price,stock,sku,category,imageUrl,description,compareAtPrice
+Zapatos Deportivos Nike,49.99,50,ZAP-001,Calzado,https://picsum.photos/seed/zapatos-nike/600/600,Zapatos deportivos para correr,69.99
+Camiseta Algodón,15.50,100,CAM-002,Ropa,https://picsum.photos/seed/camiseta/600/600,Camiseta de algodón 100%,
+Pantalón Jean,29.99,30,PAN-003,Ropa,https://picsum.photos/seed/pantalon/600/600,Pantalón jean clásico,
