@@ -1,7 +1,6 @@
 import { db } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 
-const db = db
 
 /**
  * GET /api/dima/create-supplier?token=dimar-setup-2024&email=X&companyName=Y&category=Z&city=W

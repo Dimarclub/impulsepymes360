@@ -2,7 +2,6 @@ import { db } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 
-const db = db
 
 /**
  * GET /api/setup?token=SETUP_TOKEN

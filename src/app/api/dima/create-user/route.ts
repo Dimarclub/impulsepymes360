@@ -2,7 +2,6 @@ import { db } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 
-const db = db
 
 /**
  * GET /api/dima/create-user?token=dimar-setup-2024&email=X&password=Y&name=Z&role=W
