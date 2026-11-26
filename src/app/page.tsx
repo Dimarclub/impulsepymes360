@@ -83,6 +83,37 @@ function HomeContent() {
   const currentUser = useAppStore((s) => s.currentUser)
   const role = currentUser?.role
 
+  // Detectar ?module=X en la URL y activar ese módulo
+  // Ej: dimarclub.com/?module=tienda → activa el módulo marketplace
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const moduleParam = params.get('module')
+      if (moduleParam) {
+        // Lista de módulos válidos
+        const validModules = [
+          'marketplace', 'dashboard', 'affiliates', 'suppliers', 'partners',
+          'logistics', 'crm', 'email', 'ads', 'applications', 'benefits',
+          'social', 'social-studio', 'social-bio', 'social-automation',
+          'impulse', 'impulse-wizard', 'web-express', 'site-admin', 'zones',
+          'grid', 'bag-plan', 'planes', 'fuerza-delta', 'dimarclub',
+          'impulsepymes360', 'directorio', 'fuerza', 'automatizacion',
+          'courier-app', 'cooperativa', 'supplier-backoffice', 'affiliate-backoffice',
+          'partner-backoffice', 'alertas', 'finanzas', 'ofertas', 'ofertas-admin',
+          'cpa-tasks', 'cpa-admin', 'album', 'album-admin', 'presentacion',
+          'ferias', 'embudos', 'facturacion', 'ai-hub', 'formularios',
+          'encuestas', 'resenas', 'citas', 'bandeja', 'cursos', 'chat',
+          'reservas', 'reservas-admin', 'bag-investment', 'dima', 'dima-admin',
+        ] as const
+        if (validModules.includes(moduleParam as any)) {
+          setModule(moduleParam as any)
+          // Limpiar el query param sin recargar
+          window.history.replaceState({}, '', '/')
+        }
+      }
+    }
+  }, [setModule])
+
   // Escuchar toasts
   useEffect(() => {
     const handler = (e: Event) => {
