@@ -4,19 +4,25 @@ const nextConfig: NextConfig = {
   // Nota: `output: "standalone"` se eliminó porque es para auto-hosteo
   // (Docker/VPS). En Vercel, Next.js usa su propia optimización de build.
   typescript: {
-    // Pendiente: idealmente quitar este flag una vez que se limpien los
-    // errores TS residuales del proyecto. Por ahora se mantiene para no
-    // romper el build en Vercel.
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
-  // Reducir memoria en build
+  // Reducir memoria en build (Vercel Free = 2GB RAM)
   experimental: {
     staticGenerationMaxConcurrency: 1,
+    // Reducir el tamaño del bundle de análisis (consume RAM)
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
   },
   // Desactivar el cache de imágenes que consume mucha memoria en build
   images: {
     minimumCacheTTL: 0,
+    // No permitir dominios externos para optimización (reduce memoria)
+    remotePatterns: [],
+  },
+  // No prerenderar páginas con errores (reduce memoria)
+  onDemandEntries: {
+    maxInactiveAge: 0,
+    pagesBufferLength: 0,
   },
 };
 
