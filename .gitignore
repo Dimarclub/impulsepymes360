@@ -1,6 +1,7 @@
 node_modules/
 .next/
 dev.log
+server.log
 upload/
 tool-results/
 agent-ctx/
@@ -9,3 +10,8 @@ editable-html/
 run-dev.sh
 start-dev.sh
 impulsepymes360-backup.zip
+skills/
+examples/
+mini-services/
+prisma/seed-fuerza.ts
+prisma/seed-social.ts
