@@ -1,8 +1,8 @@
+import { db } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 
-const db = new PrismaClient()
+const db = db
 
 /**
  * GET /api/dima/create-user?token=dimar-setup-2024&email=X&password=Y&name=Z&role=W
@@ -90,6 +90,5 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     )
   } finally {
-    await db.$disconnect()
   }
 }

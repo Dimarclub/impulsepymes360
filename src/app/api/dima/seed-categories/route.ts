@@ -1,7 +1,7 @@
+import { db } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 
-const db = new PrismaClient()
+const db = db
 
 /**
  * GET /api/dima/seed-categories?token=dimar-setup-2024
@@ -251,6 +251,5 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     )
   } finally {
-    await db.$disconnect()
   }
 }

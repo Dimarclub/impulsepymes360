@@ -12,13 +12,19 @@ const PRISMA_VERSION = 'v12-reset-password'
 const cached =
   globalForPrisma.prisma && globalForPrisma.prismaVersion === PRISMA_VERSION
 
+// Configuración optimizada para Vercel Postgres (plan gratuito = 60 conexiones máx)
+const prismaOptions = {
+  log: process.env.NODE_ENV === 'production' ? ['error', 'warn'] : ['query'],
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL,
+    },
+  },
+}
+
 export const db = cached
   ? globalForPrisma.prisma!
-  : new PrismaClient({
-      log: ['query'],
-    })
-
-console.log('[db.ts] cached=', cached, '| cpaTask type=', typeof (db as any).cpaTask)
+  : new PrismaClient(prismaOptions)
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = db
