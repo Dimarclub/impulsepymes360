@@ -69,7 +69,7 @@ export function ProductCard({ product }: { product: Product }) {
   }
 
   const imgSrc =
-    product.imageUrl || `https://picsum.photos/seed/${product.id}/400`
+    product.imageUrl || `https://picsum.photos/seed/${product.id}/600/600`
 
   return (
     <>
@@ -82,7 +82,11 @@ export function ProductCard({ product }: { product: Product }) {
             src={imgSrc}
             alt={product.name}
             loading="lazy"
-            className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="size-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement
+              target.src = `https://picsum.photos/seed/${product.slug}/600/600`
+            }}
           />
           <div className="absolute top-2 left-2 flex flex-col gap-1">
             {hasDiscount && (
