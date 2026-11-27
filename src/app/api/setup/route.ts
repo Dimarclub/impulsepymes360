@@ -19,8 +19,9 @@ import bcrypt from 'bcryptjs'
 export async function GET(req: NextRequest) {
   try {
     const token = req.nextUrl.searchParams.get('token')
-    const expected = process.env.SETUP_TOKEN || 'dimar-setup-2024'
-    if (token !== expected) {
+    const expected = process.env.SETUP_TOKEN
+    // Sin SETUP_TOKEN definido la ruta queda deshabilitada (no hay token por defecto).
+    if (!expected || expected.length < 16 || token !== expected) {
       return NextResponse.json({ error: 'Token inválido' }, { status: 401 })
     }
 
