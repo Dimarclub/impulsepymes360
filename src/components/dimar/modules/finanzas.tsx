@@ -322,7 +322,6 @@ function InterestTab() {
   const [rateInput, setRateInput] = useState('')
   const [savingRate, setSavingRate] = useState(false)
   const [simRate, setSimRate] = useState('2')
-  const [simRate, setSimRate] = useState('2')
 
   const fetchData = useCallback(async () => {
     setLoading(true)

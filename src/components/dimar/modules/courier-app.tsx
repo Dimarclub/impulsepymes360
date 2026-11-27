@@ -749,7 +749,7 @@ export function CourierAppModule() {
                             {d.deliveryAddress || d.order?.city || 'Dirección pendiente'}
                           </span>
                         </div>
-                        {d.amountToCollect > 0 && (
+                        {(d.amountToCollect ?? 0) > 0 && (
                           <div
                             className="flex items-center justify-between rounded-md px-2 py-1 mt-1"
                             style={{ backgroundColor: `${C.gold}22` }}
@@ -758,7 +758,7 @@ export function CourierAppModule() {
                               <DollarSign className="size-3" /> A cobrar
                             </span>
                             <span className="text-sm font-bold" style={{ color: C.gold }}>
-                              ${d.amountToCollect.toFixed(2)}
+                              ${(d.amountToCollect ?? 0).toFixed(2)}
                             </span>
                           </div>
                         )}
