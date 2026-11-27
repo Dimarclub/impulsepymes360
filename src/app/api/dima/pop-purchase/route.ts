@@ -9,7 +9,7 @@ function genQrCode(): string {
   return 'DIMA-' + code
 }
 
-// POST /api/dima/pop-purchase — compra de material POP (inversión 5% compuesto)
+// POST /api/dima/pop-purchase — compra de material POP (aporte de capital; rendimiento según resultado publicado)
 // Body: { amount, items: [{type, quantity, unitPrice}], qrCode? }
 export async function POST(req: NextRequest) {
   const auth = await requireSession()
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       userId,
       amount: total,
       items: JSON.stringify(items),
-      monthlyRate: 0.05,
+      monthlyRate: 0, // la tasa vigente la publica la cooperativa
       currentBalance: total,
       totalEarned: 0,
       lastCompoundAt: new Date(),

@@ -860,9 +860,7 @@ function DashboardTab({
     const mySpacesCurrent = allData.currentSpaces.filter((s) => s.buyerId === currentUser.id)
     const count = mySpacesNext.length + mySpacesCurrent.length
     const aporte = count * 20
-    const monthly = aporte * 0.05
-    const annualCompound = aporte * (Math.pow(1.05, 12) - 1)
-    return { count, aporte, monthly, annualCompound, mySpacesNext, mySpacesCurrent }
+    return { count, aporte, mySpacesNext, mySpacesCurrent }
   }, [allData, currentUser])
 
   // Breakdown por panel
@@ -924,18 +922,16 @@ function DashboardTab({
           <CardContent>
             {myCapital.count === 0 ? (
               <div className="text-sm text-emerald-800">
-                Aún no tienes espacios. <strong>Compra en la próxima campaña</strong> para hacerte socio y empezar a generar 5% interés mensual compuesto.
+                Aún no tienes espacios. <strong>Compra en la próxima campaña</strong> para hacerte socio y participar del resultado de la cooperativa (rendimiento variable, no garantizado).
               </div>
             ) : (
               <div className="space-y-3">
                 <p className="text-sm text-emerald-900">
-                  Tienes <strong>{myCapital.count} espacio(s)</strong> = <strong>{fmtUsd(myCapital.aporte)}</strong> en aporte de capital → <strong>{fmtUsd(myCapital.monthly)}/mes</strong> de interés (5%).
+                  Tienes <strong>{myCapital.count} espacio(s)</strong> = <strong>{fmtUsd(myCapital.aporte)}</strong> en aporte de capital; el rendimiento es variable según el resultado publicado.
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   <MiniStat label="Espacios" value={String(myCapital.count)} />
                   <MiniStat label="Aporte capital" value={fmtUsd(myCapital.aporte)} />
-                  <MiniStat label="Interés mensual" value={fmtUsd(myCapital.monthly)} />
-                  <MiniStat label="Interés anual comp." value={fmtUsd(myCapital.annualCompound)} accent />
                 </div>
               </div>
             )}
@@ -1167,7 +1163,7 @@ function SpaceEditorDialog({
                 ¡Eres socio PubliBags!
               </div>
               <p className="text-xs text-emerald-700">
-                Tu ${BAG_SPACE_PRICE} se convirtió en aporte de capital. Genera 5% interés mensual compuesto.
+                Tu ${BAG_SPACE_PRICE} se convirtió en aporte de capital. Su rendimiento es variable según el resultado publicado (no garantizado).
               </p>
               <Separator className="bg-emerald-200" />
               <div className="grid grid-cols-2 gap-2 text-xs">
@@ -1311,7 +1307,7 @@ function SpaceEditorDialog({
               {!isReadOnly && currentUser && isAvailable && (
                 <>
                   <div className="w-full text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded p-2">
-                    <strong>Tu ${BAG_SPACE_PRICE} se convierte en aporte de capital.</strong> Genera 5% interés mensual compuesto. Tu red de afiliados gana comisiones.
+                    <strong>Tu ${BAG_SPACE_PRICE} se convierte en aporte de capital.</strong> Su rendimiento es variable según el resultado publicado (no garantizado). Tu red de afiliados gana comisiones.
                   </div>
                   <Button variant="outline" onClick={() => patch('reserve')} disabled={saving}>
                     <Clock className="size-4 mr-1.5" /> Reservar
@@ -1331,7 +1327,7 @@ function SpaceEditorDialog({
               {!isReadOnly && currentUser && isReserved && (
                 <>
                   <div className="w-full text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded p-2">
-                    <strong>Tu ${BAG_SPACE_PRICE} se convierte en aporte de capital.</strong> Genera 5% interés mensual compuesto. Tu red de afiliados gana comisiones.
+                    <strong>Tu ${BAG_SPACE_PRICE} se convierte en aporte de capital.</strong> Su rendimiento es variable según el resultado publicado (no garantizado). Tu red de afiliados gana comisiones.
                   </div>
                   <Button variant="outline" onClick={() => patch('release')} disabled={saving}>
                     <XCircle className="size-4 mr-1.5" /> Liberar

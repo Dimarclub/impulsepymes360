@@ -24,6 +24,7 @@ import {
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
 import { CpaTasksModule } from './cpa-tasks'
+import { OnboardingTasksPanel } from '@/components/dimar/onboarding-tasks-panel'
 
 const fmtUsd = (n: number) => `$${(n || 0).toFixed(2)}`
 
@@ -286,41 +287,7 @@ function MarketingTab() {
 }
 
 function TasksTab() {
-  const toast = useAppStore((s) => s.toast)
-  const [progress, setProgress] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const fetchProgress = useCallback(async () => {
-    setLoading(true)
-    try { const res = await fetch('/api/tasks/progress'); if (!res.ok) { setProgress(null); return }; setProgress(await res.json()) }
-    catch { setProgress(null) } finally { setLoading(false) }
-  }, [])
-  useEffect(() => { fetchProgress() }, [fetchProgress])
-  const toggleTask = async (task: string) => { const res = await fetch('/api/tasks/progress', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ [task]: !progress[task] }) }); if (res.ok) setProgress(await res.json()) }
-  const claimReward = async () => { const res = await fetch('/api/tasks/complete', { method: 'POST' }); const d = await res.json(); if (!res.ok) { toast(d.error || 'Error', 'error'); return }; toast('¡Recompensa reclamada!', 'success'); fetchProgress() }
-  if (loading || !progress) return <Skeleton className="h-64" />
-  const tasks = [
-    { key: 'scanDone', label: 'Escanear QR', icon: QrCode }, { key: 'identifyDone', label: 'Identificar empresa', icon: Store },
-    { key: 'visitWebDone', label: 'Visitar sitio', icon: ArrowRight }, { key: 'shareDone', label: 'Compartir', icon: Share2 },
-    { key: 'commentDone', label: 'Comentar', icon: Megaphone }, { key: 'photoDone', label: 'Foto en tienda', icon: CheckCircle2 },
-  ]
-  const completedCount = tasks.filter((t) => progress[t.key]).length
-  const progressPercent = (completedCount / tasks.length) * 100
-  return (
-    <Card>
-      <CardHeader><CardTitle className="text-base flex items-center gap-2"><Award className="size-5 text-primary" /> Tareas del bolso</CardTitle><CardDescription>Completa 6 tareas → bolso + álbum + sticker</CardDescription></CardHeader>
-      <CardContent className="space-y-3">
-        <div><div className="flex justify-between text-sm mb-1"><span>Progreso: {completedCount}/{tasks.length}</span><span className="font-bold text-primary">{progressPercent}%</span></div><Progress value={progressPercent} className="h-2" /></div>
-        {tasks.map((t) => { const done = progress[t.key]; const Icon = t.icon; return (
-          <button key={t.key} onClick={() => toggleTask(t.key)} className={cn('w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left', done ? 'bg-emerald-50 border-emerald-300' : 'bg-card border-border hover:bg-muted/50')}>
-            <div className={cn('size-9 rounded-full flex items-center justify-center shrink-0', done ? 'bg-emerald-500' : 'bg-muted')}>{done ? <CheckCircle2 className="size-5 text-white" /> : <Icon className="size-5 text-muted-foreground" />}</div>
-            <p className={cn('text-sm font-medium', done && 'line-through text-muted-foreground')}>{t.label}</p>
-          </button>
-        )})}
-        {progress.completed && !progress.rewardClaimed && <Button className="w-full" size="lg" onClick={claimReward}><Gift className="size-5 mr-2" />Reclamar recompensa</Button>}
-        {progress.rewardClaimed && <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4 text-center"><CheckCircle2 className="size-8 mx-auto text-emerald-600 mb-2" /><p className="font-medium text-emerald-800">¡Recompensa reclamada!</p></div>}
-      </CardContent>
-    </Card>
-  )
+  return <OnboardingTasksPanel title="Tareas del bolso" subtitle="Completa 6 tareas → bolso + álbum + sticker" />
 }
 
 // ============ COOPERATIVA ============
@@ -358,10 +325,9 @@ function CooperativeTab() {
   if (loading) return <Card><CardContent className="p-8 text-center text-muted-foreground">Cargando cooperativa…</CardContent></Card>
 
   if (!account) {
-    return <Card><CardContent className="p-8 text-center"><PiggyBank className="size-12 mx-auto text-muted-foreground mb-3" /><p className="font-medium">Aún no tienes cuenta cooperativa</p><p className="text-sm text-muted-foreground mt-1">Haz tu primer aporte para activar tu cuenta y empezar a generar 5% interés mensual.</p><Button className="mt-4" onClick={() => setDepositOpen(true)}><Plus className="size-4 mr-1.5" /> Hacer aporte</Button></CardContent></Card>
+    return <Card><CardContent className="p-8 text-center"><PiggyBank className="size-12 mx-auto text-muted-foreground mb-3" /><p className="font-medium">Aún no tienes cuenta cooperativa</p><p className="text-sm text-muted-foreground mt-1">Haz tu primer aporte para activar tu cuenta y participar del resultado de la cooperativa.</p><Button className="mt-4" onClick={() => setDepositOpen(true)}><Plus className="size-4 mr-1.5" /> Hacer aporte</Button></CardContent></Card>
   }
 
-  const projectedYear = account.balance * Math.pow(1.05, 12)
 
   return (
     <div className="space-y-4">
@@ -371,12 +337,12 @@ function CooperativeTab() {
           <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4 text-center">
             <p className="text-xs text-muted-foreground">Saldo disponible</p>
             <p className="text-4xl font-bold mt-1 text-emerald-700">{fmtUsd(account.balance)}</p>
-            <p className="text-xs text-muted-foreground mt-1">Genera <strong>5% interés mensual compuesto</strong></p>
+            <p className="text-xs text-muted-foreground mt-1">Rendimiento <strong>variable según resultado publicado</strong></p>
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center"><p className="text-xs text-muted-foreground">Total aportado</p><p className="font-bold text-emerald-600">{fmtUsd(account.totalContributed)}</p></div>
             <div className="text-center"><p className="text-xs text-muted-foreground">Total ganado</p><p className="font-bold text-amber-600">{fmtUsd(account.totalEarned)}</p></div>
-            <div className="text-center"><p className="text-xs text-muted-foreground">Proyección anual</p><p className="font-bold text-purple-600">{fmtUsd(projectedYear)}</p></div>
+            <div className="text-center"><p className="text-xs text-muted-foreground">Rendimiento</p><p className="font-bold text-purple-600">Variable</p></div>
           </div>
           <div className="flex gap-2">
             <Button className="flex-1" onClick={() => setDepositOpen(true)}><Plus className="size-4 mr-1.5" /> Hacer aporte</Button>
@@ -388,7 +354,7 @@ function CooperativeTab() {
         <DialogContent>
           <DialogHeader><DialogTitle>Hacer aporte de capital</DialogTitle></DialogHeader>
           <div className="space-y-3 py-2">
-            <p className="text-sm text-muted-foreground">Tu aporte genera 5% interés mensual compuesto. Retiro disponible después de 5 años.</p>
+            <p className="text-sm text-muted-foreground">Tu aporte participa del resultado publicado de la cooperativa (no garantizado). Retiro disponible después de 5 años.</p>
             <Input type="number" placeholder="Monto en USD" value={amount} onChange={(e) => setAmount(e.target.value)} />
           </div>
           <DialogFooter>

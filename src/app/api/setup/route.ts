@@ -164,8 +164,8 @@ export async function GET(req: NextRequest) {
     const comboData = {
       name: 'Combo PubliBags (Inversion)',
       slug: comboSlug,
-      description: '2 bolsos + 2 calendarios + 2 empastados. Inversion al 5% mensual compuesto.',
-      longDescription: 'Combo PubliBags — Inversion con 5% interes compuesto mensual. Incluye 2 bolsos reutilizables con QR de Dima, 2 calendarios directorio y 2 empastados album-directorio.',
+      description: '2 bolsos + 2 calendarios + 2 empastados. Aporte de capital con rendimiento según resultado publicado.',
+      longDescription: 'Combo PubliBags — Aporte de capital con rendimiento variable según el resultado publicado de la cooperativa (sin tasa garantizada). Incluye 2 bolsos reutilizables con QR de Dima, 2 calendarios directorio y 2 empastados album-directorio.',
       price: 44,
       costPrice: 0,
       stock: 999999,

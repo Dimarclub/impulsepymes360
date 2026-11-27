@@ -319,6 +319,10 @@ function InterestTab() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [calculating, setCalculating] = useState(false)
+  const [rateInput, setRateInput] = useState('')
+  const [savingRate, setSavingRate] = useState(false)
+  const [simRate, setSimRate] = useState('2')
+  const [simRate, setSimRate] = useState('2')
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -328,7 +332,7 @@ function InterestTab() {
   useEffect(() => { fetchData() }, [fetchData])
 
   const calculateInterest = async () => {
-    if (!confirm('¿Calcular interés compuesto 5% para todos los socios? Esto se hace una vez al mes.')) return
+    if (!confirm('¿Aplicar el rendimiento del periodo (tasa publicada) a todos los socios? Se hace una vez al mes.')) return
     setCalculating(true)
     try {
       const res = await fetch('/api/cooperative/admin/calculate-interest', { method: 'POST' })
@@ -339,8 +343,23 @@ function InterestTab() {
     finally { setCalculating(false) }
   }
 
+  const publishRate = async () => {
+    const pct = parseFloat(rateInput.replace(',', '.'))
+    if (!Number.isFinite(pct) || pct < 0 || pct > 5) { toast('Ingresa un porcentaje entre 0 y 5', 'error'); return }
+    if (!confirm(`¿Publicar ${pct.toFixed(2)}% como rendimiento del periodo? Se usará al aplicar el rendimiento.`)) return
+    setSavingRate(true)
+    try {
+      const res = await fetch('/api/bag-investment/admin', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ rate: pct / 100 }) })
+      const d = await res.json()
+      if (!res.ok) { toast(d.error || 'Error', 'error'); return }
+      toast('Tasa publicada', 'success'); setRateInput(''); fetchData()
+    } catch { toast('Error', 'error') }
+    finally { setSavingRate(false) }
+  }
   if (loading || !data) return <Skeleton className="h-64" />
   const s = data.stats
+  const rate: number = data.publishedRate || 0
+  const sim = Math.min(Math.max(parseFloat(simRate.replace(',', '.')) || 0, 0), 5) / 100
 
   return (
     <div className="space-y-4">
@@ -348,9 +367,9 @@ function InterestTab() {
         <div className="bg-gradient-to-r from-primary to-accent p-6 text-primary-foreground">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm opacity-90">Interés compuesto mensual</p>
-              <p className="text-4xl font-bold mt-1">5%</p>
-              <p className="text-xs opacity-75 mt-2">Calculado sobre el balance de cada socio</p>
+              <p className="text-sm opacity-90">Rendimiento mensual</p>
+              <p className="text-4xl font-bold mt-1">{rate > 0 ? `${(rate * 100).toFixed(2)}%` : 'Sin publicar'}</p>
+              <p className="text-xs opacity-75 mt-2">Tasa publicada según el resultado real; se aplica al balance de cada socio</p>
             </div>
             <Percent className="size-16 opacity-30" />
           </div>
@@ -358,26 +377,33 @@ function InterestTab() {
         <CardContent className="p-4">
           <div className="grid grid-cols-3 gap-3 text-center text-sm">
             <div><p className="text-xs text-muted-foreground">Capital total</p><p className="font-bold">{fmtUsd(s.totalCapital)}</p></div>
-            <div><p className="text-xs text-muted-foreground">Interés a pagar</p><p className="font-bold text-amber-600">{fmtUsd(s.totalCapital * 0.05)}</p></div>
+            <div><p className="text-xs text-muted-foreground">Interés a pagar</p><p className="font-bold text-amber-600">{rate > 0 ? fmtUsd(s.totalCapital * rate) : '—'}</p></div>
             <div><p className="text-xs text-muted-foreground">Interés pagado histórico</p><p className="font-bold">{fmtUsd(s.interest)}</p></div>
           </div>
         </CardContent>
       </Card>
 
-      <Button className="w-full" size="lg" onClick={calculateInterest} disabled={calculating}>
+      <Card>
+        <CardHeader><CardTitle className="text-base">Publicar tasa del periodo</CardTitle><CardDescription>Define el rendimiento según el resultado real de la cooperativa (máximo 5%). Sin tasa publicada no se paga rendimiento.</CardDescription></CardHeader>
+        <CardContent className="flex gap-2">
+          <Input type="number" step="0.01" min="0" max="5" placeholder="% del periodo, ej. 2" value={rateInput} onChange={(e) => setRateInput(e.target.value)} />
+          <Button onClick={publishRate} disabled={savingRate || rateInput === ''}>{savingRate ? <Loader2 className="size-4 animate-spin" /> : 'Publicar'}</Button>
+        </CardContent>
+      </Card>
+      <Button className="w-full" size="lg" onClick={calculateInterest} disabled={calculating || rate <= 0}>
         {calculating ? <Loader2 className="size-5 mr-2 animate-spin" /> : <Calculator className="size-5 mr-2" />}
-        Calcular interés mensual (5%)
+        Aplicar rendimiento del periodo
       </Button>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Proyección anual de un aporte de $20</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">Simulación hipotética de un aporte de $20</CardTitle><CardDescription>Solo ilustrativa: usa la tasa que escribas; no es una promesa de rendimiento.</CardDescription><div className="flex items-center gap-2 pt-2"><Label className="text-xs">Tasa mensual hipotética (%)</Label><Input className="w-24" type="number" step="0.1" min="0" max="5" value={simRate} onChange={(e) => setSimRate(e.target.value)} /></div></CardHeader>
         <CardContent>
           <Table>
             <TableHeader><TableRow><TableHead>Mes</TableHead><TableHead className="text-right">Balance</TableHead><TableHead className="text-right">Ganancia del mes</TableHead></TableRow></TableHeader>
             <TableBody>
               {Array.from({ length: 12 }, (_, i) => {
-                const balance = 20 * Math.pow(1.05, i + 1)
-                const gain = balance - 20 * Math.pow(1.05, i)
+                const balance = 20 * Math.pow(1 + sim, i + 1)
+                const gain = balance - 20 * Math.pow(1 + sim, i)
                 return (
                   <TableRow key={i}>
                     <TableCell>Mes {i + 1}</TableCell>
@@ -388,8 +414,8 @@ function InterestTab() {
               })}
               <TableRow className="font-bold border-t-2">
                 <TableCell>Total año</TableCell>
-                <TableCell className="text-right text-primary">{fmtUsd(20 * Math.pow(1.05, 12))}</TableCell>
-                <TableCell className="text-right text-emerald-600">+{fmtUsd(20 * Math.pow(1.05, 12) - 20)}</TableCell>
+                <TableCell className="text-right text-primary">{fmtUsd(20 * Math.pow(1 + sim, 12))}</TableCell>
+                <TableCell className="text-right text-emerald-600">+{fmtUsd(20 * Math.pow(1 + sim, 12) - 20)}</TableCell>
               </TableRow>
             </TableBody>
           </Table>

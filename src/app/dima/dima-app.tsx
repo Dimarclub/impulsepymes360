@@ -318,7 +318,7 @@ export default function DimaApp() {
       if (!r.ok) throw new Error(d.error || 'Error')
       setSubscribeOpen(false)
       setSubscribed(true)
-      alert(`¡Suscripción Dima Plus activa! Invertiste ${fmtUsd(annualBilling ? 200 : 20)} que generan 5% compuesto mensual.`)
+      alert(`¡Suscripción Dima Plus activa! Invertiste ${fmtUsd(annualBilling ? 200 : 20)} que se registran como aporte de capital (rendimiento variable, no garantizado).`)
     } catch (e: any) {
       alert(e.message || 'Error')
     } finally {
@@ -1422,7 +1422,7 @@ function HowItWorks({ onPromote }: { onPromote: () => void }) {
 function DimaPlusCTA({ onSubscribe, onOpenPlans }: { onSubscribe: () => void; onOpenPlans: () => void }) {
   const benefits = [
     { icon: <Search size={16} />, text: 'Búsquedas ilimitadas' },
-    { icon: <TrendingUp size={16} />, text: '$20/mes se invierten al 5% compuesto (no es gasto, es inversión)' },
+    { icon: <TrendingUp size={16} />, text: '$20/mes se registran como aporte de capital; el rendimiento varía según el resultado de la cooperativa' },
     { icon: <Users size={16} />, text: 'Puedes armar tu red de afiliados' },
     { icon: <Wallet size={16} />, text: 'Gana $5 + $2/mes por cada referido que descargue la app' },
     { icon: <Award size={16} />, text: 'Dima Stars: cashback por cada compra' },
@@ -1439,7 +1439,7 @@ function DimaPlusCTA({ onSubscribe, onOpenPlans }: { onSubscribe: () => void; on
             Dima Plus — $20/mes
           </h2>
           <p style={{ margin: '0 0 24px', color: 'rgba(11,17,32,0.85)', fontSize: 16, fontWeight: 500 }}>
-            No es un gasto. Es una inversión que crece al 5% compuesto mensual.
+            Tu pago se registra como aporte de capital. El rendimiento es variable y no está garantizado.
           </p>
           <div style={{ background: 'rgba(255,255,255,0.95)', borderRadius: 14, padding: 20, marginBottom: 20 }}>
             <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -1651,7 +1651,7 @@ function UserRegisterModal({ onClose, onSuccess }: { onClose: () => void; onSucc
               >
                 <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Dima Plus</div>
                 <div style={{ fontSize: 18, fontWeight: 800, color: C.emerald }}>$20/mes</div>
-                <div style={{ fontSize: 11, color: C.textDim, marginTop: 4 }}>+ Inversión 5% + red de afiliados</div>
+                <div style={{ fontSize: 11, color: C.textDim, marginTop: 4 }}>+ Aporte de capital + red de afiliados</div>
               </button>
             </div>
           </div>
@@ -1689,7 +1689,7 @@ function UserRegisterModal({ onClose, onSuccess }: { onClose: () => void; onSucc
           </button>
           {plan === 'PLUS' && (
             <p style={{ textAlign: 'center', color: C.emerald, fontSize: 11, marginTop: 4 }}>
-              💚 Tu pago mensual de $20 se invierte al 5% compuesto + accedes a la red de afiliados
+              💚 Tu pago mensual de $20 es aporte de capital (rendimiento variable) + accedes a la red de afiliados
             </p>
           )}
           <p style={{ textAlign: 'center', color: C.textDim, fontSize: 12, marginTop: 4 }}>
@@ -1715,7 +1715,6 @@ function SubscribeDialog({
   onConfirm: () => void
 }) {
   const amount = annual ? 200 : 20
-  const projected = amount * Math.pow(1.05, 12)
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, maxWidth: 460, width: '100%', padding: 24 }}>
@@ -1746,13 +1745,13 @@ function SubscribeDialog({
             <span style={{ color: C.emerald, fontSize: 18, fontWeight: 800 }}>{fmtUsd(amount)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ color: C.textDim, fontSize: 12 }}>Proyección a 12 meses (5% compuesto)</span>
-            <span style={{ color: C.gold, fontSize: 13, fontWeight: 700 }}>{fmtUsd(projected)}</span>
+            <span style={{ color: C.textDim, fontSize: 12 }}>Rendimiento del aporte</span>
+            <span style={{ color: C.gold, fontSize: 13, fontWeight: 700 }}>Variable</span>
           </div>
         </div>
         <div style={{ background: `${C.emerald}11`, border: `1px solid ${C.emerald}33`, borderRadius: 8, padding: 10, marginBottom: 16, fontSize: 12, color: C.textDim }}>
           <CheckCircle2 size={14} style={{ verticalAlign: -2, marginRight: 4, color: C.emerald }} />
-          Este pago se invierte al 5% mensual compuesto. No es un gasto: es capital que crece.
+          Este pago se registra como aporte de capital. El rendimiento depende del resultado publicado de la cooperativa y no está garantizado.
         </div>
         <button onClick={onConfirm} disabled={loading} style={{ width: '100%', background: C.emerald, color: '#0B1120', border: 'none', padding: '14px', borderRadius: 10, fontWeight: 700, fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
           {loading ? <Loader2 size={16} className="dima-spin" /> : <Zap size={16} />}

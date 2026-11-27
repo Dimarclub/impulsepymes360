@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { requireSession } from '@/lib/security/auth'
+import { getPublishedBagRate } from '@/lib/bag-rate'
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000
 
 /**
  * POST /api/bag-investment/compound
- * Aplica interés compuesto (5% mensual) a TODAS las inversiones activas del usuario
+ * Aplica el rendimiento del periodo (tasa publicada por la cooperativa según su resultado real,
+ * sin tasa fija prometida) a TODAS las inversiones activas del usuario
  * cuya última aplicación haya sido hace más de 30 días.
  *
  * Validación de elegibilidad:
@@ -36,6 +38,17 @@ export async function POST() {
     )
   }
 
+  const rate = await getPublishedBagRate()
+  if (rate <= 0) {
+    return NextResponse.json({
+      ok: true,
+      updated: 0,
+      totalInterest: 0,
+      message:
+        'La cooperativa aún no publica el resultado de este periodo. No se aplicó rendimiento; tu capital sigue intacto.',
+    })
+  }
+
   const now = new Date()
   const investments = await db.bagInvestment.findMany({
     where: { userId, status: 'ACTIVE' },
@@ -51,7 +64,7 @@ export async function POST() {
     if (now.getTime() - last.getTime() < THIRTY_DAYS_MS) continue
 
     const startingBalance = inv.currentBalance
-    const interestEarned = +(startingBalance * inv.monthlyRate).toFixed(4)
+    const interestEarned = +(startingBalance * rate).toFixed(4)
     const endingBalance = +(startingBalance + interestEarned).toFixed(4)
 
     await db.$transaction([

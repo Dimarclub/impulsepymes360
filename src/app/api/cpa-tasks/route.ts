@@ -37,6 +37,7 @@ export async function GET() {
         status: 'ACTIVE',
         startDate: { lte: now },
         endDate: { gte: now },
+        createdBy: { not: 'system:onboarding' }, // las tareas del checklist del bolso tienen su propia pantalla
       },
       orderBy: { createdAt: 'desc' },
       include: user

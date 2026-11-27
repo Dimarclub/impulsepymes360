@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
 
   // Calcular subtotal, comisión total (ponderada por commissionRate de cada producto)
   // NUEVO MODELO: marketplace = 1% × 3 niveles (N1 + N2 + N3 = 3% total)
-  // El combo-publibags NO genera comisión marketplace — genera BagInvestment (5% mensual compuesto)
+  // El combo-publibags NO genera comisión marketplace — genera BagInvestment (aporte de capital; rendimiento según resultado publicado)
   const subtotal = +items.reduce((s, it) => s + it.price * it.quantity, 0).toFixed(2)
   const productMap = new Map(products.map((p) => [p.id, p]))
 
@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
           userId: buyerUser!.id,
           comboQuantity,
           amount: investmentAmount,
-          monthlyRate: 0.05,
+          monthlyRate: 0, // la tasa vigente la publica la cooperativa
           currentBalance: investmentAmount,
           lastCompoundAt: new Date(),
           totalEarned: 0,

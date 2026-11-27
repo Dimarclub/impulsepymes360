@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Grid3x3, ShoppingCart, DollarSign, CheckCircle2, QrCode, Award, Gift, Camera, Share2, MessageSquare, Store, ExternalLink, Zap } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 import { cn } from '@/lib/utils'
+import { OnboardingTasksPanel } from '@/components/dimar/onboarding-tasks-panel'
 
 const fmtUsd = (n: number) => `$${(n || 0).toFixed(2)}`
 const fmtDate = (iso?: string | null) => { if (!iso) return '—'; try { return new Date(iso).toLocaleDateString('es-EC', { day: '2-digit', month: 'short' }) } catch { return iso } }
@@ -227,59 +228,5 @@ function CommissionsTab() {
 }
 
 function TasksTab() {
-  const toast = useAppStore((s) => s.toast)
-  const [progress, setProgress] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-
-  const fetchProgress = useCallback(async () => {
-    setLoading(true)
-    try { const res = await fetch('/api/tasks/progress'); if (!res.ok) { setProgress(null); return }; setProgress(await res.json()) }
-    catch { setProgress(null) } finally { setLoading(false) }
-  }, [])
-  useEffect(() => { fetchProgress() }, [fetchProgress])
-
-  const toggleTask = async (task: string) => {
-    const res = await fetch('/api/tasks/progress', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ [task]: !progress[task] }) })
-    if (res.ok) setProgress(await res.json())
-  }
-  const claimReward = async () => {
-    const res = await fetch('/api/tasks/complete', { method: 'POST' }); const d = await res.json()
-    if (!res.ok) { toast(d.error || 'Error', 'error'); return }
-    toast('¡Recompensa reclamada! Bolso + Álbum + Sticker', 'success'); fetchProgress()
-  }
-
-  if (loading || !progress) return <Skeleton className="h-64" />
-
-  const tasks = [
-    { key: 'scanDone', label: 'Escanear código QR', icon: QrCode }, { key: 'identifyDone', label: 'Identificar empresa', icon: Store },
-    { key: 'visitWebDone', label: 'Visitar sitio web', icon: ExternalLink }, { key: 'shareDone', label: 'Compartir oferta', icon: Share2 },
-    { key: 'commentDone', label: 'Dejar comentario', icon: MessageSquare }, { key: 'photoDone', label: 'Foto en tienda', icon: Camera },
-  ]
-  const completedCount = tasks.filter((t) => progress[t.key]).length
-  const progressPercent = (completedCount / tasks.length) * 100
-
-  return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Award className="size-5 text-primary" /> Checklist de tareas</CardTitle>
-        <CardDescription>Completa las 6 tareas para recibir bolso + álbum + sticker</CardDescription></CardHeader>
-        <CardContent className="space-y-3">
-          <div><div className="flex justify-between text-sm mb-1"><span>Progreso: {completedCount}/{tasks.length}</span><span className="font-bold text-primary">{progressPercent}%</span></div><Progress value={progressPercent} className="h-2" /></div>
-          {tasks.map((t) => {
-            const done = progress[t.key]; const Icon = t.icon
-            return (
-              <button key={t.key} onClick={() => toggleTask(t.key)} className={cn('w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left', done ? 'bg-emerald-50 border-emerald-300' : 'bg-card border-border hover:bg-muted/50')}>
-                <div className={cn('size-9 rounded-full flex items-center justify-center shrink-0', done ? 'bg-emerald-500' : 'bg-muted')}>
-                  {done ? <CheckCircle2 className="size-5 text-white" /> : <Icon className="size-5 text-muted-foreground" />}
-                </div>
-                <p className={cn('text-sm font-medium', done && 'line-through text-muted-foreground')}>{t.label}</p>
-              </button>
-            )
-          })}
-          {progress.completed && !progress.rewardClaimed && <Button className="w-full" size="lg" onClick={claimReward}><Gift className="size-5 mr-2" />Reclamar recompensa</Button>}
-          {progress.rewardClaimed && <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4 text-center"><CheckCircle2 className="size-8 mx-auto text-emerald-600 mb-2" /><p className="font-medium text-emerald-800">¡Recompensa reclamada!</p></div>}
-        </CardContent>
-      </Card>
-    </div>
-  )
+  return <OnboardingTasksPanel title="Checklist de tareas" subtitle="Completa las 6 tareas para recibir bolso + álbum + sticker" />
 }

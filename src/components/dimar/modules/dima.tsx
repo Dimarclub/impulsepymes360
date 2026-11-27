@@ -43,7 +43,7 @@ export function DimaModule() {
             Robot Dima
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Tu buscador con IA · Inversión al 5% compuesto · Red de afiliados · Dima Stars
+            Tu buscador con IA · Aporte de capital · Red de afiliados · Dima Stars
           </p>
         </div>
         <Button variant="outline" onClick={() => window.open('/dima', '_blank')}>
@@ -141,7 +141,6 @@ function OverviewTab({ onSwitch }: { onSwitch: (t: string) => void }) {
   const sub = data?.subscription
   const stats = data?.stats || {}
   const isPlus = sub?.plan === 'PLUS' && sub?.status === 'ACTIVE'
-  const projected12 = (sub?.currentBalance || 0) * Math.pow(1.05, 12)
 
   return (
     <div className="space-y-4">
@@ -174,8 +173,8 @@ function OverviewTab({ onSwitch }: { onSwitch: (t: string) => void }) {
               <p className="text-lg font-bold text-amber-600">{fmtUsd(stats.interesGanado || 0)}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Proyección 12 meses</p>
-              <p className="text-lg font-bold text-emerald-600">{fmtUsd(projected12)}</p>
+              <p className="text-xs text-muted-foreground">Rendimiento</p>
+              <p className="text-lg font-bold text-emerald-600">Variable</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Capital total</p>
@@ -190,11 +189,11 @@ function OverviewTab({ onSwitch }: { onSwitch: (t: string) => void }) {
         <Card className="border-primary/30 bg-primary/5">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2"><Sparkles className="size-5 text-primary" /> Suscríbete a Dima Plus</CardTitle>
-            <CardDescription>$20/mes se invierten al 5% compuesto (no es gasto, es inversión).</CardDescription>
+            <CardDescription>$20/mes se registran como aporte de capital; rendimiento variable, no garantizado.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <ul className="space-y-2 text-sm">
-              <li className="flex items-start gap-2"><TrendingUp className="size-4 text-primary mt-0.5" /> Búsquedas ilimitadas + inversión 5% compuesto</li>
+              <li className="flex items-start gap-2"><TrendingUp className="size-4 text-primary mt-0.5" /> Búsquedas ilimitadas + aporte de capital</li>
               <li className="flex items-start gap-2"><Users className="size-4 text-primary mt-0.5" /> Arma tu red de afiliados (gana $5 + $2/mes por referido)</li>
               <li className="flex items-start gap-2"><Award className="size-4 text-primary mt-0.5" /> Dima Stars: cashback por cada compra</li>
             </ul>
@@ -437,7 +436,7 @@ function PopTab() {
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
               <CardTitle className="text-base flex items-center gap-2"><Package className="size-5 text-primary" /> Mis compras POP</CardTitle>
-              <CardDescription>Cada compra se invierte al 5% compuesto mensual</CardDescription>
+              <CardDescription>Cada compra se suma a tu aporte de capital</CardDescription>
             </div>
             <Button onClick={() => setPurchaseOpen(true)}>
               <Plus className="size-4 mr-1" /> Comprar material POP
@@ -473,7 +472,7 @@ function PopTab() {
             <div className="text-sm">
               <p className="font-medium">¿Cómo funciona la inversión POP?</p>
               <p className="text-muted-foreground text-xs mt-1 leading-relaxed">
-                Cada compra de material POP (bolsos, imanes, calendarios) se suma a tu capital invertido y gana <strong>5% mensual compuesto</strong>.
+                Cada compra de material POP (bolsos, imanes, calendarios) se suma a tu capital invertido y participa del resultado de la cooperativa (<strong>rendimiento variable, no garantizado</strong>).
                 Recibes los productos físicos. Los items llevan el QR unificado de Dima — si alguien escanea y descarga la app y se suscribe a Dima Plus,
                 tú ganas <strong>$2/mes recurrente</strong> (más $5 de comisión signup).
               </p>
@@ -488,7 +487,7 @@ function PopTab() {
           onSuccess={() => {
             fetchData()
             setPurchaseOpen(false)
-            toast('¡Compra POP registrada! Tu capital crece al 5% compuesto.', 'success')
+            toast('¡Compra POP registrada! Se sumó a tu aporte de capital.', 'success')
           }}
         />
       )}
@@ -604,7 +603,7 @@ function PurchaseDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Comprar material POP</DialogTitle>
-          <DialogDescription>El monto se invierte al 5% compuesto mensual. Recibes los productos físicos.</DialogDescription>
+          <DialogDescription>El monto se registra como aporte de capital (rendimiento variable). Recibes los productos físicos.</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           {POP_ITEMS.map((it) => (
@@ -632,8 +631,8 @@ function PurchaseDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess
             <p className="text-2xl font-bold text-primary">{fmtUsd(total)}</p>
           </div>
           <div className="text-xs text-muted-foreground text-right">
-            <p>Proyección 12 meses</p>
-            <p className="text-sm font-bold text-emerald-600">{fmtUsd(total * Math.pow(1.05, 12))}</p>
+            <p>Rendimiento</p>
+            <p className="text-sm font-bold text-emerald-600">Variable</p>
           </div>
         </div>
         <DialogFooter>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { requireSession } from '@/lib/security/auth'
+import { getPublishedBagRate } from '@/lib/bag-rate'
 
 /**
  * GET /api/bag-investment
@@ -14,6 +15,7 @@ export async function GET() {
   const auth = await requireSession()
   if (auth instanceof NextResponse) return auth
   const userId = (auth as { id: string }).id
+  const publishedRate = await getPublishedBagRate()
 
   // Elegibilidad: ¿el usuario tiene sponsor (forma parte de una red)?
   const user = await db.user.findUnique({
@@ -40,8 +42,8 @@ export async function GET() {
   const activeCount = active.length
   const withdrawnCount = withdrawn.length
 
-  // Proyección a 12 meses (solo sobre el balance activo)
-  const projected12 = totalBalance * Math.pow(1.05, 12)
+  // Proyección referencial con la tasa publicada vigente (0 si no hay publicación)
+  const projected12 = totalBalance * Math.pow(1 + publishedRate, 12)
 
   // Próximo compound: el lastCompoundAt más antiguo entre las activas + 30 días
   let nextCompoundAt: string | null = null
@@ -59,6 +61,7 @@ export async function GET() {
   return NextResponse.json({
     ok: true,
     eligible,
+    publishedRate,
     user: user
       ? { name: user.name, email: user.email, role: user.role }
       : null,
@@ -66,7 +69,7 @@ export async function GET() {
       id: inv.id,
       comboQuantity: inv.comboQuantity,
       amount: inv.amount,
-      monthlyRate: inv.monthlyRate,
+      monthlyRate: publishedRate,
       currentBalance: inv.currentBalance,
       lastCompoundAt: inv.lastCompoundAt,
       totalEarned: inv.totalEarned,

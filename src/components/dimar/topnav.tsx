@@ -307,18 +307,26 @@ export function TopNav() {
                   <DropdownMenuItem onClick={() => setModule('dima')}><Bot className="size-4 mr-2 text-muted-foreground" /> Dima · Mi cuenta (backoffice)</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Ventas</DropdownMenuLabel>
-                  <DropdownMenuItem onClick={() => setModule('embudos')}><Filter className="size-4 mr-2" /> Embudos de Venta</DropdownMenuItem>
+                  {displayUser?.role === 'ADMIN' && (
+                    <DropdownMenuItem onClick={() => setModule('embudos')}><Filter className="size-4 mr-2" /> Embudos de Venta</DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => setModule('facturacion')}><FileText className="size-4 mr-2" /> Facturación + Pagos</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setModule('citas')}><CalendarClock className="size-4 mr-2" /> Citas / Calendario</DropdownMenuItem>
+                  {displayUser?.role === 'ADMIN' && (
+                    <DropdownMenuItem onClick={() => setModule('citas')}><CalendarClock className="size-4 mr-2" /> Citas / Calendario</DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => setModule('bandeja')}><Inbox className="size-4 mr-2" /> Bandeja Unificada</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setModule('chat')}><MessagesSquare className="size-4 mr-2" /> Chat en Vivo</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setModule('reservas')}><Hotel className="size-4 mr-2" /> Reservas (Hotel/Auto/Tour)</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setModule('bag-investment')}><Wallet className="size-4 mr-2" /> Inversión Bolsos</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setModule('bag-investment')}><Wallet className="size-4 mr-2" /> Aporte Bolsos</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Marketing</DropdownMenuLabel>
                   <DropdownMenuItem onClick={() => setModule('ai-hub')}><BrainCircuit className="size-4 mr-2" /> Centro de IA</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setModule('formularios')}><ClipboardCheck className="size-4 mr-2" /> Formularios</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setModule('encuestas')}><MessageSquare className="size-4 mr-2" /> Encuestas</DropdownMenuItem>
+                  {displayUser?.role === 'ADMIN' && (
+                    <DropdownMenuItem onClick={() => setModule('formularios')}><ClipboardCheck className="size-4 mr-2" /> Formularios</DropdownMenuItem>
+                  )}
+                  {displayUser?.role === 'ADMIN' && (
+                    <DropdownMenuItem onClick={() => setModule('encuestas')}><MessageSquare className="size-4 mr-2" /> Encuestas</DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => setModule('resenas')}><Star className="size-4 mr-2" /> Reseñas</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel className="text-[10px] uppercase text-muted-foreground">Comunidad</DropdownMenuLabel>
@@ -411,18 +419,18 @@ export function TopNav() {
               {navItem('Planes', 'planes', CreditCard)}
               {navItem('Proveedor', 'suppliers', Store)}
               {/* Dima PWA pública - redirige a /dima */}
-              {navItem('CRM Hub · Embudos', 'embudos', Filter)}
+              {displayUser?.role === 'ADMIN' && navItem('CRM Hub · Embudos', 'embudos', Filter)}
               {navItem('CRM Hub · Facturación', 'facturacion', FileText)}
               {navItem('CRM Hub · Centro IA', 'ai-hub', BrainCircuit)}
-              {navItem('CRM Hub · Formularios', 'formularios', ClipboardCheck)}
-              {navItem('CRM Hub · Encuestas', 'encuestas', MessageSquare)}
+              {displayUser?.role === 'ADMIN' && navItem('CRM Hub · Formularios', 'formularios', ClipboardCheck)}
+              {displayUser?.role === 'ADMIN' && navItem('CRM Hub · Encuestas', 'encuestas', MessageSquare)}
               {navItem('CRM Hub · Reseñas', 'resenas', Star)}
-              {navItem('CRM Hub · Citas', 'citas', CalendarClock)}
+              {displayUser?.role === 'ADMIN' && navItem('CRM Hub · Citas', 'citas', CalendarClock)}
               {navItem('CRM Hub · Bandeja', 'bandeja', Inbox)}
               {navItem('CRM Hub · Cursos', 'cursos', GraduationCap)}
               {navItem('CRM Hub · Chat', 'chat', MessagesSquare)}
               {navItem('CRM Hub · Reservas', 'reservas', Hotel)}
-              {navItem('CRM Hub · Inversión Bolsos', 'bag-investment', Wallet)}
+              {navItem('CRM Hub · Aporte Bolsos', 'bag-investment', Wallet)}
             </div>
           </div>
         )}

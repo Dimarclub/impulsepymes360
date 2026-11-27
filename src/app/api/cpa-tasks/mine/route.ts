@@ -24,11 +24,12 @@ export async function GET() {
           status: 'ACTIVE',
           startDate: { lte: now },
           endDate: { gte: now },
+          createdBy: { not: 'system:onboarding' },
         },
         orderBy: { createdAt: 'desc' },
       }),
       db.cpaCompletion.findMany({
-        where: { userId: user.id },
+        where: { userId: user.id, task: { createdBy: { not: 'system:onboarding' } } },
         include: { task: true },
       }),
     ])
@@ -77,7 +78,7 @@ export async function GET() {
     const pastCompletions = await db.cpaCompletion.findMany({
       where: {
         userId: user.id,
-        task: { OR: [{ status: 'COMPLETED' }, { status: 'EXPIRED' }, { endDate: { lt: now } }] },
+        task: { createdBy: { not: 'system:onboarding' }, OR: [{ status: 'COMPLETED' }, { status: 'EXPIRED' }, { endDate: { lt: now } }] },
       },
       include: { task: true },
       orderBy: { completedAt: 'desc' },

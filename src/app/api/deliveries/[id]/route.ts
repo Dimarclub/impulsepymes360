@@ -128,6 +128,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (!status || !valid.includes(status)) {
       return NextResponse.json({ error: 'status inválido' }, { status: 400 })
     }
+    // Con cobro pendiente, el mensajero debe cerrar por 'sign' (confirma el cobro)
+    if (status === 'DELIVERED' && existing.amountToCollect > 0 && user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Esta entrega requiere cobro: firma la entrega confirmando el monto cobrado' },
+        { status: 400 },
+      )
+    }
     updateData = { status }
     if (typeof body.notes === 'string') updateData.notes = body.notes
     if (status === 'DELIVERED') {
@@ -186,12 +193,26 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (!signatureName || !signatureName.trim()) {
       return NextResponse.json({ error: 'Falta el nombre de quien recibe' }, { status: 400 })
     }
+    const collectedNote =
+      existing.amountToCollect > 0 ? `Cobrado $${existing.amountToCollect.toFixed(2)} por el mensajero` : null
+    if (existing.amountToCollect > 0) {
+      const collected = Number(body.collectedAmount)
+      if (!Number.isFinite(collected) || Math.abs(collected - existing.amountToCollect) > 0.009) {
+        return NextResponse.json(
+          { error: `Debes confirmar el cobro de $${existing.amountToCollect.toFixed(2)}` },
+          { status: 400 },
+        )
+      }
+    }
     updateData = {
       status: 'DELIVERED',
       deliveredAt: new Date(),
       signatureName: signatureName.trim(),
     }
     if (typeof body.notes === 'string') updateData.notes = body.notes
+    if (collectedNote) {
+      updateData.notes = [updateData.notes ?? existing.notes, collectedNote].filter(Boolean).join(' · ')
+    }
     if (buyerId) {
       notifs.push({
         userId: buyerId,
@@ -271,7 +292,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   // Sincronizar el estado del Order con el delivery (best-effort)
   try {
     if (updated.status === 'DELIVERED') {
-      await db.order.update({ where: { id: updated.orderId }, data: { status: 'DELIVERED' } })
+      await db.order.update({
+        where: { id: updated.orderId },
+        data: {
+          status: 'DELIVERED',
+          // El cobro contra entrega queda pagado solo al confirmarlo el mensajero
+          ...(updated.amountToCollect > 0 ? { paymentStatus: 'PAID' } : {}),
+        },
+      })
     } else if (updated.status === 'ASSIGNED' || updated.status === 'PICKED_UP' || updated.status === 'IN_TRANSIT') {
       await db.order.update({ where: { id: updated.orderId }, data: { status: 'SHIPPED' } })
     } else if (updated.status === 'FAILED') {

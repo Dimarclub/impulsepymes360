@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { requireRole } from '@/lib/security/auth'
+import { BAG_RATE_KEY, BAG_RATE_MAX, getPublishedBagRate } from '@/lib/bag-rate'
 
 /**
  * GET /api/bag-investment/admin
@@ -63,4 +64,33 @@ export async function GET() {
       withdrawnAmount,
     },
   })
+}
+
+/**
+ * POST /api/bag-investment/admin   Body: { rate }  (fracción mensual, ej. 0.02 = 2%)
+ * Solo ADMIN. Publica la tasa del periodo, calculada con el resultado real de la
+ * cooperativa. Debe estar entre 0 y el tope de seguridad.
+ */
+export async function POST(req: NextRequest) {
+  const auth = await requireRole('ADMIN')
+  if (auth instanceof NextResponse) return auth
+  let body: { rate?: unknown }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'JSON inválido' }, { status: 400 })
+  }
+  const rate = Number(body.rate)
+  if (!Number.isFinite(rate) || rate < 0 || rate > BAG_RATE_MAX) {
+    return NextResponse.json(
+      { error: `La tasa debe estar entre 0 y ${BAG_RATE_MAX} (ej. 0.02 = 2%)` },
+      { status: 400 },
+    )
+  }
+  await db.siteSettings.upsert({
+    where: { key: BAG_RATE_KEY },
+    update: { value: String(rate) },
+    create: { key: BAG_RATE_KEY, value: String(rate) },
+  })
+  return NextResponse.json({ ok: true, rate: await getPublishedBagRate() })
 }

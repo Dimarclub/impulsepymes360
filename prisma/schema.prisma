@@ -902,6 +902,8 @@ model GridCommission {
   createdAt     DateTime @default(now())
 }
 
+// OBSOLETO: el checklist del bolso ahora usa CpaTask/CpaCompletion (src/lib/onboarding-tasks.ts).
+// Se conserva solo para importar el progreso antiguo; se puede eliminar tras migrar los datos.
 model TaskProgress {
   id            String   @id @default(cuid())
   userId        String   @unique

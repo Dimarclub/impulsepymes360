@@ -4,7 +4,7 @@ import { requireSession } from '@/lib/security/auth'
 import { REFERRAL_MONTHLY } from '../_lib'
 
 // POST /api/dima/pay-monthly — cobro mensual recurrente de Dima Plus (auth)
-// Acredita el pago como inversión al 5% y paga comisiones N1/N2/N3 a los sponsors.
+// Acredita el pago como aporte de capital y paga comisiones N1/N2/N3 a los sponsors.
 export async function POST(req: NextRequest) {
   const auth = await requireSession()
   if (auth instanceof NextResponse) return auth

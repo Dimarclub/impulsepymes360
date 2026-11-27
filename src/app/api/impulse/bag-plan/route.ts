@@ -477,8 +477,8 @@ export async function PATCH(req: NextRequest) {
           data: {
             partnerId: partner.id,
             amount: price,
-            returnRate: 5,
-            monthlyReturn: +(price * 0.05).toFixed(2),
+            returnRate: 0,
+            monthlyReturn: 0, // sin retorno fijo prometido
             status: 'ACTIVE',
             date: now,
           },
@@ -492,7 +492,7 @@ export async function PATCH(req: NextRequest) {
             balance: price + cashback,
             totalContributed: price,
             totalEarned: cashback,
-            interestRate: 5,
+            interestRate: 0,
             status: 'ACTIVE',
           },
           update: {
@@ -561,7 +561,7 @@ export async function PATCH(req: NextRequest) {
               balance: sponsorCommission,
               totalContributed: 0,
               totalEarned: sponsorCommission,
-              interestRate: 5,
+              interestRate: 0,
               status: 'ACTIVE',
             },
             update: {
@@ -595,7 +595,7 @@ export async function PATCH(req: NextRequest) {
             title: '¡Eres socio PubliBags!',
             message:
               `Compraste el espacio #${space.position} por $${price.toFixed(2)}. ` +
-              `Tu aporte de capital genera 5% interés mensual compuesto. ` +
+              `Tu aporte de capital participa del resultado real publicado de la cooperativa (sin tasa garantizada). ` +
               (sponsorCommissions.length > 0
                 ? `Tu red de afiliados ganó $${totalSponsorComms.toFixed(2)} en comisiones.`
                 : ''),

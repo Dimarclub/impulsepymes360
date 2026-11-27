@@ -206,10 +206,10 @@ export function BagInvestmentModule() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-2">
             <PiggyBank className="size-7 text-primary" />
-            Inversión en Bolsos PubliBags
+            Aporte en Bolsos PubliBags
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            5% de interés compuesto mensual sobre tu inversión en combos PubliBags.
+            Tu aporte en combos PubliBags participa del resultado real de la cooperativa. El rendimiento no está garantizado y varía cada periodo.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -277,7 +277,7 @@ export function BagInvestmentModule() {
                       <span className="font-semibold text-amber-100">{fmtUsd(stats.totalEarned)}</span>
                     </div>
                     <div>
-                      <span className="opacity-75">Proy. 12m:</span>{' '}
+                      <span className="opacity-75">Proy. referencial 12m:</span>{' '}
                       <span className="font-semibold">{fmtUsd(stats.projected12)}</span>
                     </div>
                   </div>
@@ -319,7 +319,7 @@ export function BagInvestmentModule() {
               icon={TrendingUp}
               label="Interés ganado"
               value={fmtUsd(stats.totalEarned)}
-              sub={`5% mensual compuesto`}
+              sub={`Según resultado publicado del periodo`}
               tone="amber"
             />
             <StatCard
@@ -476,16 +476,16 @@ function InvestmentCard({
         </div>
 
         {/* Progreso del balance vs proyección 12m */}
-        {isActive && (
+        {isActive && inv.monthlyRate > 0 && (
           <div className="space-y-1">
             <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-              <span>Progreso hacia proyección 12m</span>
+              <span>Progreso hacia proyección referencial 12m</span>
               <span className="font-medium">
-                {fmtUsd(inv.currentBalance)} / {fmtUsd(inv.amount * Math.pow(1.05, 12))}
+                {fmtUsd(inv.currentBalance)} / {fmtUsd(inv.amount * Math.pow(1 + inv.monthlyRate, 12))}
               </span>
             </div>
             <Progress
-              value={Math.min(100, (inv.currentBalance / (inv.amount * Math.pow(1.05, 12))) * 100)}
+              value={Math.min(100, (inv.currentBalance / (inv.amount * Math.pow(1 + inv.monthlyRate, 12))) * 100)}
               className="h-1.5"
             />
           </div>
@@ -503,8 +503,8 @@ function InvestmentCard({
           <div className="flex items-center gap-1.5">
             <TrendingUp className="size-3 text-muted-foreground shrink-0" />
             <div className="min-w-0">
-              <p className="text-[10px] text-muted-foreground">Tasa mensual</p>
-              <p className="font-medium">{(inv.monthlyRate * 100).toFixed(0)}%</p>
+              <p className="text-[10px] text-muted-foreground">Tasa del periodo</p>
+              <p className="font-medium">{inv.monthlyRate > 0 ? `${(inv.monthlyRate * 100).toFixed(2)}%` : 'Sin publicar'}</p>
             </div>
           </div>
         </div>
@@ -714,8 +714,8 @@ function EmptyState({
           Aún no has invertido en bolsos PubliBags
         </h3>
         <p className="text-muted-foreground text-sm max-w-md mx-auto mb-6">
-          Compra tu primer Combo PubliBags y comienza a generar 5% de interés
-          compuesto mensual sobre tu inversión.
+          Compra tu primer Combo PubliBags y participa del resultado real de la
+          cooperativa. El rendimiento no está garantizado.
         </p>
         <div className="flex flex-col sm:flex-row gap-2 justify-center">
           <Button onClick={onGoToMarketplace}>
@@ -782,8 +782,8 @@ function EducationalSection() {
     },
     {
       Icon: TrendingUp,
-      title: '3. Gana 5% mensual compuesto',
-      body: 'Cada mes tu inversión crece 5% sobre el balance acumulado. El interés se suma automáticamente al capital.',
+      title: '3. Participa del resultado del periodo',
+      body: 'Cada periodo la cooperativa publica su resultado real (reciclaje y ventas). Si hay resultado, se suma a tu capital; si no, tu capital se mantiene. No hay tasa garantizada.',
       tone: 'emerald' as const,
     },
     {
@@ -853,8 +853,8 @@ function EducationalSection() {
                 <li className="flex items-start gap-2">
                   <ArrowRight className="size-3.5 mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                   <span>
-                    <strong>Compras de Combo PubliBags</strong> = 5% de interés compuesto mensual
-                    sobre tu monto invertido — crece tu capital.
+                    <strong>Compras de Combo PubliBags</strong> = aporte de capital que participa del
+                    resultado real publicado de la cooperativa (sin tasa garantizada).
                   </span>
                 </li>
               </ul>
@@ -870,7 +870,8 @@ function EducationalSection() {
 function CompoundCalculator() {
   const [amount, setAmount] = useState(44)
   const [months, setMonths] = useState(12)
-  const monthlyRate = 0.05
+  const [ratePct, setRatePct] = useState(2)
+  const monthlyRate = Math.min(Math.max(ratePct, 0), 5) / 100
 
   // Cálculo de la proyección
   const rows = useMemo(() => {
@@ -884,7 +885,7 @@ function CompoundCalculator() {
       out.push({ month: m, balance, interest, cumulative })
     }
     return out
-  }, [amount, months])
+  }, [amount, months, monthlyRate])
 
   const finalBalance = rows.length > 0 ? rows[rows.length - 1].balance : amount
   const totalInterest = rows.reduce((s, r) => s + r.interest, 0)
@@ -899,7 +900,7 @@ function CompoundCalculator() {
           Calculadora de proyección
         </CardTitle>
         <CardDescription>
-          Simula cómo crecería tu inversión con 5% de interés compuesto mensual.
+          Simulación con una tasa hipotética que tú eliges. No es una promesa: el rendimiento real depende del resultado publicado de la cooperativa.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -951,6 +952,16 @@ function CompoundCalculator() {
             <p className="text-xs text-muted-foreground">
               Arrastra para elegir entre 1 y 60 meses.
             </p>
+            <Label htmlFor="calc-rate" className="pt-2 block">Tasa mensual hipotética (%)</Label>
+            <Input
+              id="calc-rate"
+              type="number"
+              min={0}
+              max={5}
+              step={0.5}
+              value={ratePct}
+              onChange={(e) => setRatePct(Math.min(5, Math.max(0, parseFloat(e.target.value) || 0)))}
+            />
           </div>
         </div>
 
@@ -1043,8 +1054,8 @@ function CompoundCalculator() {
         <div className="rounded-md bg-primary/5 border border-primary/20 p-3 text-xs text-muted-foreground flex gap-2">
           <Info className="size-3.5 shrink-0 mt-0.5 text-primary" />
           <p>
-            Esta calculadora es solo una simulación. El interés real se aplica cada 30 días
-            sobre el balance activo de tu inversión, y solo si tienes red (eres N1 o N2).
+            Esta calculadora es solo una simulación. El rendimiento real se aplica cada 30 días,
+            solo si la cooperativa publicó resultado del periodo, y solo si tienes red (eres N1 o N2).
           </p>
         </div>
       </CardContent>

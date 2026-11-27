@@ -53,7 +53,7 @@ export function CooperativaModule() {
       <div>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Cooperativa de Ahorro</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Capital + interés compuesto 5% mensual + aportes con materiales reciclados
+          Capital + rendimiento variable según resultado + aportes con materiales reciclados
         </p>
       </div>
 
@@ -135,7 +135,6 @@ function AccountTab({ toast }: { toast: (m: string, t?: 'success' | 'error' | 'i
 
   if (loading || !account) return <Skeleton className="h-64" />
 
-  const projectedYear = account.balance * Math.pow(1.05, 12)
 
   return (
     <div className="space-y-4">
@@ -146,7 +145,7 @@ function AccountTab({ toast }: { toast: (m: string, t?: 'success' | 'error' | 'i
             <div>
               <p className="text-sm opacity-90">Balance actual (capital + interés)</p>
               <p className="text-4xl font-bold mt-1">{fmtUsd(account.balance)}</p>
-              <p className="text-xs opacity-75 mt-2">Proyección en 12 meses: {fmtUsd(projectedYear)}</p>
+              <p className="text-xs opacity-75 mt-2">Rendimiento variable según resultado publicado</p>
             </div>
             <PiggyBank className="size-16 opacity-30" />
           </div>
@@ -302,7 +301,7 @@ function MaterialsTab({ toast }: { toast: (m: string, t?: 'success' | 'error' | 
             <div className="text-sm">
               <p className="font-medium">¿Cómo funciona?</p>
               <p className="text-muted-foreground text-xs mt-1">
-                Los materiales reciclados se convierten en capital al precio de mercado. El aluminio y cobre se venden, el vidrio se guarda para Reciclarte (artesanías). Tu capital genera 5% de interés compuesto mensual.
+                Los materiales reciclados se convierten en capital al precio de mercado. El aluminio y cobre se venden, el vidrio se guarda para Reciclarte (artesanías). El rendimiento de tu capital depende del resultado publicado de la cooperativa y no está garantizado.
               </p>
             </div>
           </div>

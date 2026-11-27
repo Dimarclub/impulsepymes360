@@ -1740,6 +1740,7 @@ export function ImpulseWizardModule() {
     try {
       const payload = {
         // user
+        role: 'SUPPLIER',
         name: form.name,
         email: form.email,
         password: form.password || undefined,
@@ -1771,7 +1772,7 @@ export function ImpulseWizardModule() {
         // publibags
         selectedSpaceIds: form.selectedSpaceIds || [],
       }
-      const res = await fetch('/api/impulse/onboarding', {
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

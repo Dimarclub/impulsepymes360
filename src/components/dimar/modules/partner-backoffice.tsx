@@ -140,7 +140,6 @@ function CooperativaTab() {
   }
 
   if (loading || !account) return <Skeleton className="h-64" />
-  const projectedYear = account.balance * Math.pow(1.05, 12)
 
   return (
     <div className="space-y-4">
@@ -148,7 +147,7 @@ function CooperativaTab() {
         <div className="bg-gradient-to-r from-primary to-accent p-6 text-primary-foreground">
           <p className="text-sm opacity-90">Balance cooperativa</p>
           <p className="text-4xl font-bold mt-1">{fmtUsd(account.balance)}</p>
-          <p className="text-xs opacity-75 mt-2">Proyección 12 meses: {fmtUsd(projectedYear)}</p>
+          <p className="text-xs opacity-75 mt-2">Rendimiento variable según resultado publicado</p>
         </div>
         <CardContent className="p-4">
           <div className="grid grid-cols-3 gap-3 text-center text-sm">
@@ -177,10 +176,10 @@ function BenefitsTab() {
       <Card>
         <CardHeader><CardTitle className="text-base">Beneficios del Socio</CardTitle></CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex items-center gap-3 p-3 rounded-lg border"><TrendingUp className="size-5 text-emerald-600" /><div><p className="text-sm font-medium">3% de utilidad mensual</p><p className="text-xs text-muted-foreground">Sobre tu capital aportado</p></div></div>
+          <div className="flex items-center gap-3 p-3 rounded-lg border"><TrendingUp className="size-5 text-emerald-600" /><div><p className="text-sm font-medium">Utilidad según resultado</p><p className="text-xs text-muted-foreground">Sobre tu capital aportado, no garantizada</p></div></div>
           <div className="flex items-center gap-3 p-3 rounded-lg border"><HandCoins className="size-5 text-amber-600" /><div><p className="text-sm font-medium">Capital semilla</p><p className="text-xs text-muted-foreground">Acceso a capital para emprendimientos</p></div></div>
           <div className="flex items-center gap-3 p-3 rounded-lg border"><Gift className="size-5 text-primary" /><div><p className="text-sm font-medium">Oportunidades laborales</p><p className="text-xs text-muted-foreground">Cargos según experiencia</p></div></div>
-          <div className="flex items-center gap-3 p-3 rounded-lg border"><PiggyBank className="size-5 text-purple-600" /><div><p className="text-sm font-medium">Cooperativa de ahorro</p><p className="text-xs text-muted-foreground">5% interés compuesto mensual</p></div></div>
+          <div className="flex items-center gap-3 p-3 rounded-lg border"><PiggyBank className="size-5 text-purple-600" /><div><p className="text-sm font-medium">Cooperativa de ahorro</p><p className="text-xs text-muted-foreground">Rendimiento variable según resultado</p></div></div>
         </CardContent>
       </Card>
       <Button className="w-full" onClick={() => setModule('benefits')}>Ver todos los beneficios</Button>

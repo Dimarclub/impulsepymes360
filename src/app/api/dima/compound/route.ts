@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { requireSession } from '@/lib/security/auth'
+import { getPublishedBagRate } from '@/lib/bag-rate'
 
-// POST /api/dima/compound — aplica interés compuesto 5% mensual a DimaSubscription + PopPurchases
+// POST /api/dima/compound — aplica el rendimiento del periodo (tasa publicada por la cooperativa, sin tasa fija)
+// a DimaSubscription + PopPurchases
 // Solo si han pasado >= 30 días desde el último compound.
 export async function POST() {
   const auth = await requireSession()
@@ -11,7 +13,16 @@ export async function POST() {
 
   const now = new Date()
   const THIRTY_DAYS = 30 * 86400000
-  const RATE = 0.05
+  const RATE = await getPublishedBagRate()
+  if (RATE <= 0) {
+    return NextResponse.json({
+      ok: true,
+      updated: false,
+      message: 'La cooperativa aún no publica el resultado de este periodo. No se aplicó rendimiento; tu capital sigue intacto.',
+      interestEarned: 0,
+      newBalance: 0,
+    })
+  }
 
   let subInterest = 0
   let popInterest = 0

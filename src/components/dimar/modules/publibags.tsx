@@ -330,7 +330,7 @@ function Hero({ onSeePlan, onWhats }: { onSeePlan: () => void; onWhats: () => vo
               </div>
               <div>
                 <p style={{ fontSize: 14, fontWeight: 600, color: C.text }}>por espacio · pago único</p>
-                <p style={{ fontSize: 12, color: C.muted }}>Se convierte en aporte de capital de socio + 5% interés mensual</p>
+                <p style={{ fontSize: 12, color: C.muted }}>Se convierte en aporte de capital de socio (rendimiento variable, no garantizado)</p>
               </div>
             </div>
 
@@ -401,7 +401,7 @@ function Anatomia() {
     { label: 'Espacios totales', value: String(BAG_TOTAL_SPACES), color: C.emerald },
     { label: 'Vendibles', value: String(BAG_TOTAL_SPACES), color: C.emerald },
     { label: 'Por espacio', value: `$${BAG_SPACE_PRICE}`, color: C.gold },
-    { label: 'Interés mensual', value: '5%', color: C.purple },
+    { label: 'Rendimiento', value: 'Variable', color: C.purple },
   ]
 
   return (
@@ -455,7 +455,7 @@ function Anatomia() {
 function ComoFunciona() {
   const steps = [
     { n: 1, icon: <ShoppingBag className="size-5" />, title: 'Compras tu espacio', desc: `Eliges un espacio de 10×5 cm en el plano del bolso. Pagas $${BAG_SPACE_PRICE} (pago único) y automáticamente te haces SOCIO de la cooperativa.` },
-    { n: 2, icon: <TrendingUp className="size-5" />, title: `Tu $${BAG_SPACE_PRICE} = aporte de capital`, desc: `El $${BAG_SPACE_PRICE} se registra como aporte de capital en tu cuenta cooperativa. Genera 5% interés mensual compuesto.` },
+    { n: 2, icon: <TrendingUp className="size-5" />, title: `Tu $${BAG_SPACE_PRICE} = aporte de capital`, desc: `El $${BAG_SPACE_PRICE} se registra como aporte de capital en tu cuenta cooperativa. El rendimiento es variable según el resultado publicado (no garantizado).` },
     { n: 3, icon: <Palette className="size-5" />, title: 'Tu marca se imprime + QR', desc: `Subes tu logo o generas un QR. Se imprime en el bolso junto con ${BAG_TOTAL_SPACES - 1} marcas más, en 500 bolsas que circulan por toda la ciudad.` },
     { n: 4, icon: <Users className="size-5" />, title: 'Miles ven tu marca', desc: 'Cada bolso es visto por miles de personas. Tu red de afiliados gana 2% en 3 niveles + 3% cashback en cada compra.' },
   ]

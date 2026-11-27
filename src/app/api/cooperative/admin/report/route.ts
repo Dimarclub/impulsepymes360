@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { requireRole } from '@/lib/security/auth'
+import { getPublishedBagRate } from '@/lib/bag-rate'
 
 // Reporte financiero admin
 export async function GET() {
@@ -16,6 +17,7 @@ export async function GET() {
     db.materialInventory.findMany(),
   ])
 
+  const publishedRate = await getPublishedBagRate()
   const totalCapital = accounts.reduce((s, a) => s + a.balance, 0)
   const totalContributed = accounts.reduce((s, a) => s + a.totalContributed, 0)
   const totalWithdrawn = accounts.reduce((s, a) => s + a.totalWithdrawn, 0)
@@ -46,6 +48,7 @@ export async function GET() {
       withdrawals,
       interest,
     },
+    publishedRate,
     accounts: accounts.slice(0, 50),
     recentTransactions: allTransactions.slice(0, 30),
     materialPrices,

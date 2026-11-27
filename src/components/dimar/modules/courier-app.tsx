@@ -167,11 +167,15 @@ function SignModal({
   onSigned: () => void
 }) {
   const [name, setName] = useState('')
+  const [collected, setCollected] = useState(false)
   const [saving, setSaving] = useState(false)
   const toast = useAppStore((s) => s.toast)
 
   useEffect(() => {
-    if (open) setName('')
+    if (open) {
+      setName('')
+      setCollected(false)
+    }
   }, [open, delivery?.id])
 
   const submit = async () => {
@@ -179,12 +183,21 @@ function SignModal({
       toast('Escribe el nombre de quien recibe', 'error')
       return
     }
+    const toCollect = delivery.amountToCollect || 0
+    if (toCollect > 0 && !collected) {
+      toast('Confirma que cobraste el monto antes de cerrar la entrega', 'error')
+      return
+    }
     setSaving(true)
     try {
       const r = await fetch(`/api/deliveries/${delivery.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'sign', signatureName: name.trim() }),
+        body: JSON.stringify({
+          action: 'sign',
+          signatureName: name.trim(),
+          ...(toCollect > 0 ? { collectedAmount: toCollect } : {}),
+        }),
       })
       if (!r.ok) throw new Error('request failed')
       toast('Entrega confirmada ✅')
@@ -229,6 +242,12 @@ function SignModal({
               <DollarSign className="size-4" />
               Cobrar contra entrega: <strong>${delivery.amountToCollect.toFixed(2)}</strong>
             </div>
+          ) : null}
+          {delivery?.amountToCollect ? (
+            <label className="flex items-center gap-2 text-sm" style={{ color: C.text }}>
+              <input type="checkbox" checked={collected} onChange={(e) => setCollected(e.target.checked)} />
+              Ya cobré ${delivery.amountToCollect.toFixed(2)} al cliente
+            </label>
           ) : null}
         </div>
         <DialogFooter>

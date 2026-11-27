@@ -1,33 +1,39 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
 import { requireSession } from '@/lib/security/auth'
+import { completeStep, getOnboardingProgress, ONBOARDING_STEPS } from '@/lib/onboarding-tasks'
 
+/**
+ * Checklist del bolso (6 etapas) — ahora implementado sobre las tareas PPA (CpaTask/CpaCompletion).
+ * Se mantiene la forma de la respuesta anterior para no romper las pantallas.
+ */
 export async function GET() {
   const auth = await requireSession()
   if (auth instanceof NextResponse) return auth
   const userId = (auth as { id: string }).id
-  let progress = await db.taskProgress.findUnique({ where: { userId } })
-  if (!progress) progress = await db.taskProgress.create({ data: { userId } })
-  return NextResponse.json(progress)
+  return NextResponse.json(await getOnboardingProgress(userId))
 }
 
 export async function PATCH(req: Request) {
   const auth = await requireSession()
   if (auth instanceof NextResponse) return auth
   const userId = (auth as { id: string }).id
-  const body = await req.json()
-  const tasks = ['scanDone', 'identifyDone', 'visitWebDone', 'shareDone', 'commentDone', 'photoDone']
-  const update: Record<string, unknown> = {}
-  for (const t of tasks) { if (body[t] !== undefined) update[t] = body[t] }
-  if (body.photoUrl) update.photoUrl = body.photoUrl
-  if (body.identifiedCompany) update.identifiedCompany = body.identifiedCompany
-  if (body.shareUrl) update.shareUrl = body.shareUrl
-  if (body.commentText) update.commentText = body.commentText
-  let progress = await db.taskProgress.findUnique({ where: { userId } })
-  if (!progress) progress = await db.taskProgress.create({ data: { userId } })
-  const updated = { ...progress, ...update }
-  const allDone = updated.scanDone && updated.identifyDone && updated.visitWebDone && updated.shareDone && updated.commentDone && updated.photoDone
-  if (allDone && !progress.completed) { update.completed = true; update.completedAt = new Date() }
-  const result = await db.taskProgress.upsert({ where: { userId }, update, create: { userId, ...update } })
-  return NextResponse.json(result)
+
+  let body: Record<string, unknown>
+  try {
+    const parsed: unknown = await req.json()
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('bad')
+    body = parsed as Record<string, unknown>
+  } catch {
+    return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 })
+  }
+
+  // Las etapas solo se marcan (true); no se pueden deshacer
+  for (const step of ONBOARDING_STEPS) {
+    if (body[step.key] === true) {
+      const photoUrl = typeof body.photoUrl === 'string' ? body.photoUrl : undefined
+      const r = await completeStep(userId, step.key, photoUrl)
+      if (!r.ok) return NextResponse.json({ error: r.error }, { status: 400 })
+    }
+  }
+  return NextResponse.json(await getOnboardingProgress(userId))
 }

@@ -5,7 +5,18 @@ import { requireRole } from '@/lib/security/auth'
 export async function GET() {
   const auth = await requireRole('ADMIN', 'COURIER')
   if (auth instanceof NextResponse) return auth
+  const user = auth as { id: string; role: string }
+
+  // Un mensajero solo ve sus propias entregas; el admin (Delta Master) ve todas
+  let where: Record<string, unknown> = {}
+  if (user.role === 'COURIER') {
+    const me = await db.courier.findUnique({ where: { userId: user.id }, select: { id: true } })
+    if (!me) return NextResponse.json([])
+    where = { courierId: me.id }
+  }
+
   const deliveries = await db.delivery.findMany({
+    where,
     include: {
       order: {
         include: {
