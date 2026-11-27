@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { createOrderCommissions } from '@/lib/commissions'
 import { requireSession } from '@/lib/security/auth'
 import { getPaymentProvider } from '@/lib/services/payment'
-import { notifyOrderReceived, notifyCommissionEarned } from '@/lib/services/notifications'
+import { notifyOrderReceived } from '@/lib/services/notifications'
 
 export async function POST(req: NextRequest) {
   const auth = await requireSession()
@@ -13,6 +14,9 @@ export async function POST(req: NextRequest) {
 
   const order = await db.order.findUnique({ where: { id: orderId }, include: { items: true } })
   if (!order) return NextResponse.json({ error: 'Orden no encontrada' }, { status: 404 })
+  if (order.userId !== auth.id && auth.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+  }
   if (order.paymentStatus === 'PAID') return NextResponse.json({ error: 'Orden ya pagada' }, { status: 400 })
 
   const provider = getPaymentProvider()
@@ -28,25 +32,11 @@ export async function POST(req: NextRequest) {
     for (const item of order.items) {
       await tx.product.update({ where: { id: item.productId }, data: { stock: { decrement: item.quantity } } })
     }
+    // Mismas reglas que /api/orders: 1 % a 3 niveles, idempotente
+    await createOrderCommissions(tx, { orderId, buyerId: order.userId, base: order.subtotal })
   })
 
   const buyer = await db.user.findUnique({ where: { id: order.userId } })
-  if (buyer) {
-    const n0 = +(order.subtotal * 0.03).toFixed(2)
-    await db.commission.create({ data: { userId: buyer.id, orderId, sourceUserId: buyer.id, amount: n0, level: 0, rate: 3, status: 'PENDING' } })
-    notifyCommissionEarned(buyer.id, n0, 0, buyer.name).catch(() => {})
-    let current = buyer
-    for (let lvl = 1; lvl <= 3; lvl++) {
-      if (!current.sponsorId) break
-      const sponsor = await db.user.findUnique({ where: { id: current.sponsorId } })
-      if (!sponsor) break
-      const amt = +(order.subtotal * 0.02).toFixed(2)
-      await db.commission.create({ data: { userId: sponsor.id, orderId, sourceUserId: buyer.id, amount: amt, level: lvl, rate: 2, status: 'PENDING' } })
-      notifyCommissionEarned(sponsor.id, amt, lvl, buyer.name).catch(() => {})
-      current = sponsor
-    }
-  }
-
   // Notificar a proveedores
   const items = await db.orderItem.findMany({ where: { orderId }, include: { product: { include: { supplier: { include: { user: true } } } } } })
   const notified = new Set<string>()

@@ -1,6 +1,7 @@
 import { randomBytes } from 'node:crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { createOrderCommissions } from '@/lib/commissions'
 import { requireSession, requireRole } from '@/lib/security/auth'
 
 class OrderError extends Error {
@@ -148,30 +149,9 @@ export async function POST(req: NextRequest) {
         })
       }
 
-      // Comisiones marketplace: 1% a cada uno de los 3 niveles de patrocinadores
+      // Comisiones de red (fuente única en lib/commissions.ts, idempotente)
       const buyer = await tx.user.findUnique({ where: { id: userId } })
-      if (buyer && marketplaceSubtotal > 0) {
-        const perLevel = +(marketplaceSubtotal * 0.01).toFixed(2)
-        let current = buyer
-        for (let level = 1; level <= 3; level += 1) {
-          if (!current.sponsorId) break
-          const sponsor = await tx.user.findUnique({ where: { id: current.sponsorId } })
-          if (!sponsor) break
-          await tx.commission.create({
-            data: {
-              userId: sponsor.id,
-              orderId: created.id,
-              sourceUserId: buyer.id,
-              amount: perLevel,
-              level,
-              rate: 1,
-              status: 'PENDING',
-            },
-          })
-          current = sponsor
-        }
-      }
-
+      await createOrderCommissions(tx, { orderId: created.id, buyerId: userId, base: marketplaceSubtotal })
       // Proveedores de los ítems + dirección de retiro (sucursal principal)
       const supplierIds = [...new Set(marketplaceLines.map((l) => l.supplierId).filter(Boolean))] as string[]
       const suppliers = supplierIds.length
