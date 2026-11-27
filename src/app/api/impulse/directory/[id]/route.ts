@@ -25,21 +25,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!['ACTIVE', 'PENDING', 'REJECTED'].includes(status)) {
     return NextResponse.json({ error: 'status inválido' }, { status: 400 })
   }
-  const entry = await db.directoryEntry.findUnique({ where: { id }, include: { provider: true } })
+  // Acepta el id de la ficha o el id del proveedor (providerId es único en la ficha)
+  const entry = await db.directoryEntry.findFirst({ where: { OR: [{ id }, { providerId: id }] }, include: { provider: true } })
   if (!entry) return NextResponse.json({ error: 'No encontrada' }, { status: 404 })
   const result = await db.$transaction(async (tx) => {
-    const updated = await tx.directoryEntry.update({ where: { id }, data: { status } })
+    const updated = await tx.directoryEntry.update({ where: { id: entry.id }, data: { status } })
     await tx.websiteExpress.updateMany({ where: { providerId: entry.providerId }, data: { published: status === 'ACTIVE' } })
     let stickerCode: string | null = null
     if (status === 'ACTIVE') {
-      const existing = await tx.sticker.findFirst({ where: { directoryEntryId: id } })
+      const existing = await tx.sticker.findFirst({ where: { directoryEntryId: entry.id } })
       if (existing) stickerCode = existing.code
       else {
         const qr = await tx.qRCode.findFirst({ where: { providerId: entry.providerId }, orderBy: { createdAt: 'asc' } })
         stickerCode = `STK-${randomBytes(4).toString('hex').toUpperCase()}`
         await tx.sticker.create({
           data: {
-            directoryEntryId: id,
+            directoryEntryId: entry.id,
             name: entry.provider.companyName,
             imageUrl: entry.provider.logoUrl || '/logo.png',
             code: stickerCode,
