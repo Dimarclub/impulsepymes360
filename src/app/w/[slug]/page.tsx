@@ -1,4 +1,3 @@
-import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
 import { PublicWebsiteView } from '@/components/dimar/public-website'
 
@@ -19,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 }
 
-export default async function PublicWebsitePage(_req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+export default async function PublicWebsitePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   // Fetch data server-side
   const site = await db.websiteExpress.findUnique({
