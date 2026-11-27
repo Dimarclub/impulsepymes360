@@ -7,7 +7,10 @@ export async function GET(req: NextRequest) {
   const auth = await requireSession()
   if (auth instanceof NextResponse) return auth
   const { searchParams } = new URL(req.url)
-  const rootId = searchParams.get('userId')
+  const isAdmin = auth.role === 'ADMIN'
+  // Un no-ADMIN solo puede ver su propio subárbol (máx. 3 niveles).
+  const rootId = isAdmin ? searchParams.get('userId') : auth.id
+  const maskEmail = (email: string) => (isAdmin ? email : email.replace(/^(.{2}).*(@.*)$/, '$1***$2'))
 
   // Si no se especifica, usar el admin (raíz de toda la red)
   let root = rootId
@@ -34,14 +37,14 @@ export async function GET(req: NextRequest) {
     })
 
     const children: AffiliateNode[] = []
-    for (const r of referrals) {
+    for (const r of (!isAdmin && level >= 3 ? [] : referrals)) {
       children.push(await buildNode(r.id, level + 1))
     }
 
     return {
       id: user!.id,
       name: user!.name,
-      email: user!.email,
+      email: level === 0 ? user!.email : maskEmail(user!.email),
       role: user!.role,
       city: user!.city,
       affiliateCode: user!.affiliateCode,

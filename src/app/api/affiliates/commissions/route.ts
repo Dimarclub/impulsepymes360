@@ -6,7 +6,9 @@ export async function GET(req: NextRequest) {
   const auth = await requireSession()
   if (auth instanceof NextResponse) return auth
   const { searchParams } = new URL(req.url)
-  const userId = searchParams.get('userId')
+  // Solo ADMIN puede consultar comisiones de otro usuario; el resto ve únicamente las suyas.
+  const requested = searchParams.get('userId')
+  const userId = auth.role === 'ADMIN' ? requested : auth.id
   const where: Record<string, unknown> = {}
   if (userId) where.userId = userId
   const commissions = await db.commission.findMany({

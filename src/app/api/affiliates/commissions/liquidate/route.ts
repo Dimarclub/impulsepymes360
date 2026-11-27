@@ -19,8 +19,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Especifica commissionIds o all:true' }, { status: 400 })
   }
 
-  const result = await db.commission.updateMany({ where, data: { status: 'PAID' } })
-  return NextResponse.json({ liquidated: result.count })
+  // Solo se liquidan comisiones de pedidos efectivamente cobrados (PAID) o sin pedido asociado.
+  const pending = await db.commission.findMany({ where, select: { id: true, orderId: true } })
+  const orderIds = [...new Set(pending.map((c) => c.orderId).filter(Boolean))] as string[]
+  const paid = orderIds.length
+    ? await db.order.findMany({ where: { id: { in: orderIds }, paymentStatus: 'PAID' }, select: { id: true } })
+    : []
+  const paidSet = new Set(paid.map((o) => o.id))
+  const eligible = pending.filter((c) => !c.orderId || paidSet.has(c.orderId)).map((c) => c.id)
+  const result = await db.commission.updateMany({ where: { id: { in: eligible } }, data: { status: 'PAID' } })
+  return NextResponse.json({ liquidated: result.count, skippedUnpaidOrders: pending.length - eligible.length })
 }
 
 // Resumen de comisiones pendientes por usuario (para el panel de liquidación)
